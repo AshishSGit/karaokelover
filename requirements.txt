@@ -2,4 +2,4 @@ flask
 requests
 python-dotenv
 gunicorn
-anthropic
+openai
