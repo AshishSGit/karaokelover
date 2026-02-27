@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, Response
 from dotenv import load_dotenv
 import requests
 import re
@@ -50,6 +50,19 @@ def parse_song_info(video_title):
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/sitemap.xml')
+def sitemap():
+    xml = '''<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.karaokelover.com/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>'''
+    return Response(xml, mimetype='application/xml')
 
 
 @app.route('/api/search')
