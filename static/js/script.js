@@ -60,6 +60,7 @@ const toastContainer = document.getElementById('toastContainer');
 const miniPlayer     = document.getElementById('miniPlayer');
 const recSection     = document.getElementById('recSection');
 const recChips       = document.getElementById('recChips');
+const recLoading     = document.getElementById('recLoading');
 const trendingChips  = document.getElementById('trendingChips');
 const miniThumb      = document.getElementById('miniThumb');
 const miniTitle      = document.getElementById('miniTitle');
@@ -349,7 +350,7 @@ async function fetchLyrics(videoTitle) {
     const res  = await fetch(`/api/lyrics?title=${encodeURIComponent(videoTitle)}`);
     const data = await res.json();
     lyricsLoading.style.display = 'none';
-    if (!res.ok || data.error) { lyricsNotFound.style.display = 'block'; return; }
+    if (!res.ok || data.error) { lyricsSection.style.display = 'none'; return; }
     lyricsTitle.textContent  = data.song   || 'Lyrics';
     const artistLabel = data.artist ? `by ${data.artist}` : '';
     const aiBadge = data.source === 'ai' ? ' <span class="ai-badge">✦ AI</span>' : '';
@@ -358,8 +359,7 @@ async function fetchLyrics(videoTitle) {
     lyricsText.style.display = 'block';
     lyricsBody.scrollTop     = 0;
   } catch {
-    lyricsLoading.style.display  = 'none';
-    lyricsNotFound.style.display = 'block';
+    lyricsSection.style.display = 'none';
   }
 }
 
@@ -630,7 +630,10 @@ function setLoading(on) {
 }
 
 function showEmpty() { emptyState.style.display = 'block'; }
-function showError(msg) { errorMsg.textContent = msg; errorState.style.display = 'block'; }
+function showError(msg) {
+  errorMsg.textContent = msg || 'Could not load results — try a different search or check your connection.';
+  errorState.style.display = 'block';
+}
 
 function escapeHtml(str) {
   return String(str)
@@ -673,13 +676,15 @@ async function fetchTrending() {
 // ==========================================
 
 async function fetchRecommendations(videoTitle) {
-  recSection.style.display = 'none';
+  recSection.style.display = 'block';
   recChips.innerHTML = '';
+  recLoading.style.display = 'flex';
   try {
     const res  = await fetch(`/api/recommendations?song=${encodeURIComponent(videoTitle)}`);
     const data = await res.json();
+    recLoading.style.display = 'none';
     const recs = data.recommendations || [];
-    if (recs.length === 0) return;
+    if (recs.length === 0) { recSection.style.display = 'none'; return; }
     recs.forEach(r => {
       const q = r.artist ? `${r.artist} ${r.song}` : r.song;
       const btn = document.createElement('button');
@@ -695,5 +700,8 @@ async function fetchRecommendations(videoTitle) {
       recChips.appendChild(btn);
     });
     recSection.style.display = 'block';
-  } catch { /* silently skip */ }
+  } catch {
+    recLoading.style.display = 'none';
+    recSection.style.display = 'none';
+  }
 }

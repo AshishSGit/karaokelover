@@ -233,11 +233,17 @@ header, section, footer, .loading-overlay,
 .hero-badge {
   display: inline-block;
   background: rgba(147,51,234,0.12);
-  border: 1px solid rgba(147,51,234,0.3);
-  color: #c084fc;
-  font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
-  padding: 6px 16px; border-radius: 20px;
+  border: 1px solid rgba(147,51,234,0.35);
+  color: #d8b4fe;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.8px;
+  padding: 7px 18px; border-radius: 20px;
   margin-bottom: 24px;
+  box-shadow: 0 0 20px rgba(147,51,234,0.15);
+  animation: badge-glow 3s ease-in-out infinite;
+}
+@keyframes badge-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(147,51,234,0.15); }
+  50%       { box-shadow: 0 0 30px rgba(236,72,153,0.25); }
 }
 
 .hero-title {
@@ -312,21 +318,24 @@ header, section, footer, .loading-overlay,
 }
 
 .qp-label {
-  font-size: 13px; color: var(--muted); font-weight: 500;
+  font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  background: var(--grad);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
 
 .qp-chip {
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
   color: var(--muted);
   font-size: 13px; font-weight: 500; font-family: 'Outfit', sans-serif;
-  padding: 7px 14px; border-radius: 20px; cursor: pointer;
-  transition: background var(--transition), color var(--transition), border-color var(--transition);
+  padding: 7px 16px; border-radius: 20px; cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.12s;
 }
 .qp-chip:hover {
-  background: rgba(147,51,234,0.15);
-  border-color: rgba(147,51,234,0.4);
-  color: #c084fc;
+  background: rgba(147,51,234,0.18);
+  border-color: rgba(147,51,234,0.5);
+  color: #e2b4ff;
+  transform: translateY(-2px);
 }
 
 /* ==========================================
@@ -336,9 +345,14 @@ header, section, footer, .loading-overlay,
 .history-section { padding: 16px 0 36px; animation: fade-up 0.3s ease; }
 
 .strip-heading {
-  font-size: 13px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 1.2px; color: var(--muted); margin-bottom: 16px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.8px; color: var(--muted); margin-bottom: 14px;
   display: flex; align-items: center; gap: 8px;
+}
+.strip-heading::after {
+  content: '';
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--border), transparent);
 }
 
 .history-strip {
@@ -678,9 +692,9 @@ header, section, footer, .loading-overlay,
   animation: fade-up 0.3s ease both;
 }
 .card:hover {
-  transform: translateY(-5px);
-  border-color: rgba(147,51,234,0.45);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 24px rgba(147,51,234,0.15);
+  transform: translateY(-6px);
+  border-color: rgba(147,51,234,0.6);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 32px rgba(147,51,234,0.22), 0 0 0 1px rgba(147,51,234,0.1);
 }
 .card.active {
   border-color: var(--p1);
@@ -810,10 +824,18 @@ header, section, footer, .loading-overlay,
 .empty-state, .error-state {
   text-align: center; padding: 90px 24px;
   position: relative; z-index: 1;
+  animation: fade-up 0.3s ease;
 }
-.empty-icon, .error-icon { display: block; font-size: 52px; margin-bottom: 16px; opacity: 0.5; }
-.empty-state p { color: var(--muted); font-size: 16px; }
-.error-state p  { color: #f87171; font-size: 16px; }
+.empty-icon, .error-icon { display: block; font-size: 56px; margin-bottom: 18px; opacity: 0.45; }
+.empty-state p {
+  color: var(--muted); font-size: 16px; font-weight: 500;
+}
+.error-state p {
+  color: #fca5a5; font-size: 15px; font-weight: 500;
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  display: inline-block; padding: 10px 20px; border-radius: 10px; margin-top: 4px;
+}
 
 /* ==========================================
    MINI PLAYER
@@ -968,32 +990,55 @@ header, section, footer, .loading-overlay,
    RECOMMENDATIONS
    ========================================== */
 
-.rec-section { margin: 0 auto 32px; max-width: 1200px; padding: 0 24px; }
+.rec-section { padding: 0 0 8px; animation: fade-up 0.3s ease; }
+
+.rec-loading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 0 12px;
+}
+
+.rec-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--grad);
+  animation: rec-bounce 1s ease-in-out infinite;
+}
+.rec-dot:nth-child(2) { animation-delay: 0.15s; }
+.rec-dot:nth-child(3) { animation-delay: 0.3s; }
+
+@keyframes rec-bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50%       { transform: translateY(-6px); opacity: 1; }
+}
 
 .rec-chips {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 4px;
 }
 
 .rec-chip {
-  background: rgba(139, 92, 246, 0.12);
-  border: 1px solid rgba(139, 92, 246, 0.35);
-  color: var(--text);
+  position: relative;
+  background: rgba(147,51,234,0.1);
+  border: 1px solid rgba(147,51,234,0.3);
+  color: #d8b4fe;
   border-radius: 999px;
-  padding: 8px 18px;
+  padding: 9px 20px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.18s, border-color 0.18s, transform 0.12s;
+  transition: background 0.18s, border-color 0.18s, transform 0.14s, box-shadow 0.18s;
   font-family: inherit;
+  letter-spacing: 0.1px;
 }
 
 .rec-chip:hover {
-  background: rgba(139, 92, 246, 0.26);
-  border-color: rgba(139, 92, 246, 0.6);
-  transform: translateY(-1px);
+  background: rgba(147,51,234,0.24);
+  border-color: rgba(147,51,234,0.65);
+  color: #ede9fe;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(147,51,234,0.25);
 }
 
 /* ==========================================
@@ -1011,4 +1056,5 @@ header, section, footer, .loading-overlay,
   padding: 2px 7px;
   border-radius: 999px;
   vertical-align: middle;
+  box-shadow: 0 0 10px rgba(147,51,234,0.4);
 }
