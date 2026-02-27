@@ -77,13 +77,8 @@
       </form>
 
       <div class="quick-picks">
-        <span class="qp-label">Try:</span>
-        <button class="qp-chip" data-q="Bohemian Rhapsody">Bohemian Rhapsody</button>
-        <button class="qp-chip" data-q="Shape of You">Shape of You</button>
-        <button class="qp-chip" data-q="Blinding Lights">Blinding Lights</button>
-        <button class="qp-chip" data-q="Rolling in the Deep">Rolling in the Deep</button>
-        <button class="qp-chip" data-q="Hotel California">Hotel California</button>
-        <button class="qp-chip" data-q="Sweet Child O Mine">Sweet Child O' Mine</button>
+        <span class="qp-label">Trending:</span>
+        <div class="qp-chips" id="trendingChips"></div>
       </div>
     </div>
   </section>
@@ -122,6 +117,14 @@
           </div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ========== RECOMMENDATIONS ========== -->
+  <section class="rec-section" id="recSection" style="display:none;">
+    <div class="section-wrap">
+      <h3 class="strip-heading">✨ Sing Next</h3>
+      <div class="rec-chips" id="recChips"></div>
     </div>
   </section>
 

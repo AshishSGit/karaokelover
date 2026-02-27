@@ -58,6 +58,9 @@ const errorMsg       = document.getElementById('errorMsg');
 const equalizer      = document.getElementById('equalizer');
 const toastContainer = document.getElementById('toastContainer');
 const miniPlayer     = document.getElementById('miniPlayer');
+const recSection     = document.getElementById('recSection');
+const recChips       = document.getElementById('recChips');
+const trendingChips  = document.getElementById('trendingChips');
 const miniThumb      = document.getElementById('miniThumb');
 const miniTitle      = document.getElementById('miniTitle');
 const miniChannel    = document.getElementById('miniChannel');
@@ -74,16 +77,7 @@ const particles      = document.getElementById('particles');
 initParticles();
 updateFavCount();
 renderHistory();
-
-// Quick picks
-document.querySelectorAll('.qp-chip').forEach(chip => {
-  chip.addEventListener('click', () => {
-    searchInput.value = chip.dataset.q;
-    activeTab = 'all';
-    updateTabs();
-    doSearch(chip.dataset.q);
-  });
-});
+fetchTrending();
 
 // ==========================================
 // PARTICLES
@@ -257,6 +251,7 @@ function onCardClick(card, video, index) {
 
   addToHistory(video);
   fetchLyrics(video.title);
+  fetchRecommendations(video.title);
 }
 
 // ==========================================
@@ -356,7 +351,9 @@ async function fetchLyrics(videoTitle) {
     lyricsLoading.style.display = 'none';
     if (!res.ok || data.error) { lyricsNotFound.style.display = 'block'; return; }
     lyricsTitle.textContent  = data.song   || 'Lyrics';
-    lyricsArtist.textContent = data.artist ? `by ${data.artist}` : '';
+    const artistLabel = data.artist ? `by ${data.artist}` : '';
+    const aiBadge = data.source === 'ai' ? ' <span class="ai-badge">✦ AI</span>' : '';
+    lyricsArtist.innerHTML   = escapeHtml(artistLabel) + aiBadge;
     lyricsText.innerHTML     = formatLyrics(data.lyrics);
     lyricsText.style.display = 'block';
     lyricsBody.scrollTop     = 0;
@@ -642,4 +639,61 @@ function escapeHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+// ==========================================
+// TRENDING
+// ==========================================
+
+async function fetchTrending() {
+  try {
+    const res  = await fetch('/api/trending');
+    const data = await res.json();
+    const songs = data.songs || [];
+    trendingChips.innerHTML = '';
+    songs.forEach(s => {
+      const q = s.artist ? `${s.artist} ${s.song}` : s.song;
+      const btn = document.createElement('button');
+      btn.className = 'qp-chip';
+      btn.dataset.q = q;
+      btn.textContent = s.song;
+      btn.addEventListener('click', () => {
+        searchInput.value = q;
+        activeTab = 'all';
+        updateTabs();
+        doSearch(q);
+      });
+      trendingChips.appendChild(btn);
+    });
+  } catch { /* keep default chips empty on error */ }
+}
+
+// ==========================================
+// RECOMMENDATIONS
+// ==========================================
+
+async function fetchRecommendations(videoTitle) {
+  recSection.style.display = 'none';
+  recChips.innerHTML = '';
+  try {
+    const res  = await fetch(`/api/recommendations?song=${encodeURIComponent(videoTitle)}`);
+    const data = await res.json();
+    const recs = data.recommendations || [];
+    if (recs.length === 0) return;
+    recs.forEach(r => {
+      const q = r.artist ? `${r.artist} ${r.song}` : r.song;
+      const btn = document.createElement('button');
+      btn.className = 'rec-chip';
+      btn.textContent = `${r.song}${r.artist ? ' — ' + r.artist : ''}`;
+      btn.addEventListener('click', () => {
+        searchInput.value = q;
+        activeTab = 'all';
+        updateTabs();
+        doSearch(q);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      recChips.appendChild(btn);
+    });
+    recSection.style.display = 'block';
+  } catch { /* silently skip */ }
 }

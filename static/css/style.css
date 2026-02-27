@@ -952,5 +952,63 @@ header, section, footer, .loading-overlay,
 
 @media (max-width: 400px) {
   .results-grid { grid-template-columns: 1fr; }
-  .quick-picks .qp-chip:nth-child(n+5) { display: none; }
+}
+
+/* ==========================================
+   TRENDING CHIPS (dynamic quick-picks)
+   ========================================== */
+
+.qp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* ==========================================
+   RECOMMENDATIONS
+   ========================================== */
+
+.rec-section { margin: 0 auto 32px; max-width: 1200px; padding: 0 24px; }
+
+.rec-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.rec-chip {
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  color: var(--text);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, transform 0.12s;
+  font-family: inherit;
+}
+
+.rec-chip:hover {
+  background: rgba(139, 92, 246, 0.26);
+  border-color: rgba(139, 92, 246, 0.6);
+  transform: translateY(-1px);
+}
+
+/* ==========================================
+   AI BADGE
+   ========================================== */
+
+.ai-badge {
+  display: inline-block;
+  margin-left: 8px;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  vertical-align: middle;
 }

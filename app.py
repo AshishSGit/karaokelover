@@ -3,48 +3,80 @@ from dotenv import load_dotenv
 import requests
 import re
 import os
+import json
 
 load_dotenv()
 
 app = Flask(__name__)
 
-YOUTUBE_API_KEY = os.getenv('YOUTUBE_API_KEY')
-YOUTUBE_SEARCH_URL = 'https://www.googleapis.com/youtube/v3/search'
-LRCLIB_URL = 'https://lrclib.net/api'
+YOUTUBE_API_KEY     = os.getenv('YOUTUBE_API_KEY')
+YOUTUBE_SEARCH_URL  = 'https://www.googleapis.com/youtube/v3/search'
+LRCLIB_URL          = 'https://lrclib.net/api'
+ANTHROPIC_API_KEY   = os.getenv('ANTHROPIC_API_KEY')
+N8N_LYRICS_WEBHOOK  = os.getenv('N8N_LYRICS_WEBHOOK')
+N8N_TRENDING_SECRET = os.getenv('N8N_TRENDING_SECRET', '')
+TRENDING_FILE       = os.path.join(os.path.dirname(__file__), 'trending.json')
+
+DEFAULT_TRENDING = [
+    {'artist': 'Adele',           'song': 'Hello'},
+    {'artist': 'Ed Sheeran',      'song': 'Shape of You'},
+    {'artist': 'Queen',           'song': 'Bohemian Rhapsody'},
+    {'artist': 'Taylor Swift',    'song': 'Anti-Hero'},
+    {'artist': 'The Weeknd',      'song': 'Blinding Lights'},
+    {'artist': 'Journey',         'song': "Don't Stop Believin'"},
+    {'artist': 'Whitney Houston', 'song': 'I Will Always Love You'},
+    {'artist': 'Billie Eilish',   'song': 'Bad Guy'},
+]
 
 
-def parse_song_info(video_title):
-    """Extract artist and song name from a YouTube karaoke video title."""
+def _regex_parse(video_title):
+    """Fallback regex parser for YouTube karaoke titles."""
     title = video_title
-
-    # Strip common karaoke/lyric noise
     noise_patterns = [
-        r'\(.*?karaoke.*?\)',
-        r'\[.*?karaoke.*?\]',
-        r'\(.*?instrumental.*?\)',
-        r'\[.*?instrumental.*?\]',
-        r'\(.*?with\s+lyrics?.*?\)',
-        r'\[.*?with\s+lyrics?.*?\]',
+        r'\(.*?karaoke.*?\)', r'\[.*?karaoke.*?\]',
+        r'\(.*?instrumental.*?\)', r'\[.*?instrumental.*?\]',
+        r'\(.*?with\s+lyrics?.*?\)', r'\[.*?with\s+lyrics?.*?\]',
         r'\(.*?no\s+guide.*?\)',
         r'\bkaraoke\s*(version|track|edition)?\b',
         r'\blyrics?\b',
-        r'\(official.*?\)',
-        r'\[official.*?\]',
-        r'\(.*?hd.*?\)',
-        r'\[.*?hd.*?\]',
+        r'\(official.*?\)', r'\[official.*?\]',
+        r'\(.*?hd.*?\)', r'\[.*?hd.*?\]',
         r'\(.*?audio.*?\)',
     ]
     for pat in noise_patterns:
         title = re.sub(pat, '', title, flags=re.IGNORECASE)
-
     title = title.strip(' -–—|_').strip()
-
-    # Try "Artist - Song" or "Artist – Song" split
     parts = re.split(r'\s[-–—]\s', title, maxsplit=1)
     if len(parts) == 2:
         return parts[0].strip(), parts[1].strip()
-
     return None, title.strip()
+
+
+def parse_song_info(video_title):
+    """Extract artist and song name using Claude AI, falling back to regex."""
+    if not ANTHROPIC_API_KEY:
+        return _regex_parse(video_title)
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        message = client.messages.create(
+            model='claude-haiku-4-5-20251001',
+            max_tokens=100,
+            messages=[{
+                'role': 'user',
+                'content': (
+                    'Extract the artist name and song title from this YouTube karaoke video title. '
+                    'Return ONLY valid JSON with keys "artist" and "song", no extra text. '
+                    f'Use null for artist if unknown. Title: {video_title}'
+                )
+            }]
+        )
+        parsed = json.loads(message.content[0].text.strip())
+        artist = parsed.get('artist') or None
+        song   = parsed.get('song')   or video_title
+        return artist, song
+    except Exception:
+        return _regex_parse(video_title)
 
 
 @app.route('/')
@@ -97,10 +129,10 @@ def search():
             continue
         snippet = item['snippet']
         results.append({
-            'video_id': vid_id,
-            'title': snippet['title'],
-            'channel': snippet['channelTitle'],
-            'thumbnail': snippet['thumbnails']['medium']['url'],
+            'video_id':     vid_id,
+            'title':        snippet['title'],
+            'channel':      snippet['channelTitle'],
+            'thumbnail':    snippet['thumbnails']['medium']['url'],
             'published_at': snippet['publishedAt'],
         })
 
@@ -116,26 +148,98 @@ def lyrics():
     artist, song = parse_song_info(video_title)
 
     try:
-        # Search lrclib.net — works with or without artist
         query = f"{artist} {song}" if artist else song
         resp  = requests.get(f"{LRCLIB_URL}/search", params={'q': query}, timeout=8)
         results = resp.json()
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-    if not results:
-        return jsonify({'error': 'Lyrics not found'}), 404
+    best = next((r for r in results if r.get('plainLyrics')), None) if results else None
+    if best:
+        return jsonify({
+            'lyrics': best['plainLyrics'],
+            'artist': best.get('artistName', artist or ''),
+            'song':   best.get('trackName',  song),
+        })
 
-    # Pick best match: prefer one with plain lyrics
-    best = next((r for r in results if r.get('plainLyrics')), None)
-    if not best:
-        return jsonify({'error': 'Lyrics not found'}), 404
+    # LRCLib found nothing — try n8n AI lyrics fallback
+    if N8N_LYRICS_WEBHOOK:
+        try:
+            n8n_resp = requests.post(
+                N8N_LYRICS_WEBHOOK,
+                json={'artist': artist or '', 'song': song},
+                timeout=15
+            )
+            if n8n_resp.ok:
+                n8n_data = n8n_resp.json()
+                if n8n_data.get('lyrics'):
+                    return jsonify({
+                        'lyrics': n8n_data['lyrics'],
+                        'artist': n8n_data.get('artist', artist or ''),
+                        'song':   n8n_data.get('song', song),
+                        'source': 'ai',
+                    })
+        except Exception:
+            pass
 
-    return jsonify({
-        'lyrics': best['plainLyrics'],
-        'artist': best.get('artistName', artist or ''),
-        'song':   best.get('trackName',  song),
-    })
+    return jsonify({'error': 'Lyrics not found'}), 404
+
+
+@app.route('/api/recommendations')
+def recommendations():
+    artist = request.args.get('artist', '').strip()
+    song   = request.args.get('song', '').strip()
+    if not song:
+        return jsonify({'error': 'song is required'}), 400
+    if not ANTHROPIC_API_KEY:
+        return jsonify({'recommendations': []}), 200
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        prompt = (
+            f'Someone just finished singing "{song}"'
+            + (f' by {artist}' if artist else '')
+            + '. Suggest 5 other popular karaoke songs they would enjoy. '
+            'Return ONLY a JSON array of objects with keys "artist" and "song". No extra text.'
+        )
+        message = client.messages.create(
+            model='claude-haiku-4-5-20251001',
+            max_tokens=300,
+            messages=[{'role': 'user', 'content': prompt}]
+        )
+        recs = json.loads(message.content[0].text.strip())
+        return jsonify({'recommendations': recs[:5]})
+    except Exception:
+        return jsonify({'recommendations': []}), 200
+
+
+@app.route('/api/trending')
+def trending():
+    try:
+        if os.path.exists(TRENDING_FILE):
+            with open(TRENDING_FILE) as f:
+                songs = json.load(f)
+            return jsonify({'songs': songs})
+    except Exception:
+        pass
+    return jsonify({'songs': DEFAULT_TRENDING})
+
+
+@app.route('/api/update-trending', methods=['POST'])
+def update_trending():
+    secret = request.headers.get('X-Trending-Secret', '')
+    if N8N_TRENDING_SECRET and secret != N8N_TRENDING_SECRET:
+        return jsonify({'error': 'Unauthorized'}), 401
+    data  = request.get_json(silent=True)
+    songs = data.get('songs') if data else None
+    if not songs or not isinstance(songs, list):
+        return jsonify({'error': 'songs array required'}), 400
+    try:
+        with open(TRENDING_FILE, 'w') as f:
+            json.dump(songs, f)
+        return jsonify({'ok': True, 'count': len(songs)})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':
