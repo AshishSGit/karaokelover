@@ -15,6 +15,10 @@
   <meta property="og:url" content="https://www.karaokelover.com" />
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#9333EA" />
+  <!-- Firebase v10 compat SDKs (no bundler required) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
 
@@ -72,6 +76,27 @@
       <div class="kbd-hints">
         <kbd class="kbd">Space</kbd> play &nbsp;
         <kbd class="kbd">← →</kbd> skip
+      </div>
+
+      <!-- AUTH UI -->
+      <div class="header-auth">
+        <!-- Shown when logged out -->
+        <button class="auth-signin-btn" id="headerSignInBtn">Sign In</button>
+        <!-- Shown when logged in -->
+        <div class="user-avatar-wrap" id="userAvatarWrap" style="display:none">
+          <button class="user-avatar" id="userAvatarBtn" title="Account">
+            <img id="userPhoto" src="" alt="avatar">
+            <span class="user-initials" id="userInitials"></span>
+          </button>
+          <div class="user-dropdown" id="userDropdown" style="display:none">
+            <div class="user-dropdown-info">
+              <strong id="dropdownName"></strong>
+              <span id="dropdownEmail"></span>
+            </div>
+            <hr class="dropdown-divider">
+            <button id="signOutBtn">Sign Out</button>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -265,7 +290,45 @@
     <p>Karaoke Lover &mdash; Powered by YouTube Data API &bull; All videos play via official YouTube embed &bull; No downloads</p>
   </footer>
 
+  <!-- ========== AUTH MODAL ========== -->
+  <div class="auth-modal-overlay" id="authModal" style="display:none" role="dialog" aria-modal="true" aria-label="Sign in">
+    <div class="auth-modal-card">
+      <button class="auth-modal-close" id="authModalClose" aria-label="Close">✕</button>
+      <h2 class="auth-modal-title" id="authModalTitle">Welcome Back</h2>
+
+      <!-- Google -->
+      <button class="google-signin-btn" id="googleSignInBtn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
+        Continue with Google
+      </button>
+
+      <div class="auth-divider"><span>or</span></div>
+
+      <!-- Sign In form -->
+      <form class="auth-form" id="signInForm" novalidate>
+        <input class="auth-input" type="email" id="siEmail" placeholder="Email" autocomplete="email" required>
+        <input class="auth-input" type="password" id="siPassword" placeholder="Password" autocomplete="current-password" required>
+        <button class="auth-submit-btn" type="submit">Sign In</button>
+      </form>
+
+      <!-- Sign Up form (hidden by default) -->
+      <form class="auth-form" id="signUpForm" style="display:none" novalidate>
+        <input class="auth-input" type="text" id="suName" placeholder="Your name" autocomplete="name" required>
+        <input class="auth-input" type="email" id="suEmail" placeholder="Email" autocomplete="email" required>
+        <input class="auth-input" type="password" id="suPassword" placeholder="Password (min 6 chars)" autocomplete="new-password" required>
+        <button class="auth-submit-btn" type="submit">Create Account</button>
+      </form>
+
+      <p class="auth-toggle">
+        <span id="authToggleText">Don't have an account?</span>
+        <button class="auth-toggle-btn" type="button" id="authToggleBtn">Sign Up</button>
+      </p>
+      <p class="auth-error" id="authError"></p>
+    </div>
+  </div>
+
   <script src="https://www.youtube.com/iframe_api"></script>
   <script src="/static/js/script.js"></script>
+  <script src="/static/js/auth.js"></script>
 </body>
 </html>

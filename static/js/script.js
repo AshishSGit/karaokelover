@@ -419,6 +419,15 @@ function toggleFavorite(video, btn) {
   localStorage.setItem(FAV_KEY, JSON.stringify(favs));
   updateFavCount();
   if (activeTab === 'favorites') renderFavoritesTab();
+
+  /* Sync to Firestore if user is signed in */
+  if (window.karaokAuth?.user) {
+    if (isFav) {
+      window.karaokAuth.removeFavorite(video.video_id);
+    } else {
+      window.karaokAuth.saveFavorite(video);
+    }
+  }
 }
 
 function updateFavCount() {
@@ -472,6 +481,9 @@ function addToHistory(video) {
   if (hist.length > HIST_MAX) hist = hist.slice(0, HIST_MAX);
   localStorage.setItem(HIST_KEY, JSON.stringify(hist));
   // Don't re-render history while results are visible
+
+  /* Sync to Firestore if user is signed in */
+  if (window.karaokAuth?.user) window.karaokAuth.saveHistory(video);
 }
 
 function renderHistory() {
@@ -706,3 +718,21 @@ async function fetchRecommendations(videoTitle) {
     recSection.style.display = 'none';
   }
 }
+
+/* ----------------------------------------------------------------
+   AUTH STATE — reload cloud favorites into localStorage when user signs in
+   ---------------------------------------------------------------- */
+window.addEventListener('authStateChanged', async (e) => {
+  if (!e.detail.user) return;
+  try {
+    const cloudFavs = await window.karaokAuth.getFavorites();
+    if (cloudFavs.length) {
+      /* Convert Firestore format {videoId} → script.js format {video_id} */
+      const mapped = {};
+      cloudFavs.forEach(f => { mapped[f.videoId] = { video_id: f.videoId, title: f.title, channel: f.channel, thumbnail: f.thumbnail }; });
+      localStorage.setItem(FAV_KEY, JSON.stringify(mapped));
+    }
+    updateFavCount();
+    if (currentResults.length) renderResults(currentResults);
+  } catch { /* non-critical */ }
+});
