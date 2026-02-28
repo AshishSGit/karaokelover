@@ -1503,6 +1503,11 @@ body.concert-live .player-container {
 /* User avatar wrapper (shown when logged in) */
 .user-avatar-wrap {
   position: relative;
+  animation: authPopIn .3s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes authPopIn {
+  from { opacity: 0; transform: scale(.6); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 /* Circular avatar button */

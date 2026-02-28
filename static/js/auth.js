@@ -64,10 +64,13 @@ auth.onAuthStateChanged(async (user) => {
 /* ----------------------------------------------------------------
    4. AUTH FUNCTIONS
    ---------------------------------------------------------------- */
+let _pendingWelcome = false;
+
 async function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
   try {
     await auth.signInWithPopup(provider);
+    _pendingWelcome = true;
     _closeModal();
   } catch (err) {
     _showAuthError(_friendlyError(err));
@@ -77,6 +80,7 @@ async function signInWithGoogle() {
 async function signInWithEmail(email, password) {
   try {
     await auth.signInWithEmailAndPassword(email, password);
+    _pendingWelcome = true;
     _closeModal();
   } catch (err) {
     _showAuthError(_friendlyError(err));
@@ -87,6 +91,7 @@ async function signUpWithEmail(email, password, name) {
   try {
     const cred = await auth.createUserWithEmailAndPassword(email, password);
     await cred.user.updateProfile({ displayName: name });
+    _pendingWelcome = true;
     _closeModal();
   } catch (err) {
     _showAuthError(_friendlyError(err));
@@ -94,6 +99,7 @@ async function signUpWithEmail(email, password, name) {
 }
 
 async function doSignOut() {
+  _showToast('See you next time! 🎤', '');
   await auth.signOut();
 }
 
@@ -256,6 +262,12 @@ function _updateHeaderLoggedIn(user) {
 
   if (dropdownName)  dropdownName.textContent  = user.displayName || 'Karaoke Fan';
   if (dropdownEmail) dropdownEmail.textContent = user.email || '';
+
+  if (_pendingWelcome) {
+    _pendingWelcome = false;
+    const firstName = (user.displayName || 'back').split(' ')[0];
+    _showToast(`Welcome, ${firstName}! 🎤`, 'success');
+  }
 }
 
 function _updateHeaderLoggedOut() {
