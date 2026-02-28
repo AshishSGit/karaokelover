@@ -44,8 +44,13 @@ auth.onAuthStateChanged(async (user) => {
   window.karaokAuth.user = user;
 
   if (user) {
-    await _ensureUserDoc(user);
-    await _migrateLocalStorageIfNeeded(user.uid); /* must complete before script.js reads Firestore */
+    /* Firestore setup — wrapped so auth UI always updates even if Firestore is unavailable */
+    try {
+      await _ensureUserDoc(user);
+      await _migrateLocalStorageIfNeeded(user.uid);
+    } catch (err) {
+      console.warn('[karaok] Firestore setup error (continuing):', err && err.message);
+    }
     _updateHeaderLoggedIn(user);
   } else {
     _updateHeaderLoggedOut();
@@ -123,19 +128,27 @@ async function saveFavorite(video) {
     channel:   video.channel   || '',
     thumbnail: video.thumbnail || '',
   };
-  await _userRef(user.uid).update({
-    favorites: firebase.firestore.FieldValue.arrayUnion(entry),
-  });
+  try {
+    await _userRef(user.uid).update({
+      favorites: firebase.firestore.FieldValue.arrayUnion(entry),
+    });
+  } catch (err) {
+    console.warn('[karaok] saveFavorite error (local state preserved):', err && err.message);
+  }
 }
 
 async function removeFavorite(videoId) {
   const user = window.karaokAuth.user;
   if (!user) return;
-  const snap = await _userRef(user.uid).get();
-  if (!snap.exists) return;
-  const current = snap.data().favorites || [];
-  const updated = current.filter(f => f.videoId !== videoId);
-  await _userRef(user.uid).update({ favorites: updated });
+  try {
+    const snap = await _userRef(user.uid).get();
+    if (!snap.exists) return;
+    const current = snap.data().favorites || [];
+    const updated = current.filter(f => f.videoId !== videoId);
+    await _userRef(user.uid).update({ favorites: updated });
+  } catch (err) {
+    console.warn('[karaok] removeFavorite error (local state preserved):', err && err.message);
+  }
 }
 
 async function getFavorites() {

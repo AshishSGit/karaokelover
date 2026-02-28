@@ -732,10 +732,13 @@ window.addEventListener('authStateChanged', async (e) => {
   }
   try {
     const cloudFavs = await window.karaokAuth.getFavorites();
-    /* Always write to localStorage (even empty) so count is in sync */
-    const mapped = {};
-    cloudFavs.forEach(f => { mapped[f.videoId] = { video_id: f.videoId, title: f.title, channel: f.channel, thumbnail: f.thumbnail }; });
-    localStorage.setItem(FAV_KEY, JSON.stringify(mapped));
+    if (cloudFavs.length > 0) {
+      /* Cloud has favorites — use as source of truth */
+      const mapped = {};
+      cloudFavs.forEach(f => { mapped[f.videoId] = { video_id: f.videoId, title: f.title, channel: f.channel, thumbnail: f.thumbnail }; });
+      localStorage.setItem(FAV_KEY, JSON.stringify(mapped));
+    }
+    /* If cloud returned empty (new account or Firestore unreachable), keep any local favorites intact */
     updateFavCount();
     if (currentResults.length && query) renderResults(query, currentResults);
   } catch { /* non-critical */ }
