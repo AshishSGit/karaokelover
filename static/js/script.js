@@ -723,10 +723,11 @@ async function fetchRecommendations(videoTitle) {
    AUTH STATE — reload cloud favorites into localStorage when user signs in
    ---------------------------------------------------------------- */
 window.addEventListener('authStateChanged', async (e) => {
+  const query = searchInput.value.trim();
   if (!e.detail.user) {
     /* Signed out — localStorage already cleared by auth.js; refresh UI */
     updateFavCount();
-    if (currentResults.length) renderResults(currentResults);
+    if (currentResults.length && query) renderResults(query, currentResults);
     return;
   }
   try {
@@ -736,6 +737,6 @@ window.addEventListener('authStateChanged', async (e) => {
     cloudFavs.forEach(f => { mapped[f.videoId] = { video_id: f.videoId, title: f.title, channel: f.channel, thumbnail: f.thumbnail }; });
     localStorage.setItem(FAV_KEY, JSON.stringify(mapped));
     updateFavCount();
-    if (currentResults.length) renderResults(currentResults);
+    if (currentResults.length && query) renderResults(query, currentResults);
   } catch { /* non-critical */ }
 });
