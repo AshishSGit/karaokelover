@@ -139,6 +139,7 @@ function onPlayerStateChange(e) {
   const playing = e.data === YT.PlayerState.PLAYING;
   equalizer.classList.toggle('playing', playing);
   playerContainer.classList.toggle('playing', playing);
+  document.body.classList.toggle('concert-live', playing);
   miniPlayPause.textContent = playing ? '⏸' : '▶';
 
   if (e.data === YT.PlayerState.ENDED) playNext();

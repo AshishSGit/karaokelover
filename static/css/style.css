@@ -1058,3 +1058,416 @@ header, section, footer, .loading-overlay,
   vertical-align: middle;
   box-shadow: 0 0 10px rgba(147,51,234,0.4);
 }
+
+/* ==========================================
+   CONCERT STAGE — spotlights, curtains, rig
+   ========================================== */
+
+.stage-scene {
+  position: fixed; inset: 0;
+  pointer-events: none; overflow: hidden;
+  z-index: 0;
+}
+
+/* ---- Sweeping spotlight beams ---- */
+
+.spot {
+  position: absolute;
+  top: 0;
+  transform-origin: 50% 0;
+  will-change: transform, opacity;
+}
+
+/* Left purple beam */
+.spot1 {
+  left: -4%;
+  width: 440px; height: 95vh;
+  background: linear-gradient(180deg,
+    rgba(147,51,234,0.22) 0%,
+    rgba(147,51,234,0.07) 40%,
+    transparent 78%);
+  clip-path: polygon(44% 0, 56% 0, 100% 100%, 0% 100%);
+  animation: spot-sway1 13s ease-in-out infinite alternate;
+}
+
+/* Center-left golden beam */
+.spot2 {
+  left: 27%;
+  width: 360px; height: 88vh;
+  background: linear-gradient(180deg,
+    rgba(245,196,66,0.16) 0%,
+    rgba(245,196,66,0.04) 45%,
+    transparent 82%);
+  clip-path: polygon(38% 0, 62% 0, 96% 100%, 4% 100%);
+  animation: spot-sway2 10s ease-in-out infinite alternate;
+  animation-delay: -4s;
+}
+
+/* Right pink beam */
+.spot3 {
+  right: -4%;
+  width: 440px; height: 95vh;
+  background: linear-gradient(180deg,
+    rgba(236,72,153,0.18) 0%,
+    rgba(236,72,153,0.05) 40%,
+    transparent 78%);
+  clip-path: polygon(44% 0, 56% 0, 100% 100%, 0% 100%);
+  animation: spot-sway3 15s ease-in-out infinite alternate;
+  animation-delay: -8s;
+}
+
+/* Center white/cool beam */
+.spot4 {
+  left: 50%;
+  width: 320px; height: 82vh;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,0.045) 0%,
+    rgba(190,170,255,0.02) 55%,
+    transparent 82%);
+  clip-path: polygon(40% 0, 60% 0, 86% 100%, 14% 100%);
+  transform: translateX(-50%);
+  animation: spot-center 19s ease-in-out infinite alternate;
+  animation-delay: -13s;
+}
+
+@keyframes spot-sway1 {
+  0%   { transform: rotate(-15deg); opacity: 0.5; }
+  40%  { opacity: 0.9; }
+  100% { transform: rotate(7deg);   opacity: 0.65; }
+}
+@keyframes spot-sway2 {
+  0%   { transform: rotate(11deg);  opacity: 0.55; }
+  60%  { opacity: 1; }
+  100% { transform: rotate(-9deg);  opacity: 0.75; }
+}
+@keyframes spot-sway3 {
+  0%   { transform: rotate(13deg);  opacity: 0.45; }
+  100% { transform: rotate(-11deg); opacity: 0.7; }
+}
+@keyframes spot-center {
+  0%   { transform: translateX(-50%) rotate(-4deg); opacity: 0.4; }
+  50%  { opacity: 0.85; }
+  100% { transform: translateX(-50%) rotate(4deg);  opacity: 0.5; }
+}
+
+/* ---- Velvet curtain edges ---- */
+
+.curtain {
+  position: fixed; top: 0; bottom: 0;
+  pointer-events: none; z-index: 1;
+}
+.curtain-l {
+  left: 0; width: 72px;
+  background: linear-gradient(90deg,
+    rgba(3,0,10,0.97) 0%,
+    rgba(8,0,22,0.78) 50%,
+    transparent 100%);
+}
+.curtain-r {
+  right: 0; width: 72px;
+  background: linear-gradient(270deg,
+    rgba(3,0,10,0.97) 0%,
+    rgba(8,0,22,0.78) 50%,
+    transparent 100%);
+}
+/* Subtle fold-highlight on each curtain */
+.curtain-l::before, .curtain-r::before {
+  content: '';
+  position: absolute; top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(147,51,234,0.22) 25%,
+    rgba(236,72,153,0.18) 65%,
+    transparent 100%);
+}
+.curtain-l::before { left: 24px; }
+.curtain-r::before { right: 24px; }
+
+/* ---- Stage haze / floor glow ---- */
+
+.stage-haze {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 240px;
+  background: linear-gradient(to top,
+    rgba(25,0,50,0.18) 0%,
+    rgba(147,51,234,0.05) 45%,
+    transparent 100%);
+  animation: haze-breathe 7s ease-in-out infinite alternate;
+}
+@keyframes haze-breathe {
+  from { opacity: 0.65; }
+  to   { opacity: 1; }
+}
+
+/* ---- Lighting rig bar ---- */
+
+.stage-rig-bar {
+  position: fixed;
+  top: 64px; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(147,51,234,0.45) 18%,
+    rgba(255,255,255,0.12) 50%,
+    rgba(236,72,153,0.4) 82%,
+    transparent 100%);
+  box-shadow:
+    0 0 14px rgba(147,51,234,0.35),
+    0 0 40px rgba(147,51,234,0.12);
+  z-index: 150;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-around;
+  padding: 0 8%;
+}
+
+/* PAR-can fixture icons hanging from the rig */
+.rig-fixture {
+  display: block;
+  width: 10px; height: 18px;
+  background: linear-gradient(180deg, #140828 0%, #07030e 100%);
+  border-radius: 0 0 4px 4px;
+  border: 1px solid rgba(147,51,234,0.15);
+  border-top: none;
+  position: relative;
+  flex-shrink: 0;
+}
+.rig-fixture::after {
+  content: '';
+  position: absolute;
+  bottom: 3px; left: 50%;
+  transform: translateX(-50%);
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  animation: fixture-glow 4s ease-in-out infinite;
+}
+/* Alternate lens colors */
+.rf1::after, .rf5::after { background: radial-gradient(circle, rgba(255,255,255,0.9), rgba(147,51,234,0.8)); }
+.rf2::after, .rf6::after { background: radial-gradient(circle, rgba(255,255,255,0.9), rgba(245,196,66,0.85)); animation-delay: -1s; }
+.rf3::after, .rf7::after { background: radial-gradient(circle, rgba(255,255,255,0.9), rgba(236,72,153,0.8)); animation-delay: -2s; }
+.rf4::after, .rf8::after { background: radial-gradient(circle, rgba(255,255,255,0.9), rgba(6,182,212,0.8));   animation-delay: -3s; }
+
+@keyframes fixture-glow {
+  0%,  90%, 100% { opacity: 0.75; box-shadow: 0 0 6px currentColor; }
+  92% { opacity: 0.3; }
+  95% { opacity: 0.9; }
+  97% { opacity: 0.5; }
+}
+
+/* ---- Hero center spotlight pool ---- */
+
+.hero-center-light {
+  position: absolute;
+  top: -60px; left: 50%;
+  transform: translateX(-50%);
+  width: 1100px; height: 800px;
+  background: radial-gradient(ellipse 55% 45% at 50% 0%,
+    rgba(255,248,225,0.065) 0%,
+    rgba(147,51,234,0.035) 35%,
+    transparent 68%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ---- Hero badge — VIP shimmer pass ---- */
+
+.hero-badge {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg,
+    rgba(147,51,234,0.2) 0%,
+    rgba(236,72,153,0.13) 100%);
+  border-color: rgba(147,51,234,0.5);
+  border-radius: 6px;
+  letter-spacing: 1px;
+  box-shadow:
+    0 0 28px rgba(147,51,234,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+/* Travelling shimmer */
+.hero-badge::after {
+  content: '';
+  position: absolute;
+  top: -60%; left: -90%;
+  width: 55%; height: 220%;
+  background: linear-gradient(90deg,
+    transparent,
+    rgba(255,255,255,0.18),
+    transparent);
+  transform: skewX(-20deg);
+  animation: badge-sweep 5s ease-in-out infinite;
+  animation-delay: 1s;
+}
+@keyframes badge-sweep {
+  0%, 65%, 100% { left: -90%; }
+  38% { left: 140%; }
+}
+
+/* ---- Header neon underline upgrade ---- */
+
+.header {
+  border-bottom-color: rgba(147,51,234,0.22);
+  box-shadow: 0 1px 0 rgba(147,51,234,0.1), 0 4px 24px rgba(0,0,0,0.55);
+}
+
+/* ---- NOW PLAYING badge — LED display feel ---- */
+
+.now-playing-badge {
+  background: rgba(147,51,234,0.2);
+  border-color: rgba(147,51,234,0.5);
+  letter-spacing: 2.5px;
+  box-shadow: 0 0 14px rgba(147,51,234,0.25), inset 0 0 8px rgba(147,51,234,0.1);
+}
+.npb-dot {
+  box-shadow: 0 0 8px rgba(192,132,252,0.8);
+}
+
+/* ---- Card — concert ticket upgrade ---- */
+
+.card::after {
+  content: '';
+  position: absolute;
+  bottom: 44px; left: 0; right: 0;
+  height: 1px;
+  background: repeating-linear-gradient(90deg,
+    rgba(255,255,255,0.06) 0px,
+    rgba(255,255,255,0.06) 5px,
+    transparent 5px,
+    transparent 9px);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.card:hover::after { opacity: 1; }
+
+/* Stronger hover glow + golden top accent */
+.card:hover {
+  box-shadow:
+    0 18px 56px rgba(0,0,0,0.65),
+    0 0 36px rgba(147,51,234,0.28),
+    0 0 0 1px rgba(147,51,234,0.15);
+}
+.card:hover .card-thumb { transform: scale(1.08); }
+
+/* Gold spotlight flash on play overlay */
+.card-play-overlay {
+  background: rgba(120,40,220,0.9);
+  box-shadow: 0 0 24px rgba(147,51,234,0.6), 0 0 60px rgba(147,51,234,0.2);
+  transition: opacity 0.2s, background 0.2s;
+}
+.card:hover .card-play-overlay {
+  background: rgba(147,51,234,0.92);
+}
+
+/* ---- Sing mode — concert stage feel ---- */
+
+.sing-stage-light {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 900px; height: 70vh;
+  background: radial-gradient(ellipse 50% 55% at 50% 0%,
+    rgba(255,248,220,0.07) 0%,
+    rgba(147,51,234,0.04) 35%,
+    transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+  animation: sing-light-breathe 4s ease-in-out infinite alternate;
+}
+@keyframes sing-light-breathe {
+  from { opacity: 0.7; }
+  to   { opacity: 1; }
+}
+
+.sing-mode {
+  background:
+    radial-gradient(ellipse 80% 40% at 50% -5%, rgba(60,0,90,0.35) 0%, transparent 70%),
+    rgba(5,5,12,0.97);
+}
+
+/* Side rim lighting in sing mode */
+.sing-mode::before, .sing-mode::after {
+  content: '';
+  position: absolute; top: 0; bottom: 0;
+  width: 3px;
+  pointer-events: none; z-index: 1;
+  animation: rim-pulse 3s ease-in-out infinite alternate;
+}
+.sing-mode::before {
+  left: 0;
+  background: linear-gradient(180deg,
+    transparent 0%, rgba(147,51,234,0.6) 30%, rgba(147,51,234,0.6) 70%, transparent 100%);
+}
+.sing-mode::after {
+  right: 0;
+  background: linear-gradient(180deg,
+    transparent 0%, rgba(236,72,153,0.6) 30%, rgba(236,72,153,0.6) 70%, transparent 100%);
+  animation-delay: -1.5s;
+}
+@keyframes rim-pulse {
+  from { opacity: 0.4; }
+  to   { opacity: 0.9; }
+}
+
+/* Keep sing body/header above the light overlay */
+.sing-stage-light, .sing-close { z-index: 2; }
+.sing-header, .sing-body { position: relative; z-index: 2; }
+
+/* ---- Concert-live body state (music playing) ---- */
+
+body.concert-live .spot1 { animation-duration: 7s; }
+body.concert-live .spot2 { animation-duration: 5.5s; }
+body.concert-live .spot3 { animation-duration: 8.5s; }
+body.concert-live .spot4 { animation-duration: 10s; }
+
+body.concert-live .stage-haze {
+  background: linear-gradient(to top,
+    rgba(40,0,70,0.22) 0%,
+    rgba(147,51,234,0.08) 40%,
+    transparent 100%);
+  animation-duration: 4s;
+}
+
+body.concert-live .stage-rig-bar {
+  box-shadow:
+    0 0 22px rgba(147,51,234,0.55),
+    0 0 70px rgba(147,51,234,0.2);
+}
+
+body.concert-live .rig-fixture::after {
+  animation-duration: 2s;
+}
+
+body.concert-live .player-container {
+  box-shadow: var(--shadow), 0 0 80px rgba(147,51,234,0.35);
+}
+
+/* ---- Player section top neon accent ---- */
+
+.player-section {
+  position: relative;
+}
+.player-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 70%; height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(147,51,234,0.5) 30%,
+    rgba(236,72,153,0.5) 70%,
+    transparent 100%);
+  box-shadow: 0 0 16px rgba(147,51,234,0.3);
+}
+
+/* ---- Search bar — warm spotlight on focus ---- */
+
+.search-bar:focus-within {
+  border-color: rgba(167,81,244,0.7);
+  box-shadow:
+    var(--shadow),
+    0 0 50px rgba(147,51,234,0.18),
+    0 0 90px rgba(245,196,66,0.05),
+    inset 0 1px 0 rgba(255,255,255,0.06);
+}
