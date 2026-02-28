@@ -45,10 +45,12 @@ auth.onAuthStateChanged(async (user) => {
 
   if (user) {
     await _ensureUserDoc(user);
-    _migrateLocalStorageIfNeeded(user.uid);
+    await _migrateLocalStorageIfNeeded(user.uid); /* must complete before script.js reads Firestore */
     _updateHeaderLoggedIn(user);
   } else {
     _updateHeaderLoggedOut();
+    /* Clear locally-cached cloud favorites so guest sees a fresh state */
+    try { localStorage.removeItem('ks_favorites'); } catch {}
   }
 
   window.dispatchEvent(new CustomEvent('authStateChanged', { detail: { user } }));
@@ -256,9 +258,15 @@ function _updateHeaderLoggedOut() {
 function _openModal(mode) {
   const modal = document.getElementById('authModal');
   if (!modal) return;
-  modal.style.display = 'flex';
+  /* Always reset to signin unless explicitly told otherwise */
   _switchMode(mode || 'signin');
   _clearError();
+  /* Clear any leftover form values */
+  ['siEmail','siPassword','suName','suEmail','suPassword'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  modal.style.display = 'flex';
 }
 
 function _closeModal() {

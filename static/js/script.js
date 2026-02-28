@@ -723,15 +723,18 @@ async function fetchRecommendations(videoTitle) {
    AUTH STATE — reload cloud favorites into localStorage when user signs in
    ---------------------------------------------------------------- */
 window.addEventListener('authStateChanged', async (e) => {
-  if (!e.detail.user) return;
+  if (!e.detail.user) {
+    /* Signed out — localStorage already cleared by auth.js; refresh UI */
+    updateFavCount();
+    if (currentResults.length) renderResults(currentResults);
+    return;
+  }
   try {
     const cloudFavs = await window.karaokAuth.getFavorites();
-    if (cloudFavs.length) {
-      /* Convert Firestore format {videoId} → script.js format {video_id} */
-      const mapped = {};
-      cloudFavs.forEach(f => { mapped[f.videoId] = { video_id: f.videoId, title: f.title, channel: f.channel, thumbnail: f.thumbnail }; });
-      localStorage.setItem(FAV_KEY, JSON.stringify(mapped));
-    }
+    /* Always write to localStorage (even empty) so count is in sync */
+    const mapped = {};
+    cloudFavs.forEach(f => { mapped[f.videoId] = { video_id: f.videoId, title: f.title, channel: f.channel, thumbnail: f.thumbnail }; });
+    localStorage.setItem(FAV_KEY, JSON.stringify(mapped));
     updateFavCount();
     if (currentResults.length) renderResults(currentResults);
   } catch { /* non-critical */ }
