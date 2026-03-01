@@ -68,6 +68,7 @@ let _pendingWelcome = false;
 
 async function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' }); /* always show account picker */
   try {
     await auth.signInWithPopup(provider);
     _pendingWelcome = true;
@@ -135,9 +136,10 @@ async function saveFavorite(video) {
     thumbnail: video.thumbnail || '',
   };
   try {
-    await _userRef(user.uid).update({
+    /* set+merge creates the doc if it doesn't exist, avoiding "No document to update" errors */
+    await _userRef(user.uid).set({
       favorites: firebase.firestore.FieldValue.arrayUnion(entry),
-    });
+    }, { merge: true });
   } catch (err) {
     console.warn('[karaok] saveFavorite error (local state preserved):', err && err.message);
   }
@@ -265,9 +267,54 @@ function _updateHeaderLoggedIn(user) {
 
   if (_pendingWelcome) {
     _pendingWelcome = false;
-    const firstName = (user.displayName || 'back').split(' ')[0];
-    _showToast(`Welcome, ${firstName}! 🎤`, 'success');
+    _showWelcomeBanner(user);
   }
+}
+
+function _showWelcomeBanner(user) {
+  /* Remove any stale banner */
+  const old = document.getElementById('wbBanner');
+  if (old) old.remove();
+
+  const firstName = (user.displayName || 'Karaoke Fan').split(' ')[0];
+  const banner = document.createElement('div');
+  banner.id = 'wbBanner';
+  banner.className = 'welcome-banner';
+
+  /* Avatar */
+  const avatar = document.createElement('div');
+  if (user.photoURL) {
+    const img = document.createElement('img');
+    img.src = user.photoURL; img.alt = '';
+    img.className = 'wb-avatar-img';
+    avatar.appendChild(img);
+  } else {
+    avatar.className = 'wb-avatar-initial';
+    avatar.textContent = (user.displayName || user.email || '?').charAt(0).toUpperCase();
+  }
+  banner.appendChild(avatar);
+
+  /* Text */
+  const txt = document.createElement('div');
+  txt.className = 'wb-text';
+  const title = document.createElement('div');
+  title.className = 'wb-title';
+  title.textContent = `Welcome, ${firstName}! 🎤`;
+  const sub = document.createElement('div');
+  sub.className = 'wb-sub';
+  sub.textContent = 'Favorites & history are synced to your account';
+  txt.appendChild(title); txt.appendChild(sub);
+  banner.appendChild(txt);
+
+  /* Check icon */
+  const check = document.createElement('div');
+  check.className = 'wb-check';
+  check.textContent = '✓';
+  banner.appendChild(check);
+
+  document.body.appendChild(banner);
+  /* Auto-remove after animation finishes (4s show + 0.4s fade-out) */
+  setTimeout(() => { if (banner.parentNode) banner.remove(); }, 4500);
 }
 
 function _updateHeaderLoggedOut() {
