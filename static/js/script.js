@@ -15,6 +15,7 @@ let activeTab      = 'all';
 let shuffleMode    = false;
 let currentVideo   = null;
 let miniVisible    = false;
+let _memFavs       = null;   // in-memory fallback for localStorage-blocked environments
 
 // ---- DOM ----
 const searchForm     = document.getElementById('searchForm');
@@ -396,9 +397,6 @@ function closeSingMode() {
 // ==========================================
 
 const FAV_KEY = 'ks_favorites';
-
-/* In-memory fallback — used when localStorage is blocked (Safari private, etc.) */
-let _memFavs = null;
 
 function getFavorites() {
   try {
