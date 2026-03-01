@@ -15,7 +15,15 @@ let activeTab      = 'all';
 let shuffleMode    = false;
 let currentVideo   = null;
 let miniVisible    = false;
-let _memFavs       = null;   // in-memory fallback for localStorage-blocked environments
+// Favorites store — loaded once at startup, kept in memory, persisted to localStorage
+let _favs = (function () {
+  try {
+    const raw = localStorage.getItem('ks_favorites');
+    if (!raw) return {};
+    const p = JSON.parse(raw);
+    return (p && typeof p === 'object' && !Array.isArray(p)) ? p : {};
+  } catch { return {}; }
+})();
 
 // ---- DOM ----
 const searchForm     = document.getElementById('searchForm');
@@ -398,24 +406,8 @@ function closeSingMode() {
 
 const FAV_KEY = 'ks_favorites';
 
-function getFavorites() {
-  try {
-    const raw = localStorage.getItem(FAV_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      _memFavs = parsed; // keep in-memory cache in sync
-      return parsed;
-    }
-  } catch { /* fall through to in-memory */ }
-  return _memFavs || {};
-}
-
-function _saveFavorites(favs) {
-  _memFavs = favs; // always update in-memory cache first
-  try {
-    localStorage.setItem(FAV_KEY, JSON.stringify(favs));
-  } catch { /* localStorage blocked — in-memory fallback active for this session */ }
-}
+function getFavorites()      { return _favs; }
+function _saveFavorites(obj) { _favs = obj; try { localStorage.setItem(FAV_KEY, JSON.stringify(obj)); } catch {} }
 
 function toggleFavorite(video, btn) {
   const favs  = getFavorites();
@@ -444,7 +436,7 @@ function toggleFavorite(video, btn) {
 }
 
 function updateFavCount() {
-  favCount.textContent = Object.keys(getFavorites()).length;
+  favCount.textContent = Object.keys(_favs).length;
 }
 
 function renderFavoritesTab() {
@@ -738,30 +730,31 @@ async function fetchRecommendations(videoTitle) {
    ---------------------------------------------------------------- */
 window.addEventListener('authStateChanged', async (e) => {
   if (!e.detail.user) {
-    /* Signed out — clear in-memory cache + count badge + reset visible heart buttons */
-    _memFavs = null;
-    updateFavCount();
-    document.querySelectorAll('.heart-btn').forEach(btn => {
-      btn.textContent = '🤍';
-      btn.classList.remove('active');
-    });
+    /* Only clear favorites on an actual sign-out, NOT on the initial page-load null
+       event — that would erase guest favorites already loaded from localStorage. */
+    if (e.detail.isSignOut) {
+      _favs = {};
+      updateFavCount();
+      document.querySelectorAll('.heart-btn').forEach(btn => {
+        btn.textContent = '🤍';
+        btn.classList.remove('active');
+      });
+    }
     return;
   }
   try {
     const cloudFavs = await window.karaokAuth.getFavorites();
     if (cloudFavs.length > 0) {
-      /* Merge: start with existing local favorites, then layer cloud favorites on top */
-      const merged = getFavorites();
+      /* Merge cloud favorites into the in-memory store */
       cloudFavs.forEach(f => {
-        merged[f.videoId] = { video_id: f.videoId, title: f.title, channel: f.channel, thumbnail: f.thumbnail };
+        _favs[f.videoId] = { video_id: f.videoId, title: f.title, channel: f.channel, thumbnail: f.thumbnail };
       });
-      _saveFavorites(merged);
+      _saveFavorites(_favs);
     }
     updateFavCount();
     /* Update visible heart buttons in place — never re-render cards (would detach click handlers) */
-    const favs = getFavorites();
     document.querySelectorAll('.heart-btn').forEach(btn => {
-      const isFav = !!favs[btn.dataset.id];
+      const isFav = !!_favs[btn.dataset.id];
       btn.textContent = isFav ? '❤️' : '🤍';
       btn.classList.toggle('active', isFav);
     });
