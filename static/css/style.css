@@ -713,14 +713,15 @@ header, section, footer, .loading-overlay,
 
 /* Heart button */
 .heart-btn {
-  position: absolute; top: 8px; right: 8px; z-index: 2;
+  position: absolute; top: 8px; right: 8px; z-index: 10;
   background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
   border: none; border-radius: 50%;
   width: 32px; height: 32px; font-size: 15px;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
-  opacity: 0; transition: opacity var(--transition), transform var(--transition);
+  pointer-events: auto;
+  opacity: 0.35; transition: opacity var(--transition), transform var(--transition);
 }
-.heart-btn:hover  { transform: scale(1.2); }
+.heart-btn:hover  { opacity: 1; transform: scale(1.2); }
 .heart-btn.active { opacity: 1; }
 .card:hover .heart-btn { opacity: 1; }
 

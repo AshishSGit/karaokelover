@@ -221,14 +221,16 @@ async function _migrateLocalStorageIfNeeded(uid) {
   }
 
   try {
-    const favs = JSON.parse(raw);
-    if (!Array.isArray(favs) || favs.length === 0) {
+    const parsed = JSON.parse(raw);
+    /* Favorites are stored as an object {videoId: videoObject}, not an array */
+    const entries = Array.isArray(parsed) ? parsed : Object.values(parsed);
+    if (entries.length === 0) {
       localStorage.setItem(MIGRATION_KEY, '1');
       return;
     }
 
     /* Upload each existing favourite to Firestore */
-    const normalised = favs.map(v => ({
+    const normalised = entries.map(v => ({
       videoId:   v.video_id || v.videoId || '',
       title:     v.title     || '',
       channel:   v.channel   || '',
