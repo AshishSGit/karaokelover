@@ -397,26 +397,9 @@ function closeSingMode() {
 
 const FAV_KEY = 'ks_favorites';
 
-/* In-memory fallback — used when localStorage is blocked (Safari private, etc.) */
-let _memFavs = null;
-
 function getFavorites() {
-  try {
-    const raw = localStorage.getItem(FAV_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      _memFavs = parsed; // keep in-memory cache in sync
-      return parsed;
-    }
-  } catch { /* fall through to in-memory */ }
-  return _memFavs || {};
-}
-
-function _saveFavorites(favs) {
-  _memFavs = favs; // always update in-memory cache first
-  try {
-    localStorage.setItem(FAV_KEY, JSON.stringify(favs));
-  } catch { /* localStorage blocked — in-memory fallback active for this session */ }
+  try { return JSON.parse(localStorage.getItem(FAV_KEY) || '{}'); }
+  catch { return {}; }
 }
 
 function toggleFavorite(video, btn) {
@@ -429,9 +412,11 @@ function toggleFavorite(video, btn) {
   } else {
     favs[video.video_id] = video;
     btn.textContent = '❤️'; btn.classList.add('active');
+    btn.style.animation = 'none';
+    requestAnimationFrame(() => { btn.style.animation = ''; });
     showToast('Added to favorites ❤️', 'fav');
   }
-  _saveFavorites(favs);
+  localStorage.setItem(FAV_KEY, JSON.stringify(favs));
   updateFavCount();
   if (activeTab === 'favorites') renderFavoritesTab();
 
@@ -451,7 +436,6 @@ function updateFavCount() {
 
 function renderFavoritesTab() {
   const list = Object.values(getFavorites());
-  resultsSection.style.display = 'block'; // ensure section is visible
   resultsTitle.innerHTML = list.length ? `Your <span>Favorites</span> (${list.length})` : '';
   resultsGrid.innerHTML  = '';
   if (list.length === 0) {
@@ -740,8 +724,7 @@ async function fetchRecommendations(videoTitle) {
    ---------------------------------------------------------------- */
 window.addEventListener('authStateChanged', async (e) => {
   if (!e.detail.user) {
-    /* Signed out — clear in-memory cache + count badge + reset visible heart buttons */
-    _memFavs = null;
+    /* Signed out — update count badge and reset all visible heart buttons */
     updateFavCount();
     document.querySelectorAll('.heart-btn').forEach(btn => {
       btn.textContent = '🤍';
@@ -757,7 +740,7 @@ window.addEventListener('authStateChanged', async (e) => {
       cloudFavs.forEach(f => {
         merged[f.videoId] = { video_id: f.videoId, title: f.title, channel: f.channel, thumbnail: f.thumbnail };
       });
-      _saveFavorites(merged);
+      localStorage.setItem(FAV_KEY, JSON.stringify(merged));
     }
     updateFavCount();
     /* Update visible heart buttons in place — never re-render cards (would detach click handlers) */
