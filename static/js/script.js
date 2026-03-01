@@ -723,26 +723,32 @@ async function fetchRecommendations(videoTitle) {
    AUTH STATE — reload cloud favorites into localStorage when user signs in
    ---------------------------------------------------------------- */
 window.addEventListener('authStateChanged', async (e) => {
-  const query = searchInput.value.trim();
   if (!e.detail.user) {
-    /* Signed out — localStorage already cleared by auth.js; refresh UI */
+    /* Signed out — update count badge and reset all visible heart buttons */
     updateFavCount();
-    if (currentResults.length && query) renderResults(query, currentResults);
+    document.querySelectorAll('.heart-btn').forEach(btn => {
+      btn.textContent = '🤍';
+      btn.classList.remove('active');
+    });
     return;
   }
   try {
     const cloudFavs = await window.karaokAuth.getFavorites();
     if (cloudFavs.length > 0) {
-      /* Merge: start with existing local favorites, then add cloud favorites on top.
-         This preserves any favorites the user clicked before auth state resolved. */
+      /* Merge: start with existing local favorites, then layer cloud favorites on top */
       const merged = getFavorites();
       cloudFavs.forEach(f => {
         merged[f.videoId] = { video_id: f.videoId, title: f.title, channel: f.channel, thumbnail: f.thumbnail };
       });
       localStorage.setItem(FAV_KEY, JSON.stringify(merged));
     }
-    /* If cloud returned empty (new account or Firestore unreachable), keep local favorites intact */
     updateFavCount();
-    if (currentResults.length && query) renderResults(query, currentResults);
+    /* Update visible heart buttons in place — never re-render cards (would detach click handlers) */
+    const favs = getFavorites();
+    document.querySelectorAll('.heart-btn').forEach(btn => {
+      const isFav = !!favs[btn.dataset.id];
+      btn.textContent = isFav ? '❤️' : '🤍';
+      btn.classList.toggle('active', isFav);
+    });
   } catch { /* non-critical */ }
 });
