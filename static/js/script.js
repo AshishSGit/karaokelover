@@ -397,9 +397,19 @@ function closeSingMode() {
 
 const FAV_KEY = 'ks_favorites';
 
+/* In-memory fallback for browsers that block localStorage (Safari Private Mode, etc.) */
+let _memFavs = null;
+
 function getFavorites() {
+  if (_memFavs !== null) return Object.assign({}, _memFavs);
   try { return JSON.parse(localStorage.getItem(FAV_KEY) || '{}'); }
   catch { return {}; }
+}
+
+function _saveFavorites(favs) {
+  if (_memFavs !== null) { _memFavs = Object.assign({}, favs); return; }
+  try { localStorage.setItem(FAV_KEY, JSON.stringify(favs)); }
+  catch { _memFavs = Object.assign({}, favs); } /* storage blocked — use in-memory */
 }
 
 function toggleFavorite(video, btn) {
@@ -416,7 +426,7 @@ function toggleFavorite(video, btn) {
     requestAnimationFrame(() => { btn.style.animation = ''; });
     showToast('Added to favorites ❤️', 'fav');
   }
-  localStorage.setItem(FAV_KEY, JSON.stringify(favs));
+  _saveFavorites(favs);
   updateFavCount();
   if (activeTab === 'favorites') renderFavoritesTab();
 
@@ -739,7 +749,7 @@ window.addEventListener('authStateChanged', async (e) => {
       cloudFavs.forEach(f => {
         merged[f.videoId] = { video_id: f.videoId, title: f.title, channel: f.channel, thumbnail: f.thumbnail };
       });
-      localStorage.setItem(FAV_KEY, JSON.stringify(merged));
+      _saveFavorites(merged);
     }
     /* If cloud returned empty (new account or Firestore unreachable), keep local favorites intact */
     updateFavCount();
