@@ -242,7 +242,7 @@ async function _migrateLocalStorageIfNeeded(uid) {
     localStorage.removeItem('ks_favorites');
     localStorage.setItem(MIGRATION_KEY, '1');
 
-    _showToast(`${favs.length} favourite${favs.length > 1 ? 's' : ''} synced to your account ☁️`, 'fav');
+    _showToast(`${entries.length} favourite${entries.length > 1 ? 's' : ''} synced to your account ☁️`, 'fav');
   } catch { /* silent — migration is best-effort */ }
 }
 
