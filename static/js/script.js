@@ -403,10 +403,8 @@ function getFavorites() {
 }
 
 function toggleFavorite(video, btn) {
-  console.log('[FAV] click — id:', video?.video_id, '| title:', video?.title?.slice(0,40));
   const favs  = getFavorites();
   const isFav = !!favs[video.video_id];
-  console.log('[FAV] isFav before toggle:', isFav, '| localStorage keys:', Object.keys(favs).length);
   if (isFav) {
     delete favs[video.video_id];
     btn.textContent = '🤍'; btn.classList.remove('active');
@@ -418,12 +416,7 @@ function toggleFavorite(video, btn) {
     requestAnimationFrame(() => { btn.style.animation = ''; });
     showToast('Added to favorites ❤️', 'fav');
   }
-  try {
-    localStorage.setItem(FAV_KEY, JSON.stringify(favs));
-    console.log('[FAV] saved OK — new count:', Object.keys(getFavorites()).length);
-  } catch (e) {
-    console.error('[FAV] localStorage.setItem FAILED:', e);
-  }
+  localStorage.setItem(FAV_KEY, JSON.stringify(favs));
   updateFavCount();
   if (activeTab === 'favorites') renderFavoritesTab();
 
@@ -438,9 +431,7 @@ function toggleFavorite(video, btn) {
 }
 
 function updateFavCount() {
-  const n = Object.keys(getFavorites()).length;
-  console.log('[FAV] updateFavCount →', n, '| favCount el:', !!favCount);
-  favCount.textContent = n;
+  favCount.textContent = Object.keys(getFavorites()).length;
 }
 
 function renderFavoritesTab() {
@@ -740,20 +731,15 @@ window.addEventListener('authStateChanged', async (e) => {
     return;
   }
   try {
-    console.log('[AUTH] fetching cloud favorites…');
     const cloudFavs = await window.karaokAuth.getFavorites();
-    console.log('[AUTH] cloud favorites returned:', cloudFavs.length, 'items');
     if (cloudFavs.length > 0) {
       /* Cloud has favorites — use as source of truth */
       const mapped = {};
       cloudFavs.forEach(f => { mapped[f.videoId] = { video_id: f.videoId, title: f.title, channel: f.channel, thumbnail: f.thumbnail }; });
       localStorage.setItem(FAV_KEY, JSON.stringify(mapped));
-      console.log('[AUTH] localStorage overwritten with', cloudFavs.length, 'cloud favorites');
-    } else {
-      console.log('[AUTH] cloud empty — keeping local localStorage as-is');
     }
     /* If cloud returned empty (new account or Firestore unreachable), keep any local favorites intact */
     updateFavCount();
     if (currentResults.length && query) renderResults(query, currentResults);
-  } catch (err) { console.warn('[AUTH] authStateChanged error:', err); }
+  } catch { /* non-critical */ }
 });

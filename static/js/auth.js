@@ -40,24 +40,31 @@ window.karaokAuth = {
 /* ----------------------------------------------------------------
    3. AUTH STATE OBSERVER
    ---------------------------------------------------------------- */
+let _prevUser = undefined; /* undefined = not yet known */
+
 auth.onAuthStateChanged(async (user) => {
   window.karaokAuth.user = user;
 
   if (user) {
-    /* Firestore setup — wrapped so auth UI always updates even if Firestore is unavailable */
-    try {
-      await _ensureUserDoc(user);
-      await _migrateLocalStorageIfNeeded(user.uid);
-    } catch (err) {
-      console.warn('[karaok] Firestore setup error (continuing):', err && err.message);
-    }
+    /* Firestore setup — each step independently wrapped so a failure in one
+       doesn't prevent the other or the UI from updating */
+    try { await _ensureUserDoc(user); }
+    catch (e) { console.warn('[karaok] ensureUserDoc:', e && e.message); }
+
+    try { await _migrateLocalStorageIfNeeded(user.uid); }
+    catch (e) { console.warn('[karaok] migration:', e && e.message); }
+
     _updateHeaderLoggedIn(user);
   } else {
     _updateHeaderLoggedOut();
-    /* Clear locally-cached cloud favorites so guest sees a fresh state */
-    try { localStorage.removeItem('ks_favorites'); } catch {}
+    /* Only wipe favorites when the user explicitly signs OUT (not on initial
+       page-load null, which would erase guest favorites). */
+    if (_prevUser) {
+      try { localStorage.removeItem('ks_favorites'); } catch {}
+    }
   }
 
+  _prevUser = user;
   window.dispatchEvent(new CustomEvent('authStateChanged', { detail: { user } }));
 });
 
@@ -227,7 +234,7 @@ async function _migrateLocalStorageIfNeeded(uid) {
       channel:   v.channel   || '',
       thumbnail: v.thumbnail || '',
     }));
-    await _userRef(uid).update({ favorites: normalised });
+    await _userRef(uid).set({ favorites: normalised }, { merge: true });
 
     /* Clear localStorage favourites (Firestore is now the source of truth) */
     localStorage.removeItem('ks_favorites');
