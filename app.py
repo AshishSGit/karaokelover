@@ -82,16 +82,6 @@ def parse_song_info(video_title):
         return _regex_parse(video_title)
 
 
-@app.after_request
-def no_cache_js(response):
-    """Prevent browsers from caching JS/CSS so deploys take effect immediately."""
-    if request.path.startswith('/static/js/'):
-        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
-        response.headers['Pragma'] = 'no-cache'
-        response.headers['Expires'] = '0'
-    return response
-
-
 @app.route('/')
 def index():
     return render_template('index.html')
