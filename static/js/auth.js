@@ -216,10 +216,10 @@ function _showWelcomeBanner(user) {
   txt.className = 'wb-text';
   const title = document.createElement('div');
   title.className = 'wb-title';
-  title.textContent = `Welcome, ${firstName}! 🎤`;
+  title.textContent = `Hey ${firstName}, you're in! 🎤`;
   const sub = document.createElement('div');
   sub.className = 'wb-sub';
-  sub.textContent = 'Your sing history is saved to your account';
+  sub.textContent = 'Sing any song, right now — your history is saved across devices.';
   txt.appendChild(title); txt.appendChild(sub);
   banner.appendChild(txt);
 
