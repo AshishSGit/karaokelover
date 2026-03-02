@@ -64,8 +64,9 @@ auth.onAuthStateChanged(async (user) => {
     }
   }
 
+  const isSignOut = !!_prevUser && !user;  // compute BEFORE updating _prevUser
   _prevUser = user;
-  window.dispatchEvent(new CustomEvent('authStateChanged', { detail: { user, isSignOut: !!_prevUser && !user } }));
+  window.dispatchEvent(new CustomEvent('authStateChanged', { detail: { user, isSignOut } }));
 });
 
 /* ----------------------------------------------------------------

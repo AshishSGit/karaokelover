@@ -406,7 +406,19 @@ function closeSingMode() {
 
 const FAV_KEY = 'ks_favorites';
 
-function getFavorites()      { return _favs; }
+function getFavorites() {
+  // If in-memory store is empty, try to recover from localStorage
+  if (Object.keys(_favs).length === 0) {
+    try {
+      const raw = localStorage.getItem(FAV_KEY);
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p && typeof p === 'object' && !Array.isArray(p)) _favs = p;
+      }
+    } catch {}
+  }
+  return _favs;
+}
 function _saveFavorites(obj) { _favs = obj; try { localStorage.setItem(FAV_KEY, JSON.stringify(obj)); } catch {} }
 
 function toggleFavorite(video, btn) {
@@ -452,6 +464,7 @@ function renderFavoritesTab() {
     return;
   }
   list.forEach((video, i) => resultsGrid.appendChild(createCard(video, i, true)));
+  updateFavCount();
 }
 
 tabsBar.addEventListener('click', (e) => {
