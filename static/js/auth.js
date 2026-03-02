@@ -219,7 +219,7 @@ function _showWelcomeBanner(user) {
   title.textContent = `Welcome, ${firstName}! 🎤`;
   const sub = document.createElement('div');
   sub.className = 'wb-sub';
-  sub.textContent = 'Favorites & history are synced to your account';
+  sub.textContent = 'Your sing history is saved to your account';
   txt.appendChild(title); txt.appendChild(sub);
   banner.appendChild(txt);
 
