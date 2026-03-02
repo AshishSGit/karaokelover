@@ -1,7 +1,7 @@
 /* ==========================================
    Karaoke Lover v3
    Search · Player · Lyrics · History
-   Favorites · Auto-play · Mini Player
+   Auto-play · Mini Player
    Keyboard Shortcuts · Shuffle · Sing Mode
    ========================================== */
 
@@ -11,19 +11,9 @@ let ytReady        = false;
 let pendingVideoId = null;
 let currentResults = [];
 let currentIndex   = -1;
-let activeTab      = 'all';
 let shuffleMode    = false;
 let currentVideo   = null;
 let miniVisible    = false;
-// Favorites store — loaded once at startup, kept in memory, persisted to localStorage
-let _favs = (function () {
-  try {
-    const raw = localStorage.getItem('ks_favorites');
-    if (!raw) return {};
-    const p = JSON.parse(raw);
-    return (p && typeof p === 'object' && !Array.isArray(p)) ? p : {};
-  } catch { return {}; }
-})();
 
 // ---- DOM ----
 const searchForm     = document.getElementById('searchForm');
@@ -34,8 +24,6 @@ const resultsGrid    = document.getElementById('resultsGrid');
 const resultsTitle   = document.getElementById('resultsTitle');
 const tabsBar        = document.getElementById('tabsBar');
 const tabAll         = document.getElementById('tabAll');
-const tabFavs        = document.getElementById('tabFavs');
-const favCount       = document.getElementById('favCount');
 const playerSection  = document.getElementById('playerSection');
 const playerTitle    = document.getElementById('playerTitle');
 const playerChannel  = document.getElementById('playerChannel');
@@ -85,7 +73,6 @@ const particles      = document.getElementById('particles');
 // ==========================================
 
 initParticles();
-updateFavCount();
 renderHistory();
 fetchTrending();
 
@@ -162,8 +149,7 @@ searchForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const query = searchInput.value.trim();
   if (!query) return;
-  activeTab = 'all';
-  updateTabs();
+
   await doSearch(query);
 });
 
@@ -193,23 +179,18 @@ async function doSearch(query) {
 // ==========================================
 
 function renderResults(query, results) {
-  const favs = getFavorites();
   resultsTitle.innerHTML = `Karaoke results for <span>"${escapeHtml(query)}"</span>`;
   resultsGrid.innerHTML = '';
   results.forEach((video, i) => {
-    resultsGrid.appendChild(createCard(video, i, !!favs[video.video_id]));
+    resultsGrid.appendChild(createCard(video, i));
   });
   resultsSection.style.display = 'block';
-  updateFavCount();
 }
 
-function createCard(video, index, isFav) {
+function createCard(video, index) {
   const card = document.createElement('div');
   card.className = 'card';
   card.dataset.index = index;
-
-  // Determine overlay content
-  const overlayHTML = `<span style="font-size:9px;font-weight:800;letter-spacing:1.5px">NOW SINGING</span><span>♪</span>`;
 
   card.innerHTML = `
     <div class="card-thumb-wrap">
@@ -217,17 +198,11 @@ function createCard(video, index, isFav) {
       <div class="card-play-overlay">▶</div>
     </div>
     <div class="card-num">#${index + 1}</div>
-    <button class="heart-btn ${isFav ? 'active' : ''}" data-id="${escapeHtml(video.video_id)}">${isFav ? '❤️' : '🤍'}</button>
     <div class="card-body">
       <div class="card-title">${escapeHtml(video.title)}</div>
       <div class="card-channel">${escapeHtml(video.channel)}</div>
     </div>
   `;
-
-  card.querySelector('.heart-btn').addEventListener('click', (e) => {
-    e.stopPropagation();
-    toggleFavorite(video, card.querySelector('.heart-btn'));
-  });
 
   card.addEventListener('click', () => onCardClick(card, video, index));
   return card;
@@ -400,87 +375,6 @@ function closeSingMode() {
   document.body.style.overflow = '';
 }
 
-// ==========================================
-// FAVORITES
-// ==========================================
-
-const FAV_KEY = 'ks_favorites';
-
-function getFavorites() {
-  // If in-memory store is empty, try to recover from localStorage
-  if (Object.keys(_favs).length === 0) {
-    try {
-      const raw = localStorage.getItem(FAV_KEY);
-      if (raw) {
-        const p = JSON.parse(raw);
-        if (p && typeof p === 'object' && !Array.isArray(p)) _favs = p;
-      }
-    } catch {}
-  }
-  return _favs;
-}
-function _saveFavorites(obj) { _favs = obj; try { localStorage.setItem(FAV_KEY, JSON.stringify(obj)); } catch {} }
-
-function toggleFavorite(video, btn) {
-  const favs  = getFavorites();
-  const isFav = !!favs[video.video_id];
-  if (isFav) {
-    delete favs[video.video_id];
-    btn.textContent = '🤍'; btn.classList.remove('active');
-    showToast('Removed from favorites', 'fav');
-  } else {
-    favs[video.video_id] = video;
-    btn.textContent = '❤️'; btn.classList.add('active');
-    showToast('Added to favorites ❤️', 'fav');
-  }
-  _saveFavorites(favs);
-  updateFavCount();
-  if (activeTab === 'favorites') renderFavoritesTab();
-
-  /* Sync to Firestore if user is signed in */
-  if (window.karaokAuth?.user) {
-    if (isFav) {
-      window.karaokAuth.removeFavorite(video.video_id);
-    } else {
-      window.karaokAuth.saveFavorite(video);
-    }
-  }
-}
-
-function updateFavCount() {
-  favCount.textContent = Object.keys(_favs).length;
-}
-
-function renderFavoritesTab() {
-  const list = Object.values(getFavorites());
-  resultsSection.style.display = 'block'; // ensure section is visible
-  resultsTitle.innerHTML = list.length ? `Your <span>Favorites</span> (${list.length})` : '';
-  resultsGrid.innerHTML  = '';
-  if (list.length === 0) {
-    resultsGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 0;color:var(--muted);">
-      <div style="font-size:44px;margin-bottom:14px;opacity:.4">🤍</div>
-      <p>No favorites yet — click the heart on any song!</p>
-    </div>`;
-    return;
-  }
-  list.forEach((video, i) => resultsGrid.appendChild(createCard(video, i, true)));
-  updateFavCount();
-}
-
-tabsBar.addEventListener('click', (e) => {
-  const tab = e.target.closest('.tab');
-  if (!tab) return;
-  activeTab = tab.dataset.tab;
-  updateTabs();
-  if (activeTab === 'favorites') renderFavoritesTab();
-  else if (currentResults.length > 0) renderResults(searchInput.value.trim(), currentResults);
-});
-
-function updateTabs() {
-  tabAll.classList.toggle('active',  activeTab === 'all');
-  tabFavs.classList.toggle('active', activeTab === 'favorites');
-  updateFavCount();
-}
 
 // ==========================================
 // HISTORY
@@ -738,38 +632,3 @@ async function fetchRecommendations(videoTitle) {
   }
 }
 
-/* ----------------------------------------------------------------
-   AUTH STATE — reload cloud favorites into localStorage when user signs in
-   ---------------------------------------------------------------- */
-window.addEventListener('authStateChanged', async (e) => {
-  if (!e.detail.user) {
-    /* Only clear favorites on an actual sign-out, NOT on the initial page-load null
-       event — that would erase guest favorites already loaded from localStorage. */
-    if (e.detail.isSignOut) {
-      _favs = {};
-      updateFavCount();
-      document.querySelectorAll('.heart-btn').forEach(btn => {
-        btn.textContent = '🤍';
-        btn.classList.remove('active');
-      });
-    }
-    return;
-  }
-  try {
-    const cloudFavs = await window.karaokAuth.getFavorites();
-    if (cloudFavs.length > 0) {
-      /* Merge cloud favorites into the in-memory store */
-      cloudFavs.forEach(f => {
-        _favs[f.videoId] = { video_id: f.videoId, title: f.title, channel: f.channel, thumbnail: f.thumbnail };
-      });
-      _saveFavorites(_favs);
-    }
-    updateFavCount();
-    /* Update visible heart buttons in place — never re-render cards (would detach click handlers) */
-    document.querySelectorAll('.heart-btn').forEach(btn => {
-      const isFav = !!_favs[btn.dataset.id];
-      btn.textContent = isFav ? '❤️' : '🤍';
-      btn.classList.toggle('active', isFav);
-    });
-  } catch { /* non-critical */ }
-});

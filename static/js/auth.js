@@ -30,9 +30,6 @@ window.karaokAuth = {
   signInWithEmail,
   signUpWithEmail,
   doSignOut,
-  saveFavorite,
-  removeFavorite,
-  getFavorites,
   saveHistory,
   getHistory,
 };
@@ -51,17 +48,9 @@ auth.onAuthStateChanged(async (user) => {
     try { await _ensureUserDoc(user); }
     catch (e) { console.warn('[karaok] ensureUserDoc:', e && e.message); }
 
-    try { await _migrateLocalStorageIfNeeded(user.uid); }
-    catch (e) { console.warn('[karaok] migration:', e && e.message); }
-
     _updateHeaderLoggedIn(user);
   } else {
     _updateHeaderLoggedOut();
-    /* Only wipe favorites when the user explicitly signs OUT (not on initial
-       page-load null, which would erase guest favorites). */
-    if (_prevUser) {
-      try { localStorage.removeItem('ks_favorites'); } catch {}
-    }
   }
 
   const isSignOut = !!_prevUser && !user;  // compute BEFORE updating _prevUser
@@ -134,49 +123,6 @@ async function _ensureUserDoc(user) {
   }
 }
 
-async function saveFavorite(video) {
-  const user = window.karaokAuth.user;
-  if (!user) return;
-  const entry = {
-    videoId:   video.video_id || video.videoId || '',
-    title:     video.title     || '',
-    channel:   video.channel   || '',
-    thumbnail: video.thumbnail || '',
-  };
-  try {
-    /* set+merge creates the doc if it doesn't exist, avoiding "No document to update" errors */
-    await _userRef(user.uid).set({
-      favorites: firebase.firestore.FieldValue.arrayUnion(entry),
-    }, { merge: true });
-  } catch (err) {
-    console.warn('[karaok] saveFavorite error (local state preserved):', err && err.message);
-  }
-}
-
-async function removeFavorite(videoId) {
-  const user = window.karaokAuth.user;
-  if (!user) return;
-  try {
-    const snap = await _userRef(user.uid).get();
-    if (!snap.exists) return;
-    const current = snap.data().favorites || [];
-    const updated = current.filter(f => f.videoId !== videoId);
-    await _userRef(user.uid).update({ favorites: updated });
-  } catch (err) {
-    console.warn('[karaok] removeFavorite error (local state preserved):', err && err.message);
-  }
-}
-
-async function getFavorites() {
-  const user = window.karaokAuth.user;
-  if (!user) return [];
-  try {
-    const snap = await _userRef(user.uid).get();
-    return snap.exists ? (snap.data().favorites || []) : [];
-  } catch {
-    return [];
-  }
-}
 
 async function saveHistory(video) {
   const user = window.karaokAuth.user;
@@ -209,46 +155,7 @@ async function getHistory() {
 }
 
 /* ----------------------------------------------------------------
-   6. LOCALSTORAGE MIGRATION (runs once on first sign-in)
-   ---------------------------------------------------------------- */
-async function _migrateLocalStorageIfNeeded(uid) {
-  const MIGRATION_KEY = 'ks_migrated_' + uid;
-  if (localStorage.getItem(MIGRATION_KEY)) return;
-
-  const raw = localStorage.getItem('ks_favorites');
-  if (!raw) {
-    localStorage.setItem(MIGRATION_KEY, '1');
-    return;
-  }
-
-  try {
-    const parsed = JSON.parse(raw);
-    /* Favorites are stored as an object {videoId: videoObject}, not an array */
-    const entries = Array.isArray(parsed) ? parsed : Object.values(parsed);
-    if (entries.length === 0) {
-      localStorage.setItem(MIGRATION_KEY, '1');
-      return;
-    }
-
-    /* Upload each existing favourite to Firestore */
-    const normalised = entries.map(v => ({
-      videoId:   v.video_id || v.videoId || '',
-      title:     v.title     || '',
-      channel:   v.channel   || '',
-      thumbnail: v.thumbnail || '',
-    }));
-    await _userRef(uid).set({ favorites: normalised }, { merge: true });
-
-    /* Clear localStorage favourites (Firestore is now the source of truth) */
-    localStorage.removeItem('ks_favorites');
-    localStorage.setItem(MIGRATION_KEY, '1');
-
-    _showToast(`${favs.length} favourite${favs.length > 1 ? 's' : ''} synced to your account ☁️`, 'fav');
-  } catch { /* silent — migration is best-effort */ }
-}
-
-/* ----------------------------------------------------------------
-   7. HEADER UI HELPERS
+   6. HEADER UI HELPERS
    ---------------------------------------------------------------- */
 function _updateHeaderLoggedIn(user) {
   const signInBtn    = document.getElementById('headerSignInBtn');
