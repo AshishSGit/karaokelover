@@ -4,6 +4,7 @@ import requests
 import re
 import os
 import json
+import html as _html
 
 load_dotenv()
 
@@ -133,8 +134,8 @@ def search():
         snippet = item['snippet']
         results.append({
             'video_id':     vid_id,
-            'title':        snippet['title'],
-            'channel':      snippet['channelTitle'],
+            'title':        _html.unescape(snippet['title']),
+            'channel':      _html.unescape(snippet['channelTitle']),
             'thumbnail':    snippet['thumbnails']['medium']['url'],
             'published_at': snippet['publishedAt'],
         })
