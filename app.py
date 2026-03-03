@@ -29,6 +29,51 @@ DEFAULT_TRENDING = [
     {'artist': 'Billie Eilish',   'song': 'Bad Guy'},
 ]
 
+# Static song pages for SEO — each gets a /sing/<slug> URL indexed by Google
+SONG_PAGES = [
+    {'artist': 'Queen',             'song': 'Bohemian Rhapsody',              'slug': 'bohemian-rhapsody'},
+    {'artist': 'Adele',             'song': 'Hello',                          'slug': 'adele-hello'},
+    {'artist': 'Ed Sheeran',        'song': 'Shape of You',                   'slug': 'shape-of-you'},
+    {'artist': 'Taylor Swift',      'song': 'Anti-Hero',                      'slug': 'anti-hero'},
+    {'artist': 'The Weeknd',        'song': 'Blinding Lights',                'slug': 'blinding-lights'},
+    {'artist': 'Journey',           'song': "Don't Stop Believin'",           'slug': 'dont-stop-believin'},
+    {'artist': 'Whitney Houston',   'song': 'I Will Always Love You',         'slug': 'i-will-always-love-you'},
+    {'artist': 'Billie Eilish',     'song': 'Bad Guy',                        'slug': 'bad-guy'},
+    {'artist': 'Celine Dion',       'song': 'My Heart Will Go On',            'slug': 'my-heart-will-go-on'},
+    {'artist': 'Coldplay',          'song': 'Yellow',                         'slug': 'coldplay-yellow'},
+    {'artist': 'Bon Jovi',          'song': "Livin' on a Prayer",             'slug': 'livin-on-a-prayer'},
+    {'artist': 'ABBA',              'song': 'Dancing Queen',                  'slug': 'dancing-queen'},
+    {'artist': 'Michael Jackson',   'song': 'Billie Jean',                    'slug': 'billie-jean'},
+    {'artist': 'Eminem',            'song': 'Lose Yourself',                  'slug': 'lose-yourself'},
+    {'artist': 'Mariah Carey',      'song': 'All I Want for Christmas Is You','slug': 'all-i-want-for-christmas'},
+    {'artist': 'Bruno Mars',        'song': 'Just the Way You Are',           'slug': 'just-the-way-you-are'},
+    {'artist': 'Katy Perry',        'song': 'Roar',                           'slug': 'katy-perry-roar'},
+    {'artist': 'Lady Gaga',         'song': 'Bad Romance',                    'slug': 'bad-romance'},
+    {'artist': 'Rihanna',           'song': 'Umbrella',                       'slug': 'rihanna-umbrella'},
+    {'artist': 'Beyonce',           'song': 'Halo',                           'slug': 'beyonce-halo'},
+    {'artist': 'Pink',              'song': 'Just Give Me a Reason',          'slug': 'just-give-me-a-reason'},
+    {'artist': 'Alanis Morissette', 'song': 'Ironic',                         'slug': 'alanis-ironic'},
+    {'artist': 'Guns N Roses',      'song': 'Sweet Child O Mine',             'slug': 'sweet-child-o-mine'},
+    {'artist': 'Eagles',            'song': 'Hotel California',               'slug': 'hotel-california'},
+    {'artist': 'The Beatles',       'song': 'Hey Jude',                       'slug': 'hey-jude'},
+    {'artist': 'Elton John',        'song': 'Rocket Man',                     'slug': 'rocket-man'},
+    {'artist': 'Rick Astley',       'song': 'Never Gonna Give You Up',        'slug': 'never-gonna-give-you-up'},
+    {'artist': 'Imagine Dragons',   'song': 'Radioactive',                    'slug': 'radioactive'},
+    {'artist': 'Sam Smith',         'song': 'Stay With Me',                   'slug': 'sam-smith-stay-with-me'},
+    {'artist': 'Ariana Grande',     'song': 'Thank U Next',                   'slug': 'thank-u-next'},
+    {'artist': 'Dua Lipa',          'song': 'Levitating',                     'slug': 'levitating'},
+    {'artist': 'Harry Styles',      'song': 'Watermelon Sugar',               'slug': 'watermelon-sugar'},
+    {'artist': 'Olivia Rodrigo',    'song': 'Drivers License',                'slug': 'drivers-license'},
+    {'artist': 'Miley Cyrus',       'song': 'Flowers',                        'slug': 'miley-flowers'},
+    {'artist': 'Fleetwood Mac',     'song': 'Go Your Own Way',                'slug': 'go-your-own-way'},
+    {'artist': 'Don McLean',        'song': 'American Pie',                   'slug': 'american-pie'},
+    {'artist': 'Lizzo',             'song': 'Good as Hell',                   'slug': 'good-as-hell'},
+    {'artist': 'Post Malone',       'song': 'Circles',                        'slug': 'post-malone-circles'},
+    {'artist': 'Shawn Mendes',      'song': 'Treat You Better',               'slug': 'treat-you-better'},
+    {'artist': 'David Bowie',       'song': 'Heroes',                         'slug': 'bowie-heroes'},
+]
+_SONG_BY_SLUG = {s['slug']: s for s in SONG_PAGES}
+
 
 def _regex_parse(video_title):
     """Fallback regex parser for YouTube karaoke titles."""
@@ -88,16 +133,42 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/sing/<slug>')
+def song_page(slug):
+    song = _SONG_BY_SLUG.get(slug)
+    if not song:
+        return render_template('index.html'), 404
+    return render_template('song.html', **song)
+
+
+@app.route('/robots.txt')
+def robots():
+    content = (
+        'User-agent: *\n'
+        'Allow: /\n'
+        'Disallow: /api/\n'
+        'Sitemap: https://www.karaokelover.com/sitemap.xml\n'
+    )
+    return Response(content, mimetype='text/plain')
+
+
 @app.route('/sitemap.xml')
 def sitemap():
-    xml = '''<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://www.karaokelover.com/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
-  </url>
-</urlset>'''
+    urls = [
+        '<url><loc>https://www.karaokelover.com/</loc>'
+        '<changefreq>weekly</changefreq><priority>1.0</priority></url>'
+    ]
+    for s in SONG_PAGES:
+        urls.append(
+            f'<url><loc>https://www.karaokelover.com/sing/{s["slug"]}</loc>'
+            f'<changefreq>monthly</changefreq><priority>0.8</priority></url>'
+        )
+    xml = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + '\n'.join(f'  {u}' for u in urls)
+        + '\n</urlset>'
+    )
     return Response(xml, mimetype='application/xml')
 
 

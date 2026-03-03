@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}<title>{{ song }} Karaoke — Sing Along Free | Karaoke Lover</title>{% endblock %}
+
+{% block seo_head %}
+<link rel="canonical" href="https://www.karaokelover.com/sing/{{ slug }}" />
+<meta name="description" content="Sing {{ song }} by {{ artist }} karaoke online for free. Lyrics included. No downloads, no sign-up. Play instantly on Karaoke Lover." />
+<meta property="og:title" content="{{ song }} Karaoke — Sing Along Free" />
+<meta property="og:description" content="Sing {{ song }} by {{ artist }} karaoke online for free on Karaoke Lover." />
+<meta property="og:url" content="https://www.karaokelover.com/sing/{{ slug }}" />
+<meta property="og:type" content="music.song" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="{{ song }} Karaoke — Sing Along Free" />
+<meta name="twitter:description" content="Sing {{ song }} by {{ artist }} karaoke free on Karaoke Lover." />
+{% endblock %}
+
+{% block json_ld %}
+<script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "MusicRecording",
+    "name": "{{ song }}",
+    "byArtist": { "@type": "MusicGroup", "name": "{{ artist }}" },
+    "url": "https://www.karaokelover.com/sing/{{ slug }}"
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Karaoke Lover", "item": "https://www.karaokelover.com" },
+      { "@type": "ListItem", "position": 2, "name": "{{ song }} Karaoke", "item": "https://www.karaokelover.com/sing/{{ slug }}" }
+    ]
+  }
+]
+</script>
+{% endblock %}
+
+{% block hero_title %}{{ song }} Karaoke<br>
+<span class="hero-title-accent">by {{ artist }}</span>{% endblock %}
+
+{% block hero_sub %}Sing {{ song }} by {{ artist }} free — lyrics included, no downloads.{% endblock %}
+
+{% block auto_search %}
+<script>
+  window.addEventListener('DOMContentLoaded', function () {
+    var input = document.getElementById('searchInput');
+    var form = document.getElementById('searchForm');
+    if (input && form) {
+      input.value = '{{ song|e }} {{ artist|e }}';
+      setTimeout(function () { form.dispatchEvent(new Event('submit')); }, 300);
+    }
+  });
+</script>
+{% endblock %}
