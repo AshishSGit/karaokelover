@@ -19,6 +19,11 @@ N8N_LYRICS_WEBHOOK  = os.getenv('N8N_LYRICS_WEBHOOK')
 N8N_TRENDING_SECRET = os.getenv('N8N_TRENDING_SECRET', '')
 TRENDING_FILE       = os.path.join(os.path.dirname(__file__), 'trending.json')
 
+# Search result cache — avoids burning quota on repeated queries
+SEARCH_CACHE     = {}   # key → {'results': [...], 'ts': float}
+SEARCH_CACHE_TTL = 6 * 3600   # 6 hours
+SEARCH_CACHE_MAX = 500         # max entries; evict oldest when full
+
 DEFAULT_TRENDING = [
     {'artist': 'Adele',           'song': 'Hello'},
     {'artist': 'Ed Sheeran',      'song': 'Shape of You'},
@@ -353,6 +358,13 @@ def search():
     if not query:
         return jsonify({'error': 'Query is required'}), 400
 
+    # --- Cache lookup ---
+    cache_key = f'{query.lower()}|{language}|{region}'
+    now = time.time()
+    cached = SEARCH_CACHE.get(cache_key)
+    if cached and now - cached['ts'] < SEARCH_CACHE_TTL:
+        return jsonify({'results': cached['results'], 'cached': True})
+
     params = {
         'key': YOUTUBE_API_KEY,
         'q': f'{query} karaoke',
@@ -395,6 +407,12 @@ def search():
             'thumbnail':    snippet['thumbnails']['medium']['url'],
             'published_at': snippet['publishedAt'],
         })
+
+    # --- Cache store (evict oldest entries if full) ---
+    if len(SEARCH_CACHE) >= SEARCH_CACHE_MAX:
+        oldest = min(SEARCH_CACHE, key=lambda k: SEARCH_CACHE[k]['ts'])
+        del SEARCH_CACHE[oldest]
+    SEARCH_CACHE[cache_key] = {'results': results, 'ts': now}
 
     return jsonify({'results': results})
 
