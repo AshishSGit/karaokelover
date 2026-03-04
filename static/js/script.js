@@ -161,16 +161,21 @@ function updateFilterBadges() {
 }
 
 function buildQuery(baseQuery) {
-  let q = baseQuery;
-  if (activeFilters.genre)   q += ` ${activeFilters.genre}`;
-  if (activeFilters.era)     q += ` ${activeFilters.era}`;
-  if (activeFilters.mood)    q += ` ${MOOD_KEYWORDS[activeFilters.mood] || activeFilters.mood}`;
-  return q;
+  const base = baseQuery.trim();
+  const parts = base ? [base] : [];
+  if (activeFilters.genre) parts.push(activeFilters.genre);
+  if (activeFilters.era)   parts.push(base ? activeFilters.era : `${activeFilters.era} hits`);
+  if (activeFilters.mood)  parts.push(MOOD_KEYWORDS[activeFilters.mood] || activeFilters.mood);
+  // Language-only with no text: return empty so Python sends plain "karaoke" with relevanceLanguage
+  return parts.join(' ');
 }
 
 function maybeReSearch() {
   const query = searchInput.value.trim();
-  if (query) doSearch(query);
+  if (query) { doSearch(query); return; }
+  // No search text — if any filter is active, run a discovery search
+  const hasFilters = Object.values(activeFilters).some(Boolean);
+  if (hasFilters) doSearch('');
 }
 
 // ==========================================
@@ -273,7 +278,7 @@ async function doSearch(query) {
   try {
     const builtQuery = buildQuery(query);
     const url = new URL('/api/search', window.location.origin);
-    url.searchParams.set('q', builtQuery);
+    url.searchParams.set('q', builtQuery || 'karaoke');
     if (activeFilters.language) url.searchParams.set('language', activeFilters.language);
     const res  = await fetch(url.toString());
     const data = await res.json();
@@ -282,7 +287,8 @@ async function doSearch(query) {
     if (results.length === 0) { showEmpty(); return; }
     currentResults = results;
     currentIndex   = -1;
-    renderResults(query, results);
+    // Use original query for title; fall back to builtQuery if box was empty
+    renderResults(query || builtQuery || 'your filters', results);
   } catch {
     showError('Network error — check your connection.');
   } finally {
