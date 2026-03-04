@@ -310,32 +310,56 @@ header, section, footer, .loading-overlay,
 .search-btn:active { transform: translateY(0); }
 .search-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-/* ---- Quick picks ---- */
+/* ---- Popular / Quick picks ---- */
 
 .quick-picks {
-  display: flex; align-items: center; flex-wrap: wrap;
-  justify-content: center; gap: 8px;
+  max-width: 700px;
+  margin: 4px auto 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .qp-label {
-  font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
   background: var(--grad);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.qp-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, rgba(147,51,234,0.35), transparent);
 }
 
 .qp-chip {
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.09);
-  color: var(--muted);
-  font-size: 13px; font-weight: 500; font-family: 'Outfit', sans-serif;
-  padding: 7px 16px; border-radius: 20px; cursor: pointer;
-  transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.12s;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.07);
+  color: rgba(180,165,220,0.62);
+  font-size: 12.5px;
+  font-weight: 500;
+  font-family: 'Outfit', sans-serif;
+  padding: 7px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.15s, box-shadow 0.18s;
 }
 .qp-chip:hover {
-  background: rgba(147,51,234,0.18);
-  border-color: rgba(147,51,234,0.5);
-  color: #e2b4ff;
-  transform: translateY(-2px);
+  background: rgba(147,51,234,0.15);
+  border-color: rgba(147,51,234,0.45);
+  color: #ddd6fe;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 14px rgba(147,51,234,0.2);
 }
 
 /* ==========================================
@@ -1023,9 +1047,15 @@ header, section, footer, .loading-overlay,
 
 .qp-chips {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  gap: 7px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 3px 28px 4px 0;
+  -webkit-mask-image: linear-gradient(to right, black 88%, transparent 100%);
+  mask-image: linear-gradient(to right, black 88%, transparent 100%);
 }
+.qp-chips::-webkit-scrollbar { display: none; }
 
 /* ==========================================
    RECOMMENDATIONS
