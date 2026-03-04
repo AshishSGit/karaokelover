@@ -15,6 +15,20 @@ let shuffleMode    = false;
 let currentVideo   = null;
 let miniVisible    = false;
 
+// ---- Filter state ----
+const MOOD_KEYWORDS = {
+  'Party':    'party hits dance',
+  'Romantic': 'love romantic slow',
+  'Sad':      'sad ballad heartbreak',
+  'Pump Up':  'pump up workout energy',
+  'Chill':    'chill relaxing mellow',
+};
+const LANGUAGE_LABELS = {
+  'en':'English','es':'Spanish','hi':'Hindi','ko':'Korean',
+  'fr':'French','pt':'Portuguese','it':'Italian','ja':'Japanese',
+};
+const activeFilters = { genre: null, era: null, language: null, mood: null };
+
 // ---- DOM ----
 const searchForm     = document.getElementById('searchForm');
 const searchInput    = document.getElementById('searchInput');
@@ -66,6 +80,10 @@ const miniPrev       = document.getElementById('miniPrev');
 const miniPlayPause  = document.getElementById('miniPlayPause');
 const miniNext       = document.getElementById('miniNext');
 const miniBack       = document.getElementById('miniBack');
+const filterToggleBtn = document.getElementById('filterToggleBtn');
+const filterPanel     = document.getElementById('filterPanel');
+const filterBadgeList = document.getElementById('filterBadgeList');
+const filterClearAll  = document.getElementById('filterClearAll');
 const particles      = document.getElementById('particles');
 
 // ==========================================
@@ -75,6 +93,85 @@ const particles      = document.getElementById('particles');
 initParticles();
 renderHistory();
 fetchTrending();
+initFilters();
+
+// ==========================================
+// SMART FILTERS
+// ==========================================
+
+function initFilters() {
+  filterToggleBtn.addEventListener('click', () => {
+    const isOpen = filterPanel.classList.toggle('open');
+    filterToggleBtn.setAttribute('aria-expanded', String(isOpen));
+  });
+
+  filterPanel.addEventListener('click', (e) => {
+    const chip = e.target.closest('.filter-chip');
+    if (!chip) return;
+    const category = chip.dataset.filter;
+    const value    = chip.dataset.value;
+
+    if (activeFilters[category] === value) {
+      activeFilters[category] = null;
+      chip.classList.remove('active');
+    } else {
+      const prev = filterPanel.querySelector(`.filter-chip[data-filter="${category}"].active`);
+      if (prev) prev.classList.remove('active');
+      activeFilters[category] = value;
+      chip.classList.add('active');
+    }
+    updateFilterBadges();
+    maybeReSearch();
+  });
+
+  filterClearAll.addEventListener('click', () => {
+    clearAllFilters();
+    maybeReSearch();
+  });
+}
+
+function clearAllFilters() {
+  Object.keys(activeFilters).forEach(k => { activeFilters[k] = null; });
+  filterPanel.querySelectorAll('.filter-chip.active').forEach(c => c.classList.remove('active'));
+  updateFilterBadges();
+}
+
+function updateFilterBadges() {
+  filterBadgeList.innerHTML = '';
+  let count = 0;
+  Object.entries(activeFilters).forEach(([category, value]) => {
+    if (!value) return;
+    count++;
+    const label = category === 'language' ? (LANGUAGE_LABELS[value] || value) : value;
+    const badge = document.createElement('div');
+    badge.className = 'filter-badge';
+    badge.innerHTML = `${escapeHtml(label)}<button class="filter-badge-remove" aria-label="Remove ${escapeHtml(label)} filter">×</button>`;
+    badge.querySelector('.filter-badge-remove').addEventListener('click', () => {
+      const chip = filterPanel.querySelector(`.filter-chip[data-filter="${category}"][data-value="${CSS.escape(value)}"]`);
+      if (chip) chip.classList.remove('active');
+      activeFilters[category] = null;
+      updateFilterBadges();
+      maybeReSearch();
+    });
+    filterBadgeList.appendChild(badge);
+  });
+  const hasAny = count > 0;
+  filterClearAll.style.display = hasAny ? 'inline-block' : 'none';
+  filterToggleBtn.classList.toggle('has-active', hasAny);
+}
+
+function buildQuery(baseQuery) {
+  let q = baseQuery;
+  if (activeFilters.genre)   q += ` ${activeFilters.genre}`;
+  if (activeFilters.era)     q += ` ${activeFilters.era}`;
+  if (activeFilters.mood)    q += ` ${MOOD_KEYWORDS[activeFilters.mood] || activeFilters.mood}`;
+  return q;
+}
+
+function maybeReSearch() {
+  const query = searchInput.value.trim();
+  if (query) doSearch(query);
+}
 
 // ==========================================
 // PARTICLES
@@ -174,7 +271,11 @@ async function doSearch(query) {
   historySection.style.display = 'none';
 
   try {
-    const res  = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+    const builtQuery = buildQuery(query);
+    const url = new URL('/api/search', window.location.origin);
+    url.searchParams.set('q', builtQuery);
+    if (activeFilters.language) url.searchParams.set('language', activeFilters.language);
+    const res  = await fetch(url.toString());
     const data = await res.json();
     if (!res.ok || data.error) { showError(data.error || 'API error'); return; }
     const results = data.results || [];

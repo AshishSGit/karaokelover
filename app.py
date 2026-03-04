@@ -178,7 +178,9 @@ def sitemap():
 
 @app.route('/api/search')
 def search():
-    query = request.args.get('q', '').strip()
+    query    = request.args.get('q', '').strip()
+    language = request.args.get('language', '').strip()
+    region   = request.args.get('region', '').strip()
     if not query:
         return jsonify({'error': 'Query is required'}), 400
 
@@ -193,6 +195,10 @@ def search():
         'videoEmbeddable': 'true',
         'videoSyndicated': 'true',
     }
+    if language:
+        params['relevanceLanguage'] = language
+    if region:
+        params['regionCode'] = region
 
     try:
         resp = requests.get(YOUTUBE_SEARCH_URL, params=params, timeout=10)
