@@ -82,9 +82,12 @@ const miniPrev       = document.getElementById('miniPrev');
 const miniPlayPause  = document.getElementById('miniPlayPause');
 const miniNext       = document.getElementById('miniNext');
 const miniBack       = document.getElementById('miniBack');
-const filterBadgeList = document.getElementById('filterBadgeList');
-const filterClearAll  = document.getElementById('filterClearAll');
-const particles      = document.getElementById('particles');
+const filterBadgeList  = document.getElementById('filterBadgeList');
+const filterClearAll   = document.getElementById('filterClearAll');
+const searchDropdown   = document.getElementById('searchDropdown');
+const sdList           = document.getElementById('sdList');
+const sdClear          = document.getElementById('sdClear');
+const particles        = document.getElementById('particles');
 
 // ==========================================
 // INIT
@@ -94,6 +97,69 @@ initParticles();
 renderHistory();
 fetchTrending();
 initFilters();
+initSearchDropdown();
+
+// ==========================================
+// SEARCH HISTORY DROPDOWN
+// ==========================================
+
+const QUERY_KEY = 'ks_queries';
+const QUERY_MAX = 8;
+
+function getQueries() {
+  try { return JSON.parse(localStorage.getItem(QUERY_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function saveQuery(q) {
+  if (!q || q.length < 2) return;
+  let list = getQueries().filter(x => x.toLowerCase() !== q.toLowerCase());
+  list.unshift(q);
+  if (list.length > QUERY_MAX) list = list.slice(0, QUERY_MAX);
+  localStorage.setItem(QUERY_KEY, JSON.stringify(list));
+}
+
+function renderDropdown(filter) {
+  const all = getQueries();
+  const f   = (filter || '').toLowerCase().trim();
+  const items = f ? all.filter(q => q.toLowerCase().includes(f)) : all;
+  sdList.innerHTML = '';
+  items.forEach(q => {
+    const div  = document.createElement('div');
+    div.className = 'sd-item';
+    div.innerHTML = `<span class="sd-item-icon">🕐</span><span class="sd-item-text">${escapeHtml(q)}</span>`;
+    div.addEventListener('mousedown', (e) => {
+      e.preventDefault(); // prevent blur before click fires
+      searchInput.value = q;
+      hideDropdown();
+      doSearch(q);
+    });
+    sdList.appendChild(div);
+  });
+  if (items.length > 0) searchDropdown.classList.add('open');
+  else searchDropdown.classList.remove('open');
+}
+
+function showDropdown() {
+  renderDropdown(searchInput.value.trim());
+}
+
+function hideDropdown() {
+  searchDropdown.classList.remove('open');
+}
+
+function initSearchDropdown() {
+  searchInput.addEventListener('focus', showDropdown);
+  searchInput.addEventListener('input', () => renderDropdown(searchInput.value.trim()));
+  searchInput.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideDropdown(); });
+  sdClear.addEventListener('click', () => {
+    localStorage.removeItem(QUERY_KEY);
+    hideDropdown();
+  });
+  document.addEventListener('click', (e) => {
+    if (!searchForm.contains(e.target)) hideDropdown();
+  });
+}
 
 // ==========================================
 // SMART FILTERS
@@ -292,6 +358,8 @@ async function doSearch(query) {
     currentResults = results;
     currentIndex   = -1;
     renderResults(query || getDiscoveryTitle() || builtQuery, results);
+    if (query) saveQuery(query);
+    hideDropdown();
   } catch {
     showError('Network error — check your connection.');
   } finally {

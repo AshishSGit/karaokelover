@@ -122,14 +122,23 @@
       <form class="search-form" id="searchForm">
         <div class="search-bar" id="searchBar">
           <span class="search-icon">🔍</span>
-          <input
-            type="text"
-            id="searchInput"
-            class="search-input"
-            placeholder="Song name, artist, or lyrics..."
-            autocomplete="off"
-            autofocus
-          />
+          <div class="search-input-wrap">
+            <input
+              type="text"
+              id="searchInput"
+              class="search-input"
+              placeholder="Song name, artist, or lyrics..."
+              autocomplete="off"
+              autofocus
+            />
+            <div class="search-dropdown" id="searchDropdown">
+              <div class="sd-header">
+                <span class="sd-label">Recent</span>
+                <button class="sd-clear" id="sdClear" type="button">Clear</button>
+              </div>
+              <div class="sd-list" id="sdList"></div>
+            </div>
+          </div>
           <button type="submit" class="search-btn">
             <span>🎤</span> Search
           </button>
