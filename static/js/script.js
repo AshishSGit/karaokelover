@@ -84,6 +84,9 @@ const miniNext       = document.getElementById('miniNext');
 const miniBack       = document.getElementById('miniBack');
 const filterBadgeList  = document.getElementById('filterBadgeList');
 const filterClearAll   = document.getElementById('filterClearAll');
+const filterMoreBtn    = document.getElementById('filterMoreBtn');
+const filterExpanded   = document.getElementById('filterExpanded');
+const filterMoreCount  = document.getElementById('filterMoreCount');
 const searchDropdown   = document.getElementById('searchDropdown');
 const sdList           = document.getElementById('sdList');
 const sdClear          = document.getElementById('sdClear');
@@ -185,6 +188,13 @@ function initFilters() {
     maybeReSearch();
   });
 
+  filterMoreBtn.addEventListener('click', () => {
+    const isOpen = filterExpanded.classList.toggle('open');
+    filterMoreBtn.classList.toggle('active', isOpen);
+    filterMoreBtn.querySelector('.filter-more-text').textContent = isOpen ? 'Less' : 'Filters';
+    filterMoreBtn.querySelector('.filter-more-icon').textContent = isOpen ? '⊖' : '⊕';
+  });
+
   filterClearAll.addEventListener('click', () => {
     clearAllFilters();
     maybeReSearch();
@@ -219,6 +229,20 @@ function updateFilterBadges() {
   const hasAny = count > 0;
   const footer = document.getElementById('filterFooter');
   if (footer) footer.style.display = hasAny ? 'flex' : 'none';
+
+  // Update "More Filters" button badge (era + lang + mood only)
+  const moreCount = ['era', 'language', 'mood'].filter(k => activeFilters[k]).length;
+  if (filterMoreCount) {
+    filterMoreCount.textContent = moreCount;
+    filterMoreCount.style.display = moreCount > 0 ? 'inline' : 'none';
+  }
+  // Auto-open expanded section if a hidden filter is active
+  if (moreCount > 0 && filterExpanded && !filterExpanded.classList.contains('open')) {
+    filterExpanded.classList.add('open');
+    filterMoreBtn.classList.add('active');
+    filterMoreBtn.querySelector('.filter-more-text').textContent = 'Less';
+    filterMoreBtn.querySelector('.filter-more-icon').textContent = '⊖';
+  }
 }
 
 function buildQuery(baseQuery) {

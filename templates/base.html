@@ -148,9 +148,9 @@
       <!-- ========== SMART DISCOVERY FILTERS ========== -->
       <div class="filter-bar" id="filterBar">
 
-        <div class="filter-row-wrap">
-          <span class="filter-row-label">Genre</span>
-          <div class="filter-chips-wrap">
+        <!-- Primary row: Genre chips + "More Filters" toggle -->
+        <div class="filter-primary-row">
+          <div class="filter-primary-chips">
             <button class="filter-chip" data-filter="genre" data-value="Pop" type="button">Pop</button>
             <button class="filter-chip" data-filter="genre" data-value="Rock" type="button">Rock</button>
             <button class="filter-chip" data-filter="genre" data-value="R&amp;B" type="button">R&amp;B</button>
@@ -162,50 +162,58 @@
             <button class="filter-chip" data-filter="genre" data-value="Jazz" type="button">Jazz</button>
             <button class="filter-chip" data-filter="genre" data-value="Disney" type="button">Disney</button>
           </div>
+          <button class="filter-more-btn" id="filterMoreBtn" type="button">
+            <span class="filter-more-icon">⊕</span>
+            <span class="filter-more-text">Filters</span>
+            <span class="filter-more-count" id="filterMoreCount" style="display:none"></span>
+          </button>
         </div>
 
-        <div class="filter-row-wrap">
-          <span class="filter-row-label">Era</span>
-          <div class="filter-chips-wrap">
-            <button class="filter-chip" data-filter="era" data-value="70s" type="button">70s</button>
-            <button class="filter-chip" data-filter="era" data-value="80s" type="button">80s</button>
-            <button class="filter-chip" data-filter="era" data-value="90s" type="button">90s</button>
-            <button class="filter-chip" data-filter="era" data-value="2000s" type="button">00s</button>
-            <button class="filter-chip" data-filter="era" data-value="2010s" type="button">10s</button>
-            <button class="filter-chip" data-filter="era" data-value="2020s" type="button">2020s</button>
+        <!-- Expanded section: Era + Lang + Mood (hidden by default) -->
+        <div class="filter-expanded" id="filterExpanded">
+          <div class="filter-row-wrap">
+            <span class="filter-row-label">Era</span>
+            <div class="filter-chips-wrap">
+              <button class="filter-chip" data-filter="era" data-value="70s" type="button">70s</button>
+              <button class="filter-chip" data-filter="era" data-value="80s" type="button">80s</button>
+              <button class="filter-chip" data-filter="era" data-value="90s" type="button">90s</button>
+              <button class="filter-chip" data-filter="era" data-value="2000s" type="button">00s</button>
+              <button class="filter-chip" data-filter="era" data-value="2010s" type="button">10s</button>
+              <button class="filter-chip" data-filter="era" data-value="2020s" type="button">2020s</button>
+            </div>
           </div>
-        </div>
 
-        <div class="filter-row-wrap">
-          <span class="filter-row-label">Lang</span>
-          <div class="filter-chips-wrap">
-            <button class="filter-chip" data-filter="language" data-value="en" type="button">🇬🇧 EN</button>
-            <button class="filter-chip" data-filter="language" data-value="hi" type="button">🇮🇳 HI</button>
-            <button class="filter-chip" data-filter="language" data-value="tl" type="button">🇵🇭 TL</button>
-            <button class="filter-chip" data-filter="language" data-value="es" type="button">🇪🇸 ES</button>
-            <button class="filter-chip" data-filter="language" data-value="ko" type="button">🇰🇷 KO</button>
-            <button class="filter-chip" data-filter="language" data-value="zh" type="button">🇨🇳 ZH</button>
-            <button class="filter-chip" data-filter="language" data-value="ja" type="button">🇯🇵 JA</button>
-            <button class="filter-chip" data-filter="language" data-value="th" type="button">🇹🇭 TH</button>
-            <button class="filter-chip" data-filter="language" data-value="ar" type="button">🇸🇦 AR</button>
-            <button class="filter-chip" data-filter="language" data-value="vi" type="button">🇻🇳 VI</button>
-            <button class="filter-chip" data-filter="language" data-value="ms" type="button">🇲🇾 MS</button>
-            <button class="filter-chip" data-filter="language" data-value="pt" type="button">🇧🇷 PT</button>
-            <button class="filter-chip" data-filter="language" data-value="fr" type="button">🇫🇷 FR</button>
-            <button class="filter-chip" data-filter="language" data-value="de" type="button">🇩🇪 DE</button>
-            <button class="filter-chip" data-filter="language" data-value="tr" type="button">🇹🇷 TR</button>
-            <button class="filter-chip" data-filter="language" data-value="it" type="button">🇮🇹 IT</button>
+          <div class="filter-row-wrap">
+            <span class="filter-row-label">Lang</span>
+            <div class="filter-chips-wrap">
+              <button class="filter-chip" data-filter="language" data-value="en" type="button">🇬🇧 EN</button>
+              <button class="filter-chip" data-filter="language" data-value="hi" type="button">🇮🇳 HI</button>
+              <button class="filter-chip" data-filter="language" data-value="tl" type="button">🇵🇭 TL</button>
+              <button class="filter-chip" data-filter="language" data-value="es" type="button">🇪🇸 ES</button>
+              <button class="filter-chip" data-filter="language" data-value="ko" type="button">🇰🇷 KO</button>
+              <button class="filter-chip" data-filter="language" data-value="zh" type="button">🇨🇳 ZH</button>
+              <button class="filter-chip" data-filter="language" data-value="ja" type="button">🇯🇵 JA</button>
+              <button class="filter-chip" data-filter="language" data-value="th" type="button">🇹🇭 TH</button>
+              <button class="filter-chip" data-filter="language" data-value="ar" type="button">🇸🇦 AR</button>
+              <button class="filter-chip" data-filter="language" data-value="vi" type="button">🇻🇳 VI</button>
+              <button class="filter-chip" data-filter="language" data-value="ms" type="button">🇲🇾 MS</button>
+              <button class="filter-chip" data-filter="language" data-value="pt" type="button">🇧🇷 PT</button>
+              <button class="filter-chip" data-filter="language" data-value="fr" type="button">🇫🇷 FR</button>
+              <button class="filter-chip" data-filter="language" data-value="de" type="button">🇩🇪 DE</button>
+              <button class="filter-chip" data-filter="language" data-value="tr" type="button">🇹🇷 TR</button>
+              <button class="filter-chip" data-filter="language" data-value="it" type="button">🇮🇹 IT</button>
+            </div>
           </div>
-        </div>
 
-        <div class="filter-row-wrap">
-          <span class="filter-row-label">Mood</span>
-          <div class="filter-chips-wrap">
-            <button class="filter-chip" data-filter="mood" data-value="Party" type="button">Party 🎉</button>
-            <button class="filter-chip" data-filter="mood" data-value="Romantic" type="button">Romantic ❤️</button>
-            <button class="filter-chip" data-filter="mood" data-value="Sad" type="button">Sad 😢</button>
-            <button class="filter-chip" data-filter="mood" data-value="Pump Up" type="button">Pump Up 💪</button>
-            <button class="filter-chip" data-filter="mood" data-value="Chill" type="button">Chill 😎</button>
+          <div class="filter-row-wrap">
+            <span class="filter-row-label">Mood</span>
+            <div class="filter-chips-wrap">
+              <button class="filter-chip" data-filter="mood" data-value="Party" type="button">Party 🎉</button>
+              <button class="filter-chip" data-filter="mood" data-value="Romantic" type="button">Romantic ❤️</button>
+              <button class="filter-chip" data-filter="mood" data-value="Sad" type="button">Sad 😢</button>
+              <button class="filter-chip" data-filter="mood" data-value="Pump Up" type="button">Pump Up 💪</button>
+              <button class="filter-chip" data-filter="mood" data-value="Chill" type="button">Chill 😎</button>
+            </div>
           </div>
         </div>
 
@@ -411,7 +419,7 @@
 
   {% block auto_search %}{% endblock %}
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="/static/js/script.js?v=16"></script>
+  <script src="/static/js/script.js?v=17"></script>
   <script src="/static/js/auth.js?v=14"></script>
 </body>
 </html>
