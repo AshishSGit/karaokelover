@@ -137,71 +137,66 @@
       </form>
 
       <!-- ========== SMART DISCOVERY FILTERS ========== -->
-      <div class="filter-toggle-row" id="filterToggleRow">
-        <button class="filter-toggle-btn" id="filterToggleBtn" type="button" aria-expanded="false" aria-controls="filterPanel">
-          <span>🎛</span> Filters
-        </button>
-        <div class="filter-badge-list" id="filterBadgeList"></div>
-        <button class="filter-clear-all" id="filterClearAll" style="display:none" type="button">Clear all</button>
-      </div>
+      <div class="filter-bar" id="filterBar">
 
-      <div class="filter-panel" id="filterPanel" role="region" aria-label="Search filters">
-        <div class="filter-panel-inner">
-
-          <div class="filter-row">
-            <span class="filter-row-label">Genre</span>
-            <div class="filter-chips-wrap">
-              <button class="filter-chip" data-filter="genre" data-value="Pop" type="button">Pop</button>
-              <button class="filter-chip" data-filter="genre" data-value="Rock" type="button">Rock</button>
-              <button class="filter-chip" data-filter="genre" data-value="R&amp;B" type="button">R&amp;B</button>
-              <button class="filter-chip" data-filter="genre" data-value="Hip-Hop" type="button">Hip-Hop</button>
-              <button class="filter-chip" data-filter="genre" data-value="Country" type="button">Country</button>
-              <button class="filter-chip" data-filter="genre" data-value="K-Pop" type="button">K-Pop</button>
-              <button class="filter-chip" data-filter="genre" data-value="Latin" type="button">Latin</button>
-              <button class="filter-chip" data-filter="genre" data-value="Bollywood" type="button">Bollywood</button>
-              <button class="filter-chip" data-filter="genre" data-value="Jazz" type="button">Jazz</button>
-              <button class="filter-chip" data-filter="genre" data-value="Disney" type="button">Disney</button>
-            </div>
+        <div class="filter-row-wrap">
+          <span class="filter-row-label">Genre</span>
+          <div class="filter-chips-wrap">
+            <button class="filter-chip" data-filter="genre" data-value="Pop" type="button">Pop</button>
+            <button class="filter-chip" data-filter="genre" data-value="Rock" type="button">Rock</button>
+            <button class="filter-chip" data-filter="genre" data-value="R&amp;B" type="button">R&amp;B</button>
+            <button class="filter-chip" data-filter="genre" data-value="Hip-Hop" type="button">Hip-Hop</button>
+            <button class="filter-chip" data-filter="genre" data-value="Country" type="button">Country</button>
+            <button class="filter-chip" data-filter="genre" data-value="K-Pop" type="button">K-Pop</button>
+            <button class="filter-chip" data-filter="genre" data-value="Latin" type="button">Latin</button>
+            <button class="filter-chip" data-filter="genre" data-value="Bollywood" type="button">Bollywood</button>
+            <button class="filter-chip" data-filter="genre" data-value="Jazz" type="button">Jazz</button>
+            <button class="filter-chip" data-filter="genre" data-value="Disney" type="button">Disney</button>
           </div>
-
-          <div class="filter-row">
-            <span class="filter-row-label">Era</span>
-            <div class="filter-chips-wrap">
-              <button class="filter-chip" data-filter="era" data-value="70s" type="button">70s</button>
-              <button class="filter-chip" data-filter="era" data-value="80s" type="button">80s</button>
-              <button class="filter-chip" data-filter="era" data-value="90s" type="button">90s</button>
-              <button class="filter-chip" data-filter="era" data-value="2000s" type="button">00s</button>
-              <button class="filter-chip" data-filter="era" data-value="2010s" type="button">10s</button>
-              <button class="filter-chip" data-filter="era" data-value="2020s" type="button">2020s</button>
-            </div>
-          </div>
-
-          <div class="filter-row">
-            <span class="filter-row-label">Language</span>
-            <div class="filter-chips-wrap">
-              <button class="filter-chip" data-filter="language" data-value="en" type="button">English</button>
-              <button class="filter-chip" data-filter="language" data-value="es" type="button">Spanish</button>
-              <button class="filter-chip" data-filter="language" data-value="hi" type="button">Hindi</button>
-              <button class="filter-chip" data-filter="language" data-value="ko" type="button">Korean</button>
-              <button class="filter-chip" data-filter="language" data-value="fr" type="button">French</button>
-              <button class="filter-chip" data-filter="language" data-value="pt" type="button">Portuguese</button>
-              <button class="filter-chip" data-filter="language" data-value="it" type="button">Italian</button>
-              <button class="filter-chip" data-filter="language" data-value="ja" type="button">Japanese</button>
-            </div>
-          </div>
-
-          <div class="filter-row">
-            <span class="filter-row-label">Mood</span>
-            <div class="filter-chips-wrap">
-              <button class="filter-chip" data-filter="mood" data-value="Party" type="button">Party 🎉</button>
-              <button class="filter-chip" data-filter="mood" data-value="Romantic" type="button">Romantic ❤️</button>
-              <button class="filter-chip" data-filter="mood" data-value="Sad" type="button">Sad 😢</button>
-              <button class="filter-chip" data-filter="mood" data-value="Pump Up" type="button">Pump Up 💪</button>
-              <button class="filter-chip" data-filter="mood" data-value="Chill" type="button">Chill 😎</button>
-            </div>
-          </div>
-
         </div>
+
+        <div class="filter-row-wrap">
+          <span class="filter-row-label">Era</span>
+          <div class="filter-chips-wrap">
+            <button class="filter-chip" data-filter="era" data-value="70s" type="button">70s</button>
+            <button class="filter-chip" data-filter="era" data-value="80s" type="button">80s</button>
+            <button class="filter-chip" data-filter="era" data-value="90s" type="button">90s</button>
+            <button class="filter-chip" data-filter="era" data-value="2000s" type="button">00s</button>
+            <button class="filter-chip" data-filter="era" data-value="2010s" type="button">10s</button>
+            <button class="filter-chip" data-filter="era" data-value="2020s" type="button">2020s</button>
+          </div>
+        </div>
+
+        <div class="filter-row-wrap">
+          <span class="filter-row-label">Lang</span>
+          <div class="filter-chips-wrap">
+            <button class="filter-chip" data-filter="language" data-value="en" type="button">🇬🇧 EN</button>
+            <button class="filter-chip" data-filter="language" data-value="es" type="button">🇪🇸 ES</button>
+            <button class="filter-chip" data-filter="language" data-value="hi" type="button">🇮🇳 HI</button>
+            <button class="filter-chip" data-filter="language" data-value="ko" type="button">🇰🇷 KO</button>
+            <button class="filter-chip" data-filter="language" data-value="fr" type="button">🇫🇷 FR</button>
+            <button class="filter-chip" data-filter="language" data-value="pt" type="button">🇧🇷 PT</button>
+            <button class="filter-chip" data-filter="language" data-value="it" type="button">🇮🇹 IT</button>
+            <button class="filter-chip" data-filter="language" data-value="ja" type="button">🇯🇵 JA</button>
+          </div>
+        </div>
+
+        <div class="filter-row-wrap">
+          <span class="filter-row-label">Mood</span>
+          <div class="filter-chips-wrap">
+            <button class="filter-chip" data-filter="mood" data-value="Party" type="button">Party 🎉</button>
+            <button class="filter-chip" data-filter="mood" data-value="Romantic" type="button">Romantic ❤️</button>
+            <button class="filter-chip" data-filter="mood" data-value="Sad" type="button">Sad 😢</button>
+            <button class="filter-chip" data-filter="mood" data-value="Pump Up" type="button">Pump Up 💪</button>
+            <button class="filter-chip" data-filter="mood" data-value="Chill" type="button">Chill 😎</button>
+          </div>
+        </div>
+
+        <div class="filter-footer" id="filterFooter" style="display:none">
+          <div class="filter-badge-list" id="filterBadgeList"></div>
+          <button class="filter-clear-all" id="filterClearAll" type="button">✕ Clear filters</button>
+        </div>
+
       </div>
       <!-- ========== END FILTERS ========== -->
 

@@ -80,8 +80,6 @@ const miniPrev       = document.getElementById('miniPrev');
 const miniPlayPause  = document.getElementById('miniPlayPause');
 const miniNext       = document.getElementById('miniNext');
 const miniBack       = document.getElementById('miniBack');
-const filterToggleBtn = document.getElementById('filterToggleBtn');
-const filterPanel     = document.getElementById('filterPanel');
 const filterBadgeList = document.getElementById('filterBadgeList');
 const filterClearAll  = document.getElementById('filterClearAll');
 const particles      = document.getElementById('particles');
@@ -100,12 +98,7 @@ initFilters();
 // ==========================================
 
 function initFilters() {
-  filterToggleBtn.addEventListener('click', () => {
-    const isOpen = filterPanel.classList.toggle('open');
-    filterToggleBtn.setAttribute('aria-expanded', String(isOpen));
-  });
-
-  filterPanel.addEventListener('click', (e) => {
+  document.getElementById('filterBar').addEventListener('click', (e) => {
     const chip = e.target.closest('.filter-chip');
     if (!chip) return;
     const category = chip.dataset.filter;
@@ -115,8 +108,8 @@ function initFilters() {
       activeFilters[category] = null;
       chip.classList.remove('active');
     } else {
-      const prev = filterPanel.querySelector(`.filter-chip[data-filter="${category}"].active`);
-      if (prev) prev.classList.remove('active');
+      document.querySelectorAll(`.filter-chip[data-filter="${category}"].active`)
+        .forEach(c => c.classList.remove('active'));
       activeFilters[category] = value;
       chip.classList.add('active');
     }
@@ -132,7 +125,7 @@ function initFilters() {
 
 function clearAllFilters() {
   Object.keys(activeFilters).forEach(k => { activeFilters[k] = null; });
-  filterPanel.querySelectorAll('.filter-chip.active').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.filter-chip.active').forEach(c => c.classList.remove('active'));
   updateFilterBadges();
 }
 
@@ -147,7 +140,7 @@ function updateFilterBadges() {
     badge.className = 'filter-badge';
     badge.innerHTML = `${escapeHtml(label)}<button class="filter-badge-remove" aria-label="Remove ${escapeHtml(label)} filter">×</button>`;
     badge.querySelector('.filter-badge-remove').addEventListener('click', () => {
-      const chip = filterPanel.querySelector(`.filter-chip[data-filter="${category}"][data-value="${CSS.escape(value)}"]`);
+      const chip = document.querySelector(`.filter-chip[data-filter="${category}"][data-value="${CSS.escape(value)}"]`);
       if (chip) chip.classList.remove('active');
       activeFilters[category] = null;
       updateFilterBadges();
@@ -156,8 +149,8 @@ function updateFilterBadges() {
     filterBadgeList.appendChild(badge);
   });
   const hasAny = count > 0;
-  filterClearAll.style.display = hasAny ? 'inline-block' : 'none';
-  filterToggleBtn.classList.toggle('has-active', hasAny);
+  const footer = document.getElementById('filterFooter');
+  if (footer) footer.style.display = hasAny ? 'flex' : 'none';
 }
 
 function buildQuery(baseQuery) {
