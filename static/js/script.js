@@ -24,8 +24,10 @@ const MOOD_KEYWORDS = {
   'Chill':    'chill relaxing mellow',
 };
 const LANGUAGE_LABELS = {
-  'en':'English','es':'Spanish','hi':'Hindi','ko':'Korean',
-  'fr':'French','pt':'Portuguese','it':'Italian','ja':'Japanese',
+  'en':'English','tl':'Filipino','hi':'Hindi','es':'Spanish',
+  'ko':'Korean','zh':'Chinese','ja':'Japanese','th':'Thai',
+  'ar':'Arabic','vi':'Vietnamese','ms':'Malay','pt':'Portuguese',
+  'fr':'French','de':'German','tr':'Turkish','it':'Italian',
 };
 const activeFilters = { genre: null, era: null, language: null, mood: null };
 
