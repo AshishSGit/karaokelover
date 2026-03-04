@@ -376,7 +376,11 @@ def search():
         return jsonify({'error': str(e)}), 500
 
     if 'error' in data:
-        return jsonify({'error': data['error']['message']}), 500
+        err = data['error']
+        reasons = [e.get('reason', '') for e in err.get('errors', [])]
+        if err.get('code') == 403 or 'quotaExceeded' in reasons or 'forbidden' in str(reasons).lower():
+            return jsonify({'error': 'Search is temporarily unavailable — daily limit reached. Please try again later.'}), 503
+        return jsonify({'error': 'YouTube search failed. Please try again.'}), 500
 
     results = []
     for item in data.get('items', []):
