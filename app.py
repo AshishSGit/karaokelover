@@ -186,6 +186,8 @@ def search():
         'videoCategoryId': '10',
         'maxResults': 20,
         'order': 'relevance',
+        'videoEmbeddable': 'true',
+        'videoSyndicated': 'true',
     }
 
     try:

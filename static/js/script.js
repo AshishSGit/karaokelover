@@ -126,6 +126,7 @@ function loadPlayer(videoId) {
       events: {
         onReady:       (e) => e.target.playVideo(),
         onStateChange: onPlayerStateChange,
+        onError:       onPlayerError,
       },
     });
   }
@@ -139,6 +140,20 @@ function onPlayerStateChange(e) {
   miniPlayPause.textContent = playing ? '⏸' : '▶';
 
   if (e.data === YT.PlayerState.ENDED) playNext();
+}
+
+function onPlayerError(e) {
+  // 101/150 = video blocked for embedding, 2 = invalid ID, 5 = HTML5 error
+  const blocked = [2, 101, 150];
+  if (blocked.includes(e.data)) {
+    showToast('Skipping blocked video…');
+    // Remove from results so it doesn't loop back
+    if (currentResults.length > 1) {
+      currentResults.splice(currentIndex, 1);
+      currentIndex = Math.min(currentIndex, currentResults.length - 1);
+    }
+    playNext();
+  }
 }
 
 // ==========================================
