@@ -159,14 +159,23 @@ function buildQuery(baseQuery) {
   if (activeFilters.genre) parts.push(activeFilters.genre);
   if (activeFilters.era)   parts.push(base ? activeFilters.era : `${activeFilters.era} hits`);
   if (activeFilters.mood)  parts.push(MOOD_KEYWORDS[activeFilters.mood] || activeFilters.mood);
-  // Language-only with no text: return empty so Python sends plain "karaoke" with relevanceLanguage
+  // Always include language name in query — relevanceLanguage alone is only a hint
+  if (activeFilters.language) parts.push(LANGUAGE_LABELS[activeFilters.language] || activeFilters.language);
   return parts.join(' ');
+}
+
+function getDiscoveryTitle() {
+  const parts = [];
+  if (activeFilters.mood)     parts.push(activeFilters.mood);
+  if (activeFilters.genre)    parts.push(activeFilters.genre);
+  if (activeFilters.era)      parts.push(activeFilters.era);
+  if (activeFilters.language) parts.push(LANGUAGE_LABELS[activeFilters.language] || activeFilters.language);
+  return parts.join(' · ');
 }
 
 function maybeReSearch() {
   const query = searchInput.value.trim();
   if (query) { doSearch(query); return; }
-  // No search text — if any filter is active, run a discovery search
   const hasFilters = Object.values(activeFilters).some(Boolean);
   if (hasFilters) doSearch('');
 }
@@ -280,8 +289,7 @@ async function doSearch(query) {
     if (results.length === 0) { showEmpty(); return; }
     currentResults = results;
     currentIndex   = -1;
-    // Use original query for title; fall back to builtQuery if box was empty
-    renderResults(query || builtQuery || 'your filters', results);
+    renderResults(query || getDiscoveryTitle() || builtQuery, results);
   } catch {
     showError('Network error — check your connection.');
   } finally {
