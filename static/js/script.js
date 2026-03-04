@@ -145,10 +145,12 @@ function renderDropdown(filter) {
 
 function showDropdown() {
   renderDropdown(searchInput.value.trim());
+  searchForm.classList.add('dropdown-open');
 }
 
 function hideDropdown() {
   searchDropdown.classList.remove('open');
+  searchForm.classList.remove('dropdown-open');
 }
 
 function initSearchDropdown() {
