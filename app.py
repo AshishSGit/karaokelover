@@ -5,6 +5,7 @@ import re
 import os
 import json
 import html as _html
+import time
 
 load_dotenv()
 
@@ -17,6 +18,9 @@ ANTHROPIC_API_KEY   = os.getenv('ANTHROPIC_API_KEY')
 N8N_LYRICS_WEBHOOK  = os.getenv('N8N_LYRICS_WEBHOOK')
 N8N_TRENDING_SECRET = os.getenv('N8N_TRENDING_SECRET', '')
 TRENDING_FILE       = os.path.join(os.path.dirname(__file__), 'trending.json')
+YOUTUBE_VIDEOS_URL  = 'https://www.googleapis.com/youtube/v3/videos'
+TRENDING_CACHE      = {'songs': None, 'ts': 0}
+TRENDING_TTL        = 7200  # 2 hours
 
 DEFAULT_TRENDING = [
     {'artist': 'Adele',           'song': 'Hello'},
@@ -284,8 +288,46 @@ def recommendations():
         return jsonify({'recommendations': []}), 200
 
 
+def _fetch_youtube_trending():
+    """Fetch top music videos from YouTube mostPopular chart, extract artist/song."""
+    if not YOUTUBE_API_KEY:
+        return None
+    try:
+        resp = requests.get(YOUTUBE_VIDEOS_URL, params={
+            'key': YOUTUBE_API_KEY,
+            'chart': 'mostPopular',
+            'videoCategoryId': '10',  # Music
+            'regionCode': 'US',
+            'maxResults': 12,
+            'part': 'snippet',
+        }, timeout=8)
+        items = resp.json().get('items', [])
+        songs = []
+        for item in items:
+            title = _html.unescape(item['snippet']['title'])
+            artist, song = _regex_parse(title)
+            if song:
+                songs.append({'artist': artist or '', 'song': song})
+        return songs[:10] if songs else None
+    except Exception:
+        return None
+
+
 @app.route('/api/trending')
 def trending():
+    now = time.time()
+    # Return cached result if still fresh
+    if TRENDING_CACHE['songs'] and now - TRENDING_CACHE['ts'] < TRENDING_TTL:
+        return jsonify({'songs': TRENDING_CACHE['songs']})
+
+    # Try live YouTube chart first
+    live = _fetch_youtube_trending()
+    if live:
+        TRENDING_CACHE['songs'] = live
+        TRENDING_CACHE['ts'] = now
+        return jsonify({'songs': live})
+
+    # Fall back to manually curated trending.json or defaults
     try:
         if os.path.exists(TRENDING_FILE):
             with open(TRENDING_FILE) as f:
