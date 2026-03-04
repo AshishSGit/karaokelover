@@ -13,7 +13,7 @@ app = Flask(__name__)
 YOUTUBE_API_KEY     = os.getenv('YOUTUBE_API_KEY')
 YOUTUBE_SEARCH_URL  = 'https://www.googleapis.com/youtube/v3/search'
 LRCLIB_URL          = 'https://lrclib.net/api'
-OPENAI_API_KEY      = os.getenv('OPENAI_API_KEY')
+ANTHROPIC_API_KEY   = os.getenv('ANTHROPIC_API_KEY')
 N8N_LYRICS_WEBHOOK  = os.getenv('N8N_LYRICS_WEBHOOK')
 N8N_TRENDING_SECRET = os.getenv('N8N_TRENDING_SECRET', '')
 TRENDING_FILE       = os.path.join(os.path.dirname(__file__), 'trending.json')
@@ -98,24 +98,24 @@ def _regex_parse(video_title):
     return None, title.strip()
 
 
-def _openai_chat(prompt, max_tokens=100):
-    """Call OpenAI chat completions, returns text or raises."""
-    from openai import OpenAI
-    client = OpenAI(api_key=OPENAI_API_KEY)
-    resp = client.chat.completions.create(
-        model='gpt-4o-mini',
+def _claude_chat(prompt, max_tokens=256):
+    """Call Anthropic Claude, returns text or raises."""
+    import anthropic
+    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    msg = client.messages.create(
+        model='claude-haiku-4-5-20251001',
         max_tokens=max_tokens,
         messages=[{'role': 'user', 'content': prompt}]
     )
-    return resp.choices[0].message.content.strip()
+    return msg.content[0].text.strip()
 
 
 def parse_song_info(video_title):
-    """Extract artist and song name using OpenAI, falling back to regex."""
-    if not OPENAI_API_KEY:
+    """Extract artist and song name using Claude, falling back to regex."""
+    if not ANTHROPIC_API_KEY:
         return _regex_parse(video_title)
     try:
-        text = _openai_chat(
+        text = _claude_chat(
             'Extract the artist name and song title from this YouTube karaoke video title. '
             'Return ONLY valid JSON with keys "artist" and "song", no extra text. '
             f'Use null for artist if unknown. Title: {video_title}'
@@ -268,7 +268,7 @@ def recommendations():
     song   = request.args.get('song', '').strip()
     if not song:
         return jsonify({'error': 'song is required'}), 400
-    if not OPENAI_API_KEY:
+    if not ANTHROPIC_API_KEY:
         return jsonify({'recommendations': []}), 200
     try:
         prompt = (
@@ -277,7 +277,7 @@ def recommendations():
             + '. Suggest 5 other popular karaoke songs they would enjoy. '
             'Return ONLY a JSON array of objects with keys "artist" and "song". No extra text.'
         )
-        text = _openai_chat(prompt, max_tokens=300)
+        text = _claude_chat(prompt, max_tokens=300)
         recs = json.loads(text)
         return jsonify({'recommendations': recs[:5]})
     except Exception:
