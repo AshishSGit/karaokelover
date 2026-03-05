@@ -146,13 +146,21 @@ function renderDropdown(filter) {
     });
     sdList.appendChild(div);
   });
-  if (items.length > 0) searchDropdown.classList.add('open');
-  else searchDropdown.classList.remove('open');
+  if (items.length > 0) {
+    searchDropdown.classList.add('open');
+    searchForm.classList.add('dropdown-open');
+  } else {
+    searchDropdown.classList.remove('open');
+    searchForm.classList.remove('dropdown-open');
+  }
 }
 
 function showDropdown() {
   renderDropdown(searchInput.value.trim());
-  searchForm.classList.add('dropdown-open');
+  // Only hide filters/popular when dropdown is actually open (has items)
+  if (searchDropdown.classList.contains('open')) {
+    searchForm.classList.add('dropdown-open');
+  }
 }
 
 function hideDropdown() {
