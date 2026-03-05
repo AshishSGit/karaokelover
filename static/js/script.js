@@ -107,7 +107,7 @@ initSearchDropdown();
 // ==========================================
 
 const QUERY_KEY = 'ks_queries';
-const QUERY_MAX = 8;
+const QUERY_MAX = 4;
 
 function getQueries() {
   try { return JSON.parse(localStorage.getItem(QUERY_KEY) || '[]'); }
