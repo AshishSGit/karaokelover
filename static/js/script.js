@@ -184,11 +184,12 @@ function initSearchDropdown() {
       hideDropdown();
       renderHistory();
     } else if (user) {
-      // Load Firestore history → sync to localStorage → re-render
+      // Render immediately from localStorage (same-device session)
+      renderHistory();
+      // Then sync from Firestore in background (cross-device)
       try {
         const firestoreHist = await window.karaokAuth.getHistory();
         if (firestoreHist && firestoreHist.length > 0) {
-          // Normalize: Firestore uses camelCase videoId, local uses video_id
           const normalized = firestoreHist.map(h => ({
             video_id:  h.videoId  || h.video_id || '',
             title:     h.title    || '',
