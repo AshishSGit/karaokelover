@@ -11,13 +11,55 @@ load_dotenv()
 
 app = Flask(__name__)
 
-YOUTUBE_API_KEY     = os.getenv('YOUTUBE_API_KEY')
 YOUTUBE_SEARCH_URL  = 'https://www.googleapis.com/youtube/v3/search'
 LRCLIB_URL          = 'https://lrclib.net/api'
 ANTHROPIC_API_KEY   = os.getenv('ANTHROPIC_API_KEY')
 N8N_LYRICS_WEBHOOK  = os.getenv('N8N_LYRICS_WEBHOOK')
 N8N_TRENDING_SECRET = os.getenv('N8N_TRENDING_SECRET', '')
 TRENDING_FILE       = os.path.join(os.path.dirname(__file__), 'trending.json')
+
+# YouTube API key rotation — add YOUTUBE_API_KEY_2, _3 in Railway env vars
+# for automatic failover when a key's daily quota is exhausted
+_ALL_YT_KEYS = [k for k in [
+    os.getenv('YOUTUBE_API_KEY'),
+    os.getenv('YOUTUBE_API_KEY_2'),
+    os.getenv('YOUTUBE_API_KEY_3'),
+] if k]
+EXHAUSTED_KEYS   = {}        # key → unix timestamp when exhausted
+QUOTA_RESET_SECS = 24 * 3600 # YouTube quota resets every 24 h
+
+def _get_active_key():
+    """Return first key whose quota hasn't run out (or was exhausted >24h ago)."""
+    now = time.time()
+    for key in _ALL_YT_KEYS:
+        if now - EXHAUSTED_KEYS.get(key, 0) > QUOTA_RESET_SECS:
+            return key
+    return None  # all keys exhausted
+
+def _mark_exhausted(key):
+    EXHAUSTED_KEYS[key] = time.time()
+
+def _youtube_search(params):
+    """Try each API key in order; rotate on quota error. Returns (data, err_msg)."""
+    now = time.time()
+    for key in _ALL_YT_KEYS:
+        if now - EXHAUSTED_KEYS.get(key, 0) <= QUOTA_RESET_SECS:
+            continue  # still exhausted, skip
+        params['key'] = key
+        try:
+            resp = requests.get(YOUTUBE_SEARCH_URL, params=params, timeout=10)
+            data = resp.json()
+        except Exception as e:
+            return None, str(e)
+        if 'error' in data:
+            err = data['error']
+            reasons = [e.get('reason', '') for e in err.get('errors', [])]
+            if err.get('code') == 403 or 'quotaExceeded' in reasons:
+                _mark_exhausted(key)
+                continue  # try next key
+            return None, 'YouTube search failed. Please try again.'
+        return data, None
+    return None, 'quota'
 
 # Search result cache — avoids burning quota on repeated queries
 SEARCH_CACHE     = {}   # key → {'results': [...], 'ts': float}
@@ -366,7 +408,6 @@ def search():
         return jsonify({'results': cached['results'], 'cached': True})
 
     params = {
-        'key': YOUTUBE_API_KEY,
         'q': f'{query} karaoke',
         'part': 'snippet',
         'type': 'video',
@@ -381,21 +422,15 @@ def search():
     if region:
         params['regionCode'] = region
 
-    try:
-        resp = requests.get(YOUTUBE_SEARCH_URL, params=params, timeout=10)
-        data = resp.json()
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    data, err_msg = _youtube_search(params)
 
-    if 'error' in data:
-        err = data['error']
-        reasons = [e.get('reason', '') for e in err.get('errors', [])]
-        if err.get('code') == 403 or 'quotaExceeded' in reasons or 'forbidden' in str(reasons).lower():
-            # Serve stale cache if available — better than an error
-            if cached and cached.get('results'):
-                return jsonify({'results': cached['results'], 'cached': True})
+    if data is None:
+        # Serve stale cache if available — better than an error
+        if cached and cached.get('results'):
+            return jsonify({'results': cached['results'], 'cached': True})
+        if err_msg == 'quota':
             return jsonify({'error': 'Search is temporarily unavailable — daily limit reached. Please try again later.'}), 503
-        return jsonify({'error': 'YouTube search failed. Please try again.'}), 500
+        return jsonify({'error': err_msg or 'YouTube search failed. Please try again.'}), 500
 
     results = []
     for item in data.get('items', []):
