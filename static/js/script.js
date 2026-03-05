@@ -188,13 +188,11 @@ function initSearchDropdown() {
       hideDropdown();
       renderHistory();
     } else if (user) {
-      // Render history immediately from localStorage
+      // Show from localStorage immediately (may be empty on first sign-in)
       renderHistory();
-
-      // Show resume banner if a video was playing before sign-out
       showResumeBanner();
 
-      // Sync from Firestore in background (cross-device history)
+      // Sync from Firestore — then re-show history + banner with full data
       try {
         const firestoreHist = await window.karaokAuth.getHistory();
         if (firestoreHist && firestoreHist.length > 0) {
@@ -206,6 +204,7 @@ function initSearchDropdown() {
           }));
           localStorage.setItem(histKey(), JSON.stringify(normalized));
           renderHistory();
+          showResumeBanner(); // re-call now that data is in localStorage
         }
       } catch { /* non-critical */ }
     }
@@ -676,6 +675,7 @@ function closeSingMode() {
 // ==========================================
 
 function showResumeBanner() {
+  if (resumeBanner.style.display === 'flex') return; // already showing
   const hist = getHistory();
   if (!hist.length) return;
   const v = hist[0]; // most recently played
