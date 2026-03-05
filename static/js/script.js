@@ -91,6 +91,10 @@ const searchDropdown   = document.getElementById('searchDropdown');
 const sdList           = document.getElementById('sdList');
 const sdClear          = document.getElementById('sdClear');
 const particles        = document.getElementById('particles');
+const resumeBanner     = document.getElementById('resumeBanner');
+const resumeBannerText = document.getElementById('resumeBannerText');
+const resumeBannerBtn  = document.getElementById('resumeBannerBtn');
+const resumeBannerDismiss = document.getElementById('resumeBannerDismiss');
 
 // ==========================================
 // INIT
@@ -198,27 +202,8 @@ function initSearchDropdown() {
       // Render history immediately from localStorage
       renderHistory();
 
-      // Auto-resume the video that was playing before sign-out
-      const resumeRaw = localStorage.getItem('ks_resume');
-      if (resumeRaw) {
-        localStorage.removeItem('ks_resume');
-        try {
-          const v = JSON.parse(resumeRaw);
-          if (v.video_id) {
-            currentResults = [v]; currentIndex = 0; currentVideo = v;
-            playerTitle.textContent   = v.title;
-            playerChannel.textContent = v.channel || '';
-            playerSection.style.display = 'block';
-            updateMiniInfo(v);
-            fetchLyrics(v.title);
-            waitForYtReady().then(() => {
-              loadPlayer(v.video_id);
-              playerSection.querySelector('.section-wrap')
-                .scrollIntoView({ behavior: 'smooth', block: 'start' });
-            });
-          }
-        } catch { /* non-critical */ }
-      }
+      // Show resume banner if a video was playing before sign-out
+      showResumeBanner();
 
       // Sync from Firestore in background (cross-device history)
       try {
@@ -696,6 +681,42 @@ function closeSingMode() {
 // ==========================================
 // HISTORY
 // ==========================================
+
+// ==========================================
+// RESUME BANNER
+// ==========================================
+
+function showResumeBanner() {
+  const raw = localStorage.getItem('ks_resume');
+  if (!raw) return;
+  try {
+    const v = JSON.parse(raw);
+    if (!v.video_id) return;
+    resumeBannerText.textContent = v.title;
+    resumeBanner.style.display = 'flex';
+
+    resumeBannerBtn.onclick = () => {
+      resumeBanner.style.display = 'none';
+      localStorage.removeItem('ks_resume');
+      currentResults = [v]; currentIndex = 0; currentVideo = v;
+      playerTitle.textContent   = v.title;
+      playerChannel.textContent = v.channel || '';
+      playerSection.style.display = 'block';
+      updateMiniInfo(v);
+      fetchLyrics(v.title);
+      waitForYtReady().then(() => {
+        loadPlayer(v.video_id);
+        playerSection.querySelector('.section-wrap')
+          .scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    };
+
+    resumeBannerDismiss.onclick = () => {
+      resumeBanner.style.display = 'none';
+      localStorage.removeItem('ks_resume');
+    };
+  } catch { /* non-critical */ }
+}
 
 const HIST_MAX = 10;
 
