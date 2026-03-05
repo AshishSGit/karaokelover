@@ -182,17 +182,6 @@ function initSearchDropdown() {
     hideDropdown();
   });
 
-  window.addEventListener('beforeSignOut', () => {
-    if (currentVideo) {
-      localStorage.setItem('ks_resume', JSON.stringify({
-        video_id:  currentVideo.video_id,
-        title:     currentVideo.title,
-        channel:   currentVideo.channel   || '',
-        thumbnail: currentVideo.thumbnail || '',
-      }));
-    }
-  });
-
   window.addEventListener('authStateChanged', async ({ detail: { user, isSignOut } }) => {
     _currentUid = user ? user.uid : null;
     if (isSignOut) {
@@ -687,35 +676,32 @@ function closeSingMode() {
 // ==========================================
 
 function showResumeBanner() {
-  const raw = localStorage.getItem('ks_resume');
-  if (!raw) return;
-  try {
-    const v = JSON.parse(raw);
-    if (!v.video_id) return;
-    resumeBannerText.textContent = v.title;
-    resumeBanner.style.display = 'flex';
+  const hist = getHistory();
+  if (!hist.length) return;
+  const v = hist[0]; // most recently played
+  if (!v.video_id) return;
 
-    resumeBannerBtn.onclick = () => {
-      resumeBanner.style.display = 'none';
-      localStorage.removeItem('ks_resume');
-      currentResults = [v]; currentIndex = 0; currentVideo = v;
-      playerTitle.textContent   = v.title;
-      playerChannel.textContent = v.channel || '';
-      playerSection.style.display = 'block';
-      updateMiniInfo(v);
-      fetchLyrics(v.title);
-      waitForYtReady().then(() => {
-        loadPlayer(v.video_id);
-        playerSection.querySelector('.section-wrap')
-          .scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-    };
+  resumeBannerText.textContent = v.title;
+  resumeBanner.style.display = 'flex';
 
-    resumeBannerDismiss.onclick = () => {
-      resumeBanner.style.display = 'none';
-      localStorage.removeItem('ks_resume');
-    };
-  } catch { /* non-critical */ }
+  resumeBannerBtn.onclick = () => {
+    resumeBanner.style.display = 'none';
+    currentResults = [v]; currentIndex = 0; currentVideo = v;
+    playerTitle.textContent   = v.title;
+    playerChannel.textContent = v.channel || '';
+    playerSection.style.display = 'block';
+    updateMiniInfo(v);
+    fetchLyrics(v.title);
+    waitForYtReady().then(() => {
+      loadPlayer(v.video_id);
+      playerSection.querySelector('.section-wrap')
+        .scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
+
+  resumeBannerDismiss.onclick = () => {
+    resumeBanner.style.display = 'none';
+  };
 }
 
 const HIST_MAX = 10;
@@ -734,14 +720,6 @@ function addToHistory(video) {
   hist.unshift({ video_id: video.video_id, title: video.title, channel: video.channel, thumbnail: video.thumbnail });
   if (hist.length > HIST_MAX) hist = hist.slice(0, HIST_MAX);
   localStorage.setItem(histKey(), JSON.stringify(hist));
-
-  /* Always keep resume key up to date while signed in */
-  if (_currentUid) {
-    localStorage.setItem('ks_resume', JSON.stringify({
-      video_id: video.video_id, title: video.title,
-      channel: video.channel || '', thumbnail: video.thumbnail || '',
-    }));
-  }
 
   /* Sync to Firestore if user is signed in */
   if (window.karaokAuth?.user) window.karaokAuth.saveHistory(video);
