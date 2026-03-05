@@ -681,7 +681,14 @@ function showResumeBanner() {
   if (!hist.length) {
     try { hist = JSON.parse(localStorage.getItem('ks_history') || '[]'); } catch { hist = []; }
   }
-  if (!hist.length) return;
+  // DEBUG: confirm banner + JS pipeline work even with no history
+  if (!hist.length) {
+    resumeBannerText.textContent = 'Play a song to enable Resume';
+    resumeBanner.style.display = 'flex';
+    resumeBannerBtn.style.display = 'none';
+    return;
+  }
+  resumeBannerBtn.style.display = '';
   const v = hist[0]; // most recently played
   if (!v.video_id) return;
 
