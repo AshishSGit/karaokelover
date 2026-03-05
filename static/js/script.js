@@ -189,13 +189,22 @@ function initSearchDropdown() {
       hideDropdown();
       renderHistory();
     } else if (user) {
-      // Migrate guest history to UID key if UID key is empty
-      const guestHist = (() => { try { return JSON.parse(localStorage.getItem('ks_history_guest') || '[]'); } catch { return []; } })();
-      const uidHist   = (() => { try { return JSON.parse(localStorage.getItem(histKey()) || '[]'); } catch { return []; } })();
-      console.log('[karaok] guest hist:', guestHist.length, 'uid hist:', uidHist.length, 'key:', histKey());
-      if (guestHist.length > 0 && uidHist.length === 0) {
-        localStorage.setItem(histKey(), JSON.stringify(guestHist));
-        console.log('[karaok] migrated guest history to uid key');
+      // Consolidate history from all possible sources into the UID key
+      const _read = k => { try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch { return []; } };
+      const uidHist   = _read(histKey());
+      const guestHist = _read('ks_history_guest');
+      const oldHist   = _read('ks_history'); // pre-UID global key
+      console.log('[karaok] uid hist:', uidHist.length, 'guest hist:', guestHist.length, 'old hist:', oldHist.length, 'key:', histKey());
+      if (guestHist.length > 0 || oldHist.length > 0) {
+        // Merge: uid entries first, then guest, then old — deduplicate by video_id
+        const merged = [...uidHist];
+        for (const e of [...guestHist, ...oldHist]) {
+          const id = e.video_id || e.videoId || '';
+          if (id && !merged.some(h => (h.video_id || h.videoId) === id)) merged.push(e);
+        }
+        merged.splice(10);
+        localStorage.setItem(histKey(), JSON.stringify(merged));
+        console.log('[karaok] consolidated to uid key:', merged.length, 'items');
       }
 
       // Show from localStorage immediately (may be empty on first sign-in)
