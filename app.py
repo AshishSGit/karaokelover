@@ -397,11 +397,12 @@ def search():
     query    = request.args.get('q', '').strip()
     language = request.args.get('language', '').strip()
     region   = request.args.get('region', '').strip()
+    era      = request.args.get('era', '').strip()
     if not query:
         return jsonify({'error': 'Query is required'}), 400
 
-    # --- Cache lookup ---
-    cache_key = f'{query.lower()}|{language}|{region}'
+    # --- Cache lookup (include era in key) ---
+    cache_key = f'{query.lower()}|{language}|{region}|{era}'
     now = time.time()
     cached = SEARCH_CACHE.get(cache_key)
     if cached and now - cached['ts'] < SEARCH_CACHE_TTL:
@@ -421,6 +422,19 @@ def search():
         params['relevanceLanguage'] = language
     if region:
         params['regionCode'] = region
+    # For 2020s, filter by upload date — karaoke uploads of new songs are recent
+    # For older eras, date filtering doesn't help (old songs re-uploaded constantly)
+    ERA_PUBLISHED_AFTER = {
+        '2020s': '2019-12-31T00:00:00Z',
+        '2010s': '2009-12-31T00:00:00Z',
+    }
+    ERA_PUBLISHED_BEFORE = {
+        '2010s': '2020-01-01T00:00:00Z',
+    }
+    if era in ERA_PUBLISHED_AFTER:
+        params['publishedAfter'] = ERA_PUBLISHED_AFTER[era]
+    if era in ERA_PUBLISHED_BEFORE:
+        params['publishedBefore'] = ERA_PUBLISHED_BEFORE[era]
 
     data, err_msg = _youtube_search(params)
 

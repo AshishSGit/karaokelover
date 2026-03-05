@@ -247,11 +247,24 @@ function updateFilterBadges() {
   }
 }
 
+// More specific era text so YouTube understands what decade we mean
+const ERA_QUERIES = {
+  '70s':   '1970s classic',
+  '80s':   '1980s classic',
+  '90s':   '1990s',
+  '2000s': 'early 2000s',
+  '2010s': '2010s',
+  '2020s': '2020 2021 2022 2023 2024 new',
+};
+
 function buildQuery(baseQuery) {
   const base = baseQuery.trim();
   const parts = base ? [base] : [];
   if (activeFilters.genre) parts.push(activeFilters.genre);
-  if (activeFilters.era)   parts.push(base ? activeFilters.era : `${activeFilters.era} hits`);
+  if (activeFilters.era) {
+    const eraText = ERA_QUERIES[activeFilters.era] || activeFilters.era;
+    parts.push(base ? eraText : `${eraText} hits`);
+  }
   if (activeFilters.mood)  parts.push(MOOD_KEYWORDS[activeFilters.mood] || activeFilters.mood);
   // Always include language name in query — relevanceLanguage alone is only a hint
   if (activeFilters.language) parts.push(LANGUAGE_LABELS[activeFilters.language] || activeFilters.language);
@@ -376,6 +389,7 @@ async function doSearch(query) {
     const url = new URL('/api/search', window.location.origin);
     url.searchParams.set('q', builtQuery || 'karaoke');
     if (activeFilters.language) url.searchParams.set('language', activeFilters.language);
+    if (activeFilters.era)      url.searchParams.set('era', activeFilters.era);
     const res  = await fetch(url.toString());
     const data = await res.json();
     if (!res.ok || data.error) { showError(data.error || 'API error'); return; }
