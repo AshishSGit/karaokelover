@@ -209,12 +209,13 @@ function initSearchDropdown() {
             playerTitle.textContent   = v.title;
             playerChannel.textContent = v.channel || '';
             playerSection.style.display = 'block';
-            playerSection.querySelector('.section-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
             updateMiniInfo(v);
-            if (ytReady) loadPlayer(v.video_id);
-            else pendingVideoId = v.video_id;
-            addToHistory(v);
             fetchLyrics(v.title);
+            waitForYtReady().then(() => {
+              loadPlayer(v.video_id);
+              playerSection.querySelector('.section-wrap')
+                .scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
           }
         } catch { /* non-critical */ }
       }
@@ -392,6 +393,14 @@ function initParticles() {
 // ==========================================
 // YOUTUBE IFRAME API
 // ==========================================
+
+function waitForYtReady(timeout = 8000) {
+  return new Promise(resolve => {
+    if (ytReady) return resolve();
+    const iv = setInterval(() => { if (ytReady) { clearInterval(iv); resolve(); } }, 150);
+    setTimeout(() => { clearInterval(iv); resolve(); }, timeout);
+  });
+}
 
 function onYouTubeIframeAPIReady() {
   ytReady = true;
@@ -704,6 +713,14 @@ function addToHistory(video) {
   hist.unshift({ video_id: video.video_id, title: video.title, channel: video.channel, thumbnail: video.thumbnail });
   if (hist.length > HIST_MAX) hist = hist.slice(0, HIST_MAX);
   localStorage.setItem(histKey(), JSON.stringify(hist));
+
+  /* Always keep resume key up to date while signed in */
+  if (_currentUid) {
+    localStorage.setItem('ks_resume', JSON.stringify({
+      video_id: video.video_id, title: video.title,
+      channel: video.channel || '', thumbnail: video.thumbnail || '',
+    }));
+  }
 
   /* Sync to Firestore if user is signed in */
   if (window.karaokAuth?.user) window.karaokAuth.saveHistory(video);
