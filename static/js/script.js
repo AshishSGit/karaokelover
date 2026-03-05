@@ -178,9 +178,28 @@ function initSearchDropdown() {
     hideDropdown();
   });
 
-  window.addEventListener('authStateChanged', ({ detail: { user, isSignOut } }) => {
+  window.addEventListener('authStateChanged', async ({ detail: { user, isSignOut } }) => {
     _currentUid = user ? user.uid : null;
-    if (isSignOut) hideDropdown();
+    if (isSignOut) {
+      hideDropdown();
+      renderHistory();
+    } else if (user) {
+      // Load Firestore history → sync to localStorage → re-render
+      try {
+        const firestoreHist = await window.karaokAuth.getHistory();
+        if (firestoreHist && firestoreHist.length > 0) {
+          // Normalize: Firestore uses camelCase videoId, local uses video_id
+          const normalized = firestoreHist.map(h => ({
+            video_id:  h.videoId  || h.video_id || '',
+            title:     h.title    || '',
+            channel:   h.channel  || '',
+            thumbnail: h.thumbnail || '',
+          }));
+          localStorage.setItem(histKey(), JSON.stringify(normalized));
+          renderHistory();
+        }
+      } catch { /* non-critical */ }
+    }
   });
   document.addEventListener('click', (e) => {
     if (!searchForm.contains(e.target)) hideDropdown();
@@ -571,6 +590,7 @@ closePlayerBtn.addEventListener('click', () => {
     if (ov) ov.innerHTML = '▶';
   });
   currentVideo = null;
+  renderHistory();
 });
 
 // ==========================================
@@ -634,11 +654,14 @@ function closeSingMode() {
 // HISTORY
 // ==========================================
 
-const HIST_KEY = 'ks_history';
 const HIST_MAX = 10;
 
+function histKey() {
+  return _currentUid ? `ks_history_${_currentUid}` : 'ks_history_guest';
+}
+
 function getHistory() {
-  try { return JSON.parse(localStorage.getItem(HIST_KEY) || '[]'); }
+  try { return JSON.parse(localStorage.getItem(histKey()) || '[]'); }
   catch { return []; }
 }
 
@@ -646,8 +669,7 @@ function addToHistory(video) {
   let hist = getHistory().filter(v => v.video_id !== video.video_id);
   hist.unshift({ video_id: video.video_id, title: video.title, channel: video.channel, thumbnail: video.thumbnail });
   if (hist.length > HIST_MAX) hist = hist.slice(0, HIST_MAX);
-  localStorage.setItem(HIST_KEY, JSON.stringify(hist));
-  // Don't re-render history while results are visible
+  localStorage.setItem(histKey(), JSON.stringify(hist));
 
   /* Sync to Firestore if user is signed in */
   if (window.karaokAuth?.user) window.karaokAuth.saveHistory(video);
