@@ -96,8 +96,8 @@ async function signUpWithEmail(email, password, name) {
   }
 }
 
-async function doSignOut() {
-  await auth.signOut();
+function doSignOut() {
+  auth.signOut().catch(() => {});
   window.location.href = '/';
 }
 

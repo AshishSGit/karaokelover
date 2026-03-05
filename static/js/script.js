@@ -561,11 +561,11 @@ function playAtIndex(index) {
   if (cards[index]) {
     onCardClick(cards[index], video, index);
   } else {
-    // Card might not be rendered (favorites tab). Load directly.
+    // No DOM cards (e.g. playing from history/favorites) — load directly
     currentIndex  = index;
     currentVideo  = video;
     playerTitle.textContent   = video.title;
-    playerChannel.textContent = video.channel;
+    playerChannel.textContent = video.channel || '';
     updateMiniInfo(video);
     if (ytReady) loadPlayer(video.video_id);
     else pendingVideoId = video.video_id;
