@@ -180,7 +180,7 @@ function initSearchDropdown() {
 
   window.addEventListener('beforeSignOut', () => {
     if (currentVideo) {
-      sessionStorage.setItem('ks_resume', JSON.stringify({
+      localStorage.setItem('ks_resume', JSON.stringify({
         video_id:  currentVideo.video_id,
         title:     currentVideo.title,
         channel:   currentVideo.channel   || '',
@@ -199,9 +199,9 @@ function initSearchDropdown() {
       renderHistory();
 
       // Auto-resume the video that was playing before sign-out
-      const resumeRaw = sessionStorage.getItem('ks_resume');
+      const resumeRaw = localStorage.getItem('ks_resume');
       if (resumeRaw) {
-        sessionStorage.removeItem('ks_resume');
+        localStorage.removeItem('ks_resume');
         try {
           const v = JSON.parse(resumeRaw);
           if (v.video_id) {
@@ -209,9 +209,11 @@ function initSearchDropdown() {
             playerTitle.textContent   = v.title;
             playerChannel.textContent = v.channel || '';
             playerSection.style.display = 'block';
+            playerSection.querySelector('.section-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
             updateMiniInfo(v);
             if (ytReady) loadPlayer(v.video_id);
             else pendingVideoId = v.video_id;
+            addToHistory(v);
             fetchLyrics(v.title);
           }
         } catch { /* non-critical */ }
