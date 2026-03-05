@@ -106,20 +106,27 @@ initSearchDropdown();
 // SEARCH HISTORY DROPDOWN
 // ==========================================
 
-const QUERY_KEY = 'ks_queries';
 const QUERY_MAX = 4;
+let _currentUid  = null;
+
+function queryKey() {
+  return _currentUid ? `ks_queries_${_currentUid}` : null;
+}
 
 function getQueries() {
-  try { return JSON.parse(localStorage.getItem(QUERY_KEY) || '[]'); }
+  const key = queryKey();
+  if (!key) return [];
+  try { return JSON.parse(localStorage.getItem(key) || '[]'); }
   catch { return []; }
 }
 
 function saveQuery(q) {
-  if (!q || q.length < 2) return;
+  const key = queryKey();
+  if (!key || !q || q.length < 2) return;
   let list = getQueries().filter(x => x.toLowerCase() !== q.toLowerCase());
   list.unshift(q);
   if (list.length > QUERY_MAX) list = list.slice(0, QUERY_MAX);
-  localStorage.setItem(QUERY_KEY, JSON.stringify(list));
+  localStorage.setItem(key, JSON.stringify(list));
 }
 
 function renderDropdown(filter) {
@@ -158,8 +165,14 @@ function initSearchDropdown() {
   searchInput.addEventListener('input', () => renderDropdown(searchInput.value.trim()));
   searchInput.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideDropdown(); });
   sdClear.addEventListener('click', () => {
-    localStorage.removeItem(QUERY_KEY);
+    const key = queryKey();
+    if (key) localStorage.removeItem(key);
     hideDropdown();
+  });
+
+  window.addEventListener('authStateChanged', ({ detail: { user, isSignOut } }) => {
+    _currentUid = user ? user.uid : null;
+    if (isSignOut) hideDropdown();
   });
   document.addEventListener('click', (e) => {
     if (!searchForm.contains(e.target)) hideDropdown();
