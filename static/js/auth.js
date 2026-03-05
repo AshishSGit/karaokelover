@@ -56,13 +56,6 @@ auth.onAuthStateChanged(async (user) => {
   const isSignOut = !!_prevUser && !user;  // compute BEFORE updating _prevUser
   _prevUser = user;
   window.dispatchEvent(new CustomEvent('authStateChanged', { detail: { user, isSignOut } }));
-  /* DEBUG: confirm banner DOM exists and auth fires */
-  if (user) {
-    const _b = document.getElementById('resumeBanner');
-    const _bt = document.getElementById('resumeBannerText');
-    if (_b && _bt) { _bt.textContent = 'DEBUG: auth fired ✓'; _b.style.display = 'flex'; }
-    else { console.error('[karaok] resumeBanner element not found in DOM'); }
-  }
 });
 
 /* ----------------------------------------------------------------
