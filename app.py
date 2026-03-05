@@ -391,6 +391,9 @@ def search():
         err = data['error']
         reasons = [e.get('reason', '') for e in err.get('errors', [])]
         if err.get('code') == 403 or 'quotaExceeded' in reasons or 'forbidden' in str(reasons).lower():
+            # Serve stale cache if available — better than an error
+            if cached and cached.get('results'):
+                return jsonify({'results': cached['results'], 'cached': True})
             return jsonify({'error': 'Search is temporarily unavailable — daily limit reached. Please try again later.'}), 503
         return jsonify({'error': 'YouTube search failed. Please try again.'}), 500
 
