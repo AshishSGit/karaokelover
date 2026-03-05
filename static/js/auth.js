@@ -140,7 +140,7 @@ async function saveHistory(video) {
     const current = snap.exists ? (snap.data().history || []) : [];
     /* keep newest at front, dedupe by videoId, max 10 */
     const deduped = [entry, ...current.filter(h => h.videoId !== entry.videoId)].slice(0, 10);
-    await _userRef(user.uid).update({ history: deduped });
+    await _userRef(user.uid).set({ history: deduped }, { merge: true });
   } catch { /* non-critical */ }
 }
 

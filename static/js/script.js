@@ -676,7 +676,11 @@ function closeSingMode() {
 
 function showResumeBanner() {
   if (resumeBanner.style.display === 'flex') return; // already showing
-  const hist = getHistory();
+  // Try UID-keyed history first, then fall back to old global key
+  let hist = getHistory();
+  if (!hist.length) {
+    try { hist = JSON.parse(localStorage.getItem('ks_history') || '[]'); } catch { hist = []; }
+  }
   if (!hist.length) return;
   const v = hist[0]; // most recently played
   if (!v.video_id) return;
