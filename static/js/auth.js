@@ -97,8 +97,8 @@ async function signUpWithEmail(email, password, name) {
 }
 
 async function doSignOut() {
-  _showToast('See you next time! 🎤', '');
   await auth.signOut();
+  window.location.href = '/';
 }
 
 /* ----------------------------------------------------------------
