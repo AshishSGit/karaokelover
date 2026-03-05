@@ -97,6 +97,7 @@ async function signUpWithEmail(email, password, name) {
 }
 
 function doSignOut() {
+  window.dispatchEvent(new CustomEvent('beforeSignOut'));
   auth.signOut().catch(() => {});
   window.location.href = '/';
 }

@@ -178,15 +178,46 @@ function initSearchDropdown() {
     hideDropdown();
   });
 
+  window.addEventListener('beforeSignOut', () => {
+    if (currentVideo) {
+      sessionStorage.setItem('ks_resume', JSON.stringify({
+        video_id:  currentVideo.video_id,
+        title:     currentVideo.title,
+        channel:   currentVideo.channel   || '',
+        thumbnail: currentVideo.thumbnail || '',
+      }));
+    }
+  });
+
   window.addEventListener('authStateChanged', async ({ detail: { user, isSignOut } }) => {
     _currentUid = user ? user.uid : null;
     if (isSignOut) {
       hideDropdown();
       renderHistory();
     } else if (user) {
-      // Render immediately from localStorage (same-device session)
+      // Render history immediately from localStorage
       renderHistory();
-      // Then sync from Firestore in background (cross-device)
+
+      // Auto-resume the video that was playing before sign-out
+      const resumeRaw = sessionStorage.getItem('ks_resume');
+      if (resumeRaw) {
+        sessionStorage.removeItem('ks_resume');
+        try {
+          const v = JSON.parse(resumeRaw);
+          if (v.video_id) {
+            currentResults = [v]; currentIndex = 0; currentVideo = v;
+            playerTitle.textContent   = v.title;
+            playerChannel.textContent = v.channel || '';
+            playerSection.style.display = 'block';
+            updateMiniInfo(v);
+            if (ytReady) loadPlayer(v.video_id);
+            else pendingVideoId = v.video_id;
+            fetchLyrics(v.title);
+          }
+        } catch { /* non-critical */ }
+      }
+
+      // Sync from Firestore in background (cross-device history)
       try {
         const firestoreHist = await window.karaokAuth.getHistory();
         if (firestoreHist && firestoreHist.length > 0) {
