@@ -470,24 +470,61 @@ header, section, footer, .loading-overlay,
 
 /* Resume banner */
 .resume-banner {
-  display: flex; align-items: center; gap: 10px;
-  margin: 14px 0 0; padding: 11px 16px;
-  background: rgba(139,92,246,0.15); border: 1px solid rgba(139,92,246,0.4);
-  border-radius: 14px; backdrop-filter: blur(12px);
-  animation: fade-up 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 16px 0 0;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(139,92,246,0.18) 0%, rgba(236,72,153,0.10) 100%);
+  border: 1px solid rgba(139,92,246,0.4);
+  border-left: 3px solid rgba(167,139,250,0.85);
+  border-radius: 16px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 4px 24px rgba(139,92,246,0.14), inset 0 0 32px rgba(139,92,246,0.04);
+  animation: fade-up 0.35s ease;
+  position: relative;
+  overflow: hidden;
 }
-.resume-banner-icon { font-size: 16px; }
-.resume-banner-text { flex: 1; font-size: 13px; color: rgba(255,255,255,0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.resume-banner::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(139,92,246,0.07) 0%, transparent 55%);
+  pointer-events: none;
+}
+.resume-banner-icon {
+  font-size: 22px; flex-shrink: 0;
+  filter: drop-shadow(0 0 8px rgba(168,85,247,0.6));
+}
+.resume-banner-left {
+  flex: 1; min-width: 0;
+  display: flex; flex-direction: column; gap: 3px;
+}
+.resume-banner-label {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 1.8px; text-transform: uppercase;
+  background: linear-gradient(90deg, #a78bfa, #f472b6);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.resume-banner-text {
+  font-size: 14px; font-weight: 500;
+  color: rgba(255,255,255,0.9);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .resume-banner-btn {
-  padding: 6px 14px; border-radius: 20px; border: none; cursor: pointer;
-  background: linear-gradient(135deg,#a855f7,#ec4899); color: #fff;
-  font-size: 12px; font-weight: 700; white-space: nowrap;
+  flex-shrink: 0;
+  padding: 9px 20px; border-radius: 24px; border: none; cursor: pointer;
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  color: #fff; font-size: 13px; font-weight: 700; white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(168,85,247,0.45);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
+.resume-banner-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 22px rgba(168,85,247,0.6); }
 .resume-banner-dismiss {
-  background: none; border: none; color: rgba(255,255,255,0.4);
-  font-size: 14px; cursor: pointer; padding: 2px 4px; line-height: 1;
+  flex-shrink: 0; background: none; border: none;
+  color: rgba(255,255,255,0.3); font-size: 15px; cursor: pointer;
+  padding: 4px 6px; line-height: 1; transition: color 0.15s;
 }
-.resume-banner-dismiss:hover { color: #fff; }
+.resume-banner-dismiss:hover { color: rgba(255,255,255,0.8); }
 
 .history-section { padding: 16px 0 36px; animation: fade-up 0.3s ease; }
 
@@ -1604,8 +1641,10 @@ header, section, footer, .loading-overlay,
 }
 
 /* Keep sing body/header above the light overlay */
-.sing-stage-light, .sing-close { z-index: 2; }
+.sing-stage-light { z-index: 2; }
 .sing-header, .sing-body { position: relative; z-index: 2; }
+/* Close button must be above sing-body (which shares z-index 2 but is later in DOM) */
+.sing-close { z-index: 10; }
 
 /* ---- Concert-live body state (music playing) ---- */
 
