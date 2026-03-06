@@ -6,6 +6,8 @@ import os
 import json
 import html as _html
 import time
+import threading
+import datetime
 
 load_dotenv()
 
@@ -39,6 +41,115 @@ def _get_active_key():
 def _mark_exhausted(key):
     EXHAUSTED_KEYS[key] = time.time()
 
+
+# ── Persistent cache ────────────────────────────────────────────────────────
+
+def _load_cache():
+    """Load search cache from disk on startup; discard expired entries."""
+    global SEARCH_CACHE
+    try:
+        if os.path.exists(CACHE_FILE):
+            with open(CACHE_FILE) as f:
+                raw = json.load(f)
+            now = time.time()
+            SEARCH_CACHE = {k: v for k, v in raw.items()
+                            if now - v.get('ts', 0) < SEARCH_CACHE_TTL}
+            print(f'[cache] Loaded {len(SEARCH_CACHE)} fresh entries from disk', flush=True)
+    except Exception as e:
+        print(f'[cache] Load error: {e}', flush=True)
+        SEARCH_CACHE = {}
+
+
+def _save_cache():
+    """Persist search cache to disk."""
+    try:
+        with open(CACHE_FILE, 'w') as f:
+            json.dump(SEARCH_CACHE, f)
+    except Exception as e:
+        print(f'[cache] Save error: {e}', flush=True)
+
+
+# ── Pre-warm ────────────────────────────────────────────────────────────────
+
+def _prewarm_one(artist, song):
+    """Fetch one song's karaoke results and store in cache. Returns True if API was called."""
+    query     = f'{artist} {song}'
+    cache_key = f'{query.lower()}|||'   # matches search route: query|language|region|era
+    now       = time.time()
+    cached    = SEARCH_CACHE.get(cache_key)
+    # Skip if cached and still has >1 day of TTL remaining
+    if cached and now - cached['ts'] < SEARCH_CACHE_TTL - 86400:
+        return False
+    params = {
+        'q': f'{query} karaoke', 'part': 'snippet', 'type': 'video',
+        'videoCategoryId': '10', 'maxResults': 20, 'order': 'relevance',
+        'videoEmbeddable': 'true', 'videoSyndicated': 'true',
+    }
+    data, _ = _youtube_search(params)
+    if data is None:
+        return False
+    results = []
+    for item in data.get('items', []):
+        vid_id = item.get('id', {}).get('videoId')
+        if not vid_id:
+            continue
+        snippet = item['snippet']
+        results.append({
+            'video_id':     vid_id,
+            'title':        _html.unescape(snippet['title']),
+            'channel':      _html.unescape(snippet['channelTitle']),
+            'thumbnail':    snippet['thumbnails']['medium']['url'],
+            'published_at': snippet['publishedAt'],
+        })
+    if len(SEARCH_CACHE) >= SEARCH_CACHE_MAX:
+        oldest = min(SEARCH_CACHE, key=lambda k: SEARCH_CACHE[k]['ts'])
+        del SEARCH_CACHE[oldest]
+    SEARCH_CACHE[cache_key] = {'results': results, 'ts': now}
+    return True
+
+
+def _prewarm_worker():
+    """Background thread: warm top songs on startup, then re-warm stale entries at 2am UTC."""
+    time.sleep(30)  # let app fully start first
+
+    # ── Startup warm: top PREWARM_SONGS ──────────────────────────────────
+    print(f'[prewarm] Startup warm: checking top {PREWARM_SONGS} songs…', flush=True)
+    warmed = 0
+    for song in SONG_PAGES[:PREWARM_SONGS]:
+        try:
+            if _prewarm_one(song['artist'], song['song']):
+                warmed += 1
+                time.sleep(3)   # 3s gap → ~150 quota units/min, well within limits
+        except Exception as e:
+            print(f'[prewarm] Error warming {song["song"]}: {e}', flush=True)
+    if warmed:
+        _save_cache()
+    print(f'[prewarm] Startup done — {warmed} new entries fetched', flush=True)
+
+    # ── Daily re-warm at 2am UTC ─────────────────────────────────────────
+    while True:
+        now_dt   = datetime.datetime.utcnow()
+        next_2am = now_dt.replace(hour=2, minute=0, second=0, microsecond=0)
+        if now_dt >= next_2am:
+            next_2am += datetime.timedelta(days=1)
+        wait_secs = (next_2am - now_dt).total_seconds()
+        print(f'[prewarm] Next daily warm in {wait_secs/3600:.1f}h', flush=True)
+        time.sleep(wait_secs)
+
+        print('[prewarm] Daily re-warm starting…', flush=True)
+        rewarmed = 0
+        for song in SONG_PAGES:
+            try:
+                if _prewarm_one(song['artist'], song['song']):
+                    rewarmed += 1
+                    time.sleep(3)
+            except Exception as e:
+                print(f'[prewarm] Error: {e}', flush=True)
+        if rewarmed:
+            _save_cache()
+        print(f'[prewarm] Daily warm done — {rewarmed} re-fetched', flush=True)
+
+
 def _youtube_search(params):
     """Try each API key in order; rotate on quota error. Returns (data, err_msg)."""
     now = time.time()
@@ -62,9 +173,11 @@ def _youtube_search(params):
     return None, 'quota'
 
 # Search result cache — avoids burning quota on repeated queries
-SEARCH_CACHE     = {}   # key → {'results': [...], 'ts': float}
-SEARCH_CACHE_TTL = 6 * 3600   # 6 hours
-SEARCH_CACHE_MAX = 500         # max entries; evict oldest when full
+SEARCH_CACHE     = {}          # key → {'results': [...], 'ts': float}
+SEARCH_CACHE_TTL = 7 * 24 * 3600  # 7 days (karaoke results are stable)
+SEARCH_CACHE_MAX = 1000            # max entries; evict oldest when full
+CACHE_FILE       = os.path.join(os.path.dirname(__file__), 'search_cache.json')
+PREWARM_SONGS    = 50              # top N songs to warm on startup
 
 DEFAULT_TRENDING = [
     {'artist': 'Adele',           'song': 'Hello'},
@@ -465,6 +578,7 @@ def search():
         oldest = min(SEARCH_CACHE, key=lambda k: SEARCH_CACHE[k]['ts'])
         del SEARCH_CACHE[oldest]
     SEARCH_CACHE[cache_key] = {'results': results, 'ts': now}
+    _save_cache()   # persist so restarts don't lose warm cache
 
     return jsonify({'results': results})
 
@@ -547,6 +661,35 @@ def trending():
     return jsonify({'songs': songs})
 
 
+@app.route('/api/cache-stats')
+def cache_stats():
+    """Monitoring endpoint — shows cache health and quota key status."""
+    now   = time.time()
+    total = len(SEARCH_CACHE)
+    fresh = sum(1 for v in SEARCH_CACHE.values() if now - v['ts'] < SEARCH_CACHE_TTL)
+    ages  = [now - v['ts'] for v in SEARCH_CACHE.values()]
+    active_keys = sum(
+        1 for k in _ALL_YT_KEYS
+        if now - EXHAUSTED_KEYS.get(k, 0) > QUOTA_RESET_SECS
+    )
+    return jsonify({
+        'cache': {
+            'total_entries':    total,
+            'fresh':            fresh,
+            'stale':            total - fresh,
+            'oldest_age_hours': round(max(ages) / 3600, 1) if ages else None,
+            'newest_age_hours': round(min(ages) / 3600, 1) if ages else None,
+            'ttl_days':         round(SEARCH_CACHE_TTL / 86400, 1),
+            'max_entries':      SEARCH_CACHE_MAX,
+        },
+        'quota': {
+            'total_keys':  len(_ALL_YT_KEYS),
+            'active_keys': active_keys,
+            'exhausted':   len(_ALL_YT_KEYS) - active_keys,
+        },
+    })
+
+
 @app.route('/api/update-trending', methods=['POST'])
 def update_trending():
     secret = request.headers.get('X-Trending-Secret', '')
@@ -563,6 +706,10 @@ def update_trending():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+
+# ── Startup ──────────────────────────────────────────────────────────────────
+_load_cache()
+threading.Thread(target=_prewarm_worker, daemon=True, name='prewarm').start()
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5002))
