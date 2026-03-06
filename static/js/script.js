@@ -400,6 +400,7 @@ function onYouTubeIframeAPIReady() {
 }
 
 function loadPlayer(videoId) {
+  resumeBanner.style.display = 'none'; // hide toast once a song is playing
   if (ytPlayer) {
     ytPlayer.loadVideoById(videoId);
   } else {
