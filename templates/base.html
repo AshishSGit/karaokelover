@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/css/style.css?v=11" />
+  <link rel="stylesheet" href="/static/css/style.css?v=12" />
   <meta name="google-site-verification" content="JEbL4Ady-ncf3y0xDqyVgUMU6ypR088v8GY-z1q7CWI" />
   {% block seo_head %}
   <link rel="canonical" href="https://www.karaokelover.com/" />
@@ -239,10 +239,12 @@
   <section class="player-section" id="playerSection" style="display:none;">
     <div class="section-wrap">
       <div class="player-container">
+        <div class="player-art-bg" id="playerArtBg"></div>
         <div class="player-wrap">
           <div id="ytPlayer"></div>
         </div>
         <div class="player-info">
+          <div class="player-art-thumb" id="playerArtThumb"></div>
           <div class="now-playing-badge">
             <span class="npb-dot"></span>
             NOW PLAYING
@@ -344,8 +346,9 @@
 
   <!-- ========== EMPTY / ERROR ========== -->
   <div class="empty-state" id="emptyState" style="display:none;">
-    <span class="empty-icon">🎵</span>
-    <p>No karaoke tracks found. Try a different search.</p>
+    <span class="empty-icon">🎤</span>
+    <p>No tracks found for that search.</p>
+    <p class="empty-sub">Try another song title or artist name.</p>
   </div>
   <div class="error-state" id="errorState" style="display:none;">
     <span class="error-icon">⚠️</span>
@@ -425,7 +428,7 @@
 
   {% block auto_search %}{% endblock %}
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="/static/js/script.js?v=38"></script>
+  <script src="/static/js/script.js?v=39"></script>
   <script src="/static/js/auth.js?v=21"></script>
 </body>
 </html>

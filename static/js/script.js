@@ -87,6 +87,8 @@ const filterClearAll   = document.getElementById('filterClearAll');
 const filterMoreBtn    = document.getElementById('filterMoreBtn');
 const filterExpanded   = document.getElementById('filterExpanded');
 const filterMoreCount  = document.getElementById('filterMoreCount');
+const playerArtBg      = document.getElementById('playerArtBg');
+const playerArtThumb   = document.getElementById('playerArtThumb');
 const searchDropdown   = document.getElementById('searchDropdown');
 const sdList           = document.getElementById('sdList');
 const sdClear          = document.getElementById('sdClear');
@@ -514,6 +516,22 @@ function createCard(video, index) {
   return card;
 }
 
+function _setPlayerArt(video) {
+  const thumb = video.thumbnail || '';
+  if (playerArtBg) {
+    playerArtBg.style.backgroundImage = thumb ? `url(${thumb})` : '';
+  }
+  if (playerArtThumb) {
+    if (thumb) {
+      playerArtThumb.style.backgroundImage = `url(${thumb})`;
+      playerArtThumb.classList.add('loaded');
+    } else {
+      playerArtThumb.style.backgroundImage = '';
+      playerArtThumb.classList.remove('loaded');
+    }
+  }
+}
+
 function onCardClick(card, video, index) {
   // Update active card
   document.querySelectorAll('.card.active').forEach(c => {
@@ -531,6 +549,7 @@ function onCardClick(card, video, index) {
   // Update main player info
   playerTitle.textContent   = video.title;
   playerChannel.textContent = video.channel;
+  _setPlayerArt(video);
   playerSection.style.display = 'block';
   playerSection.querySelector('.section-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
@@ -598,6 +617,7 @@ function playAtIndex(index) {
     currentVideo  = video;
     playerTitle.textContent   = video.title;
     playerChannel.textContent = video.channel || '';
+    _setPlayerArt(video);
     updateMiniInfo(video);
     if (ytReady) loadPlayer(video.video_id);
     else pendingVideoId = video.video_id;
@@ -615,6 +635,8 @@ closePlayerBtn.addEventListener('click', () => {
   lyricsSection.style.display = 'none';
   equalizer.classList.remove('playing');
   playerContainer.classList.remove('playing');
+  if (playerArtBg) playerArtBg.style.backgroundImage = '';
+  if (playerArtThumb) { playerArtThumb.style.backgroundImage = ''; playerArtThumb.classList.remove('loaded'); }
   hideMiniPlayer();
   if (ytPlayer) ytPlayer.stopVideo();
   document.querySelectorAll('.card.active').forEach(c => {
@@ -711,6 +733,7 @@ function showResumeBanner() {
     currentResults = [v]; currentIndex = 0; currentVideo = v;
     playerTitle.textContent   = v.title;
     playerChannel.textContent = v.channel || '';
+    _setPlayerArt(v);
     playerSection.style.display = 'block';
     updateMiniInfo(v);
     fetchLyrics(v.title);
@@ -765,6 +788,7 @@ function renderHistory() {
       currentResults = [video]; currentIndex = 0; currentVideo = video;
       playerTitle.textContent   = video.title;
       playerChannel.textContent = video.channel;
+      _setPlayerArt(video);
       playerSection.style.display = 'block';
       updateMiniInfo(video);
       if (ytReady) loadPlayer(video.video_id);
