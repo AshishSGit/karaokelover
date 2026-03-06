@@ -31,7 +31,7 @@ window.karaokAuth = {
   signUpWithEmail,
   doSignOut,
   saveHistory,
-  getHistory,
+  getHistory: _fsGetHistory,
 };
 
 /* ----------------------------------------------------------------
@@ -144,7 +144,7 @@ async function saveHistory(video) {
   } catch { /* non-critical */ }
 }
 
-async function getHistory() {
+async function _fsGetHistory() {
   const user = window.karaokAuth.user;
   if (!user) return [];
   try {

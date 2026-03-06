@@ -184,7 +184,6 @@ function initSearchDropdown() {
 
   window.addEventListener('authStateChanged', async ({ detail: { user, isSignOut } }) => {
     _currentUid = user ? user.uid : null;
-    console.log('[karaok] authStateChanged uid=', _currentUid, 'isSignOut=', isSignOut);
     if (isSignOut) {
       hideDropdown();
       renderHistory();
@@ -194,7 +193,6 @@ function initSearchDropdown() {
       const uidHist   = _read(histKey());
       const guestHist = _read('ks_history_guest');
       const oldHist   = _read('ks_history'); // pre-UID global key
-      console.log('[karaok] uid hist:', uidHist.length, 'guest hist:', guestHist.length, 'old hist:', oldHist.length, 'key:', histKey());
       if (guestHist.length > 0 || oldHist.length > 0) {
         // Merge: uid entries first, then guest, then old — deduplicate by video_id
         const merged = [...uidHist];
@@ -204,7 +202,6 @@ function initSearchDropdown() {
         }
         merged.splice(10);
         localStorage.setItem(histKey(), JSON.stringify(merged));
-        console.log('[karaok] consolidated to uid key:', merged.length, 'items');
       }
 
       // Show from localStorage immediately (may be empty on first sign-in)
@@ -214,7 +211,6 @@ function initSearchDropdown() {
       // Sync from Firestore — then re-show history + banner with full data
       try {
         const firestoreHist = await window.karaokAuth.getHistory();
-        console.log('[karaok] Firestore hist length:', firestoreHist?.length || 0);
         if (firestoreHist && firestoreHist.length > 0) {
           const normalized = firestoreHist.map(h => ({
             video_id:  h.videoId  || h.video_id || '',
@@ -226,7 +222,7 @@ function initSearchDropdown() {
           renderHistory();
           showResumeBanner(); // re-call now that data is in localStorage
         }
-      } catch (e) { console.warn('[karaok] Firestore sync error:', e?.message); }
+      } catch { /* non-critical */ }
     }
   });
   document.addEventListener('click', (e) => {
@@ -698,12 +694,10 @@ function showResumeBanner() {
   if (resumeBanner.style.display === 'flex') return; // already showing
   // Try UID-keyed history first, then fall back to old global key
   let hist = getHistory();
-  console.log('[karaok] showResumeBanner uid-hist:', hist.length, 'key:', histKey());
   if (!hist.length) {
     try { hist = JSON.parse(localStorage.getItem('ks_history') || '[]'); } catch { hist = []; }
-    console.log('[karaok] showResumeBanner old-hist fallback:', hist.length);
   }
-  if (!hist.length) { console.log('[karaok] showResumeBanner: no history, not showing'); return; } // no history — nothing to resume
+  if (!hist.length) return; // no history — nothing to resume
   resumeBannerBtn.style.display = '';
   const v = hist[0]; // most recently played
   if (!v.video_id) return;
