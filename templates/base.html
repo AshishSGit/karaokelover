@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/css/style.css?v=12" />
+  <link rel="stylesheet" href="/static/css/style.css?v=13" />
   <meta name="google-site-verification" content="JEbL4Ady-ncf3y0xDqyVgUMU6ypR088v8GY-z1q7CWI" />
   {% block seo_head %}
   <link rel="canonical" href="https://www.karaokelover.com/" />
@@ -82,6 +82,11 @@
 
       <!-- AUTH UI -->
       <div class="header-auth">
+        <!-- Queue toggle -->
+        <button class="queue-toggle-btn" id="queueToggleBtn" type="button" title="Song Queue">
+          <span class="queue-toggle-icon">🎵</span>
+          <span class="queue-count" id="queueCount" style="display:none;">0</span>
+        </button>
         <!-- Shown when logged out -->
         <button class="auth-signin-btn" id="headerSignInBtn">Sign In</button>
         <!-- Shown when logged in -->
@@ -235,6 +240,17 @@
     </div>
   </section>
 
+  <!-- ========== SAVED SONGS (Favorites) ========== -->
+  <section class="favorites-section" id="favoritesSection" style="display:none;">
+    <div class="section-wrap">
+      <div class="fav-section-header">
+        <h3 class="strip-heading" id="favHeading">❤️ Saved Songs</h3>
+        <button class="fav-clear-btn" id="favClearBtn" type="button">Clear all</button>
+      </div>
+      <div class="favorites-strip" id="favoritesStrip"></div>
+    </div>
+  </section>
+
   <!-- ========== PLAYER ========== -->
   <section class="player-section" id="playerSection" style="display:none;">
     <div class="section-wrap">
@@ -259,6 +275,7 @@
           </div>
 
           <div class="player-actions">
+            <button class="share-song-btn" id="shareSongBtn" type="button">↗ Share</button>
             <button class="close-player-btn" id="closePlayer">✕ Close</button>
           </div>
         </div>
@@ -426,9 +443,48 @@
     <button class="resume-banner-dismiss" id="resumeBannerDismiss" type="button">✕</button>
   </div>
 
+  <!-- ========== QUEUE PANEL ========== -->
+  <div class="queue-panel" id="queuePanel" style="display:none;">
+    <div class="queue-panel-header">
+      <div class="queue-panel-title-wrap">
+        <span class="queue-panel-title">🎵 Song Queue</span>
+        <span class="queue-panel-sub" id="queueSub">0 songs</span>
+      </div>
+      <div class="queue-panel-actions">
+        <button class="queue-play-btn" id="queuePlay" type="button" disabled>▶ Play All</button>
+        <button class="queue-clear-btn" id="queueClear" type="button">Clear</button>
+        <button class="queue-close-btn" id="queueClose" type="button">✕</button>
+      </div>
+    </div>
+    <div class="queue-list" id="queueList">
+      <p class="queue-empty-msg">Your queue is empty.<br>Click ＋ on any song card to add it.</p>
+    </div>
+  </div>
+
+  <!-- ========== SHARE MODAL ========== -->
+  <div class="share-modal-overlay" id="shareModal" style="display:none;">
+    <div class="share-modal-card">
+      <button class="share-modal-close" id="shareModalClose" type="button">✕</button>
+      <img class="share-modal-thumb" id="shareModalThumb" src="" alt="" />
+      <div class="share-modal-info">
+        <div class="share-modal-title" id="shareModalTitle"></div>
+        <div class="share-modal-channel" id="shareModalChannel"></div>
+      </div>
+      <p class="share-modal-cta">Share this song 🎤</p>
+      <div class="share-link-wrap">
+        <input class="share-link-input" id="shareModalLink" readonly type="text" />
+        <button class="share-copy-btn" id="shareCopyBtn" type="button">Copy</button>
+      </div>
+      <div class="share-buttons">
+        <a class="share-btn share-btn-twitter" id="shareTwitter" href="#" target="_blank" rel="noopener">𝕏 Share</a>
+        <a class="share-btn share-btn-whatsapp" id="shareWhatsapp" href="#" target="_blank" rel="noopener">WhatsApp</a>
+      </div>
+    </div>
+  </div>
+
   {% block auto_search %}{% endblock %}
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="/static/js/script.js?v=39"></script>
+  <script src="/static/js/script.js?v=40"></script>
   <script src="/static/js/auth.js?v=21"></script>
 </body>
 </html>

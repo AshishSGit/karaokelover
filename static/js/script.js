@@ -14,6 +14,11 @@ let currentIndex   = -1;
 let shuffleMode    = false;
 let currentVideo   = null;
 let miniVisible    = false;
+let songQueue      = [];
+
+// ---- Feature constants (must be before INIT) ----
+const FAV_KEY = 'ks_favorites';
+const FAV_MAX = 100;
 
 // ---- Filter state ----
 const MOOD_KEYWORDS = {
@@ -89,6 +94,28 @@ const filterExpanded   = document.getElementById('filterExpanded');
 const filterMoreCount  = document.getElementById('filterMoreCount');
 const playerArtBg      = document.getElementById('playerArtBg');
 const playerArtThumb   = document.getElementById('playerArtThumb');
+const favoritesSection = document.getElementById('favoritesSection');
+const favoritesStrip   = document.getElementById('favoritesStrip');
+const favHeading       = document.getElementById('favHeading');
+const favClearBtn      = document.getElementById('favClearBtn');
+const queueToggleBtn   = document.getElementById('queueToggleBtn');
+const queueCount       = document.getElementById('queueCount');
+const queuePanel       = document.getElementById('queuePanel');
+const queueSub         = document.getElementById('queueSub');
+const queuePlay        = document.getElementById('queuePlay');
+const queueClear       = document.getElementById('queueClear');
+const queueClose       = document.getElementById('queueClose');
+const queueList        = document.getElementById('queueList');
+const shareSongBtn     = document.getElementById('shareSongBtn');
+const shareModal       = document.getElementById('shareModal');
+const shareModalClose  = document.getElementById('shareModalClose');
+const shareModalThumb  = document.getElementById('shareModalThumb');
+const shareModalTitle  = document.getElementById('shareModalTitle');
+const shareModalChannel= document.getElementById('shareModalChannel');
+const shareModalLink   = document.getElementById('shareModalLink');
+const shareCopyBtn     = document.getElementById('shareCopyBtn');
+const shareTwitter     = document.getElementById('shareTwitter');
+const shareWhatsapp    = document.getElementById('shareWhatsapp');
 const searchDropdown   = document.getElementById('searchDropdown');
 const sdList           = document.getElementById('sdList');
 const sdClear          = document.getElementById('sdClear');
@@ -104,6 +131,7 @@ const resumeBannerDismiss = document.getElementById('resumeBannerDismiss');
 
 initParticles();
 renderHistory();
+renderFavorites();
 fetchTrending();
 initFilters();
 initSearchDropdown();
@@ -499,6 +527,7 @@ function createCard(video, index) {
   const card = document.createElement('div');
   card.className = 'card';
   card.dataset.index = index;
+  const faved = isFavorited(video.video_id);
 
   card.innerHTML = `
     <div class="card-thumb-wrap">
@@ -506,11 +535,26 @@ function createCard(video, index) {
       <div class="card-play-overlay">▶</div>
     </div>
     <div class="card-num">#${index + 1}</div>
+    <button class="heart-btn ${faved ? 'active' : ''}" title="Save to favorites" type="button">${faved ? '❤️' : '🤍'}</button>
+    <button class="queue-btn" title="Add to queue" type="button">＋</button>
     <div class="card-body">
       <div class="card-title">${escapeHtml(video.title)}</div>
       <div class="card-channel">${escapeHtml(video.channel)}</div>
     </div>
   `;
+
+  card.querySelector('.heart-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    const isNowFaved = toggleFavorite(video);
+    btn.classList.toggle('active', isNowFaved);
+    btn.textContent = isNowFaved ? '❤️' : '🤍';
+  });
+
+  card.querySelector('.queue-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    addToQueue(video);
+  });
 
   card.addEventListener('click', () => onCardClick(card, video, index));
   return card;
@@ -646,6 +690,7 @@ closePlayerBtn.addEventListener('click', () => {
   });
   currentVideo = null;
   renderHistory();
+  renderFavorites();
 });
 
 // ==========================================
@@ -917,6 +962,8 @@ function hideAllStates() {
   emptyState.style.display      = 'none';
   errorState.style.display      = 'none';
   lyricsSection.style.display   = 'none';
+  // Re-evaluate home content visibility after results hide
+  setTimeout(() => { renderHistory(); renderFavorites(); }, 0);
 }
 
 function setLoading(on) {
@@ -972,6 +1019,226 @@ async function fetchTrending() {
 // ==========================================
 // RECOMMENDATIONS
 // ==========================================
+
+// ==========================================
+// FAVORITES
+// ==========================================
+
+function getFavorites() {
+  try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function isFavorited(video_id) {
+  return getFavorites().some(v => v.video_id === video_id);
+}
+
+function toggleFavorite(video) {
+  let favs = getFavorites();
+  const idx = favs.findIndex(v => v.video_id === video.video_id);
+  let isNowFaved;
+  if (idx >= 0) {
+    favs.splice(idx, 1);
+    isNowFaved = false;
+    showToast('Removed from saved songs', '');
+  } else {
+    favs.unshift({ video_id: video.video_id, title: video.title, channel: video.channel, thumbnail: video.thumbnail });
+    if (favs.length > FAV_MAX) favs = favs.slice(0, FAV_MAX);
+    isNowFaved = true;
+    showToast('❤️ Saved!', 'fav');
+  }
+  localStorage.setItem(FAV_KEY, JSON.stringify(favs));
+  renderFavorites();
+  return isNowFaved;
+}
+
+function renderFavorites() {
+  const favs = getFavorites();
+  if (favs.length === 0 || resultsSection.style.display !== 'none') {
+    favoritesSection.style.display = 'none'; return;
+  }
+  favHeading.innerHTML = `❤️ Saved Songs <span style="color:var(--muted);font-weight:500">(${favs.length})</span>`;
+  favoritesStrip.innerHTML = favs.map(v => `
+    <div class="fav-card" data-id="${escapeHtml(v.video_id)}">
+      <img src="${escapeHtml(v.thumbnail)}" alt="${escapeHtml(v.title)}" loading="lazy" />
+      <div class="fav-card-title">${escapeHtml(v.title)}</div>
+      <span class="fav-card-heart">❤️</span>
+    </div>
+  `).join('');
+  favoritesStrip.querySelectorAll('.fav-card').forEach(fc => {
+    fc.addEventListener('click', () => {
+      const video = favs.find(v => v.video_id === fc.dataset.id);
+      if (!video) return;
+      currentResults = [video]; currentIndex = 0; currentVideo = video;
+      playerTitle.textContent   = video.title;
+      playerChannel.textContent = video.channel || '';
+      _setPlayerArt(video);
+      playerSection.style.display = 'block';
+      updateMiniInfo(video);
+      if (ytReady) loadPlayer(video.video_id);
+      else pendingVideoId = video.video_id;
+      fetchLyrics(video.title);
+      addToHistory(video);
+    });
+  });
+  favoritesSection.style.display = 'block';
+}
+
+favClearBtn.addEventListener('click', () => {
+  localStorage.removeItem(FAV_KEY);
+  renderFavorites();
+  showToast('Favorites cleared', '');
+});
+
+// ==========================================
+// QUEUE
+// ==========================================
+
+function addToQueue(video) {
+  if (songQueue.some(v => v.video_id === video.video_id)) {
+    showToast('Already in queue', ''); return;
+  }
+  songQueue.push(video);
+  updateQueueUI();
+  showToast(`🎵 Added to queue (${songQueue.length})`, 'success');
+}
+
+function removeFromQueue(video_id) {
+  songQueue = songQueue.filter(v => v.video_id !== video_id);
+  updateQueueUI();
+}
+
+function clearQueue() {
+  songQueue = [];
+  updateQueueUI();
+}
+
+function updateQueueUI() {
+  const count = songQueue.length;
+  queueCount.textContent = count;
+  queueCount.style.display = count > 0 ? 'flex' : 'none';
+  queueToggleBtn.classList.toggle('has-items', count > 0);
+  queueSub.textContent = `${count} song${count !== 1 ? 's' : ''}`;
+  queuePlay.disabled = count === 0;
+  renderQueueList();
+}
+
+function renderQueueList() {
+  if (songQueue.length === 0) {
+    queueList.innerHTML = '<p class="queue-empty-msg">Your queue is empty.<br>Click ＋ on any song card to add it.</p>';
+    return;
+  }
+  queueList.innerHTML = songQueue.map((v, i) => `
+    <div class="queue-item" data-idx="${i}">
+      <span class="queue-item-num">${i + 1}</span>
+      <img class="queue-item-thumb" src="${escapeHtml(v.thumbnail)}" alt="" loading="lazy" />
+      <div class="queue-item-info">
+        <div class="queue-item-title">${escapeHtml(v.title)}</div>
+        <div class="queue-item-channel">${escapeHtml(v.channel || '')}</div>
+      </div>
+      <button class="queue-item-remove" data-id="${escapeHtml(v.video_id)}" title="Remove" type="button">✕</button>
+    </div>
+  `).join('');
+  queueList.querySelectorAll('.queue-item-remove').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeFromQueue(btn.dataset.id);
+    });
+  });
+  queueList.querySelectorAll('.queue-item').forEach((item) => {
+    item.addEventListener('click', (e) => {
+      if (e.target.closest('.queue-item-remove')) return;
+      const idx = parseInt(item.dataset.idx, 10);
+      currentResults = [...songQueue];
+      playAtIndex(idx);
+      closeQueuePanel();
+    });
+  });
+}
+
+function openQueuePanel() {
+  queuePanel.style.display = 'flex';
+  renderQueueList();
+}
+
+function closeQueuePanel() {
+  queuePanel.style.display = 'none';
+}
+
+queueToggleBtn.addEventListener('click', () => {
+  if (queuePanel.style.display === 'none') openQueuePanel();
+  else closeQueuePanel();
+});
+queueClose.addEventListener('click', closeQueuePanel);
+queueClear.addEventListener('click', () => {
+  clearQueue();
+  showToast('Queue cleared', '');
+});
+queuePlay.addEventListener('click', () => {
+  if (songQueue.length === 0) return;
+  currentResults = [...songQueue];
+  playAtIndex(0);
+  closeQueuePanel();
+});
+
+// Close queue panel on outside click
+document.addEventListener('click', (e) => {
+  if (queuePanel.style.display !== 'none' &&
+      !queuePanel.contains(e.target) &&
+      !queueToggleBtn.contains(e.target)) {
+    closeQueuePanel();
+  }
+});
+
+// ==========================================
+// SHARE
+// ==========================================
+
+function shareCurrentSong() {
+  if (!currentVideo) return;
+  const url  = `${window.location.origin}?q=${encodeURIComponent(currentVideo.title)}`;
+  const text = `I'm singing "${currentVideo.title}" on KaraokeLover.com 🎤`;
+
+  if (navigator.share) {
+    navigator.share({ title: currentVideo.title, text, url }).catch(() => {});
+    return;
+  }
+
+  // Desktop fallback: show share modal
+  shareModalThumb.src      = currentVideo.thumbnail || '';
+  shareModalTitle.textContent   = currentVideo.title;
+  shareModalChannel.textContent = currentVideo.channel || '';
+  shareModalLink.value     = url;
+  const twitterText = encodeURIComponent(`${text}\n${url}`);
+  const waText      = encodeURIComponent(`${text} ${url}`);
+  shareTwitter.href  = `https://twitter.com/intent/tweet?text=${twitterText}`;
+  shareWhatsapp.href = `https://wa.me/?text=${waText}`;
+  shareModal.style.display = 'flex';
+}
+
+shareSongBtn.addEventListener('click', shareCurrentSong);
+
+shareModalClose.addEventListener('click', () => {
+  shareModal.style.display = 'none';
+});
+shareModal.addEventListener('click', (e) => {
+  if (e.target === shareModal) shareModal.style.display = 'none';
+});
+
+shareCopyBtn.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(shareModalLink.value);
+    shareCopyBtn.textContent = 'Copied!';
+    shareCopyBtn.classList.add('copied');
+    setTimeout(() => {
+      shareCopyBtn.textContent = 'Copy';
+      shareCopyBtn.classList.remove('copied');
+    }, 2000);
+  } catch {
+    shareModalLink.select();
+    document.execCommand('copy');
+  }
+});
 
 async function fetchRecommendations(videoTitle) {
   recSection.style.display = 'block';
