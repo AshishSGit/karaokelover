@@ -145,17 +145,6 @@
         </div>
       </form>
 
-      <!-- ========== RESUME BANNER ========== -->
-      <div class="resume-banner" id="resumeBanner" style="display:none;">
-        <div class="resume-banner-icon">🎤</div>
-        <div class="resume-banner-left">
-          <span class="resume-banner-label">Continue Singing</span>
-          <span class="resume-banner-text" id="resumeBannerText"></span>
-        </div>
-        <button class="resume-banner-btn" id="resumeBannerBtn" type="button">▶ Resume</button>
-        <button class="resume-banner-dismiss" id="resumeBannerDismiss" type="button">✕</button>
-      </div>
-
       <!-- ========== SMART DISCOVERY FILTERS ========== -->
       <div class="filter-bar" id="filterBar">
 
@@ -426,6 +415,17 @@
       </p>
       <p class="auth-error" id="authError"></p>
     </div>
+  </div>
+
+  <!-- ========== RESUME BANNER (direct body child — avoids stacking context trap) ========== -->
+  <div class="resume-banner" id="resumeBanner" style="display:none;">
+    <div class="resume-banner-icon">🎤</div>
+    <div class="resume-banner-left">
+      <span class="resume-banner-label">Continue Singing</span>
+      <span class="resume-banner-text" id="resumeBannerText"></span>
+    </div>
+    <button class="resume-banner-btn" id="resumeBannerBtn" type="button">▶ Resume</button>
+    <button class="resume-banner-dismiss" id="resumeBannerDismiss" type="button">✕</button>
   </div>
 
   {% block auto_search %}{% endblock %}
