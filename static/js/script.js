@@ -488,7 +488,8 @@ searchForm.addEventListener('submit', async (e) => {
 async function doSearch(query) {
   setLoading(true);
   hideAllStates();
-  historySection.style.display = 'none';
+  historySection.style.display  = 'none';
+  favoritesSection.style.display = 'none';
 
   try {
     const builtQuery = buildQuery(query);
@@ -659,17 +660,20 @@ function playAtIndex(index) {
   if (cards[index]) {
     onCardClick(cards[index], video, index);
   } else {
-    // No DOM cards (e.g. playing from history/favorites) — load directly
+    // No DOM cards (e.g. playing from queue/history) — load directly
     currentIndex  = index;
     currentVideo  = video;
     playerTitle.textContent   = video.title;
     playerChannel.textContent = video.channel || '';
     _setPlayerArt(video);
+    playerSection.style.display = 'block';
+    playerSection.querySelector('.section-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
     updateMiniInfo(video);
     if (ytReady) loadPlayer(video.video_id);
     else pendingVideoId = video.video_id;
     addToHistory(video);
     fetchLyrics(video.title);
+    fetchRecommendations(video.title);
   }
 }
 
@@ -965,8 +969,6 @@ function hideAllStates() {
   emptyState.style.display      = 'none';
   errorState.style.display      = 'none';
   lyricsSection.style.display   = 'none';
-  // Re-evaluate home content visibility after results hide
-  setTimeout(() => { renderHistory(); renderFavorites(); }, 0);
 }
 
 function setLoading(on) {
