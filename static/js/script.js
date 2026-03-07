@@ -544,6 +544,7 @@ function renderResults(query, results) {
     resultsGrid.appendChild(createCard(video, i));
   });
   resultsSection.style.display = 'block';
+  setTimeout(() => resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
 }
 
 function createCard(video, index) {
