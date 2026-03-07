@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/css/style.css?v=23" />
+  <link rel="stylesheet" href="/static/css/style.css?v=24" />
   <meta name="google-site-verification" content="JEbL4Ady-ncf3y0xDqyVgUMU6ypR088v8GY-z1q7CWI" />
   {% block seo_head %}
   <link rel="canonical" href="https://www.karaokelover.com/" />
@@ -253,6 +253,8 @@
 
   <!-- ========== PLAYER MODAL ========== -->
   <section class="player-section" id="playerSection" style="display:none;">
+    <!-- Full-stage blurred album art — covers entire section background -->
+    <div class="stage-art-bg" id="stageArtBg"></div>
     <div class="player-modal-backdrop" id="playerBackdrop"></div>
     <div class="section-wrap">
       <div class="player-container">
@@ -492,7 +494,7 @@
 
   {% block auto_search %}{% endblock %}
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="/static/js/script.js?v=50"></script>
+  <script src="/static/js/script.js?v=51"></script>
   <script src="/static/js/auth.js?v=21"></script>
 </body>
 </html>

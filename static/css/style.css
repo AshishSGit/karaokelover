@@ -606,6 +606,26 @@ header, section, footer, .loading-overlay,
   background: #030308;
 }
 
+/* Full-stage blurred album art — covers entire section */
+.stage-art-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background-size: cover; background-position: center;
+  filter: blur(90px) brightness(0.13) saturate(2.8);
+  transform: scale(1.5);
+  transition: background-image 0.9s ease;
+  pointer-events: none;
+}
+
+/* Top-center radial glow + bottom vignette for depth */
+.player-section::before {
+  content: '';
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 35% at 50% 0%, rgba(147,51,234,0.16), transparent),
+    linear-gradient(to bottom, rgba(5,3,15,0.45) 0%, rgba(5,3,15,0.1) 40%, rgba(5,3,15,0.65) 100%);
+  pointer-events: none;
+}
+
 /* Suppress the old modal backdrop */
 .player-modal-backdrop { display: none; }
 
@@ -658,7 +678,7 @@ header, section, footer, .loading-overlay,
 .player-art-bg {
   position: absolute; inset: 0; z-index: 0;
   background-size: cover; background-position: center;
-  filter: blur(60px) brightness(0.22) saturate(2);
+  filter: blur(60px) brightness(0.32) saturate(2.2);
   transform: scale(1.25);
   transition: background-image 0.7s ease;
   pointer-events: none;
@@ -712,6 +732,17 @@ header, section, footer, .loading-overlay,
   border-radius: 20px;
   box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
 }
+/* Remove inner 480px cap — outer sticky column controls scroll */
+.player-section .lyrics-body {
+  max-height: none;
+  overflow-y: visible;
+}
+/* Bigger, bolder lyrics in stage context */
+.player-section .lyrics-text {
+  font-size: 18px;
+  line-height: 2.15;
+  font-weight: 500;
+}
 
 /* Mobile: single column */
 @media (max-width: 900px) {
@@ -746,9 +777,11 @@ header, section, footer, .loading-overlay,
 @keyframes npb-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 
 .player-title {
-  font-size: 15px; font-weight: 700; line-height: 1.45; color: var(--text);
+  font-size: 22px; font-weight: 800; line-height: 1.3;
+  background: linear-gradient(135deg, #fff 0%, #d8b4fe 55%, #f9a8d4 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
-.player-channel { font-size: 13px; color: var(--muted); }
+.player-channel { font-size: 14px; color: rgba(205,190,255,0.65); font-weight: 500; }
 
 .player-nav {
   display: flex; gap: 8px; align-items: center;
@@ -1871,23 +1904,23 @@ header, section, footer, .loading-overlay,
 
 /* ---- Concert-live body state (music playing) ---- */
 
-body.concert-live .spot1 { animation-duration: 7s; }
-body.concert-live .spot2 { animation-duration: 5.5s; }
-body.concert-live .spot3 { animation-duration: 8.5s; }
-body.concert-live .spot4 { animation-duration: 10s; }
+body.concert-live .spot1 { animation-duration: 7s; filter: brightness(1.7); }
+body.concert-live .spot2 { animation-duration: 5.5s; filter: brightness(1.9); }
+body.concert-live .spot3 { animation-duration: 8.5s; filter: brightness(1.7); }
+body.concert-live .spot4 { animation-duration: 10s; filter: brightness(2); }
 
 body.concert-live .stage-haze {
   background: linear-gradient(to top,
-    rgba(40,0,70,0.22) 0%,
-    rgba(147,51,234,0.08) 40%,
+    rgba(60,0,110,0.38) 0%,
+    rgba(147,51,234,0.14) 50%,
     transparent 100%);
   animation-duration: 4s;
 }
 
 body.concert-live .stage-rig-bar {
   box-shadow:
-    0 0 22px rgba(147,51,234,0.55),
-    0 0 70px rgba(147,51,234,0.2);
+    0 0 32px rgba(147,51,234,0.75),
+    0 0 90px rgba(147,51,234,0.3);
 }
 
 body.concert-live .rig-fixture::after {
@@ -1895,7 +1928,7 @@ body.concert-live .rig-fixture::after {
 }
 
 body.concert-live .player-container {
-  box-shadow: var(--shadow), 0 0 80px rgba(147,51,234,0.35);
+  box-shadow: var(--shadow), 0 0 100px rgba(147,51,234,0.45), 0 0 200px rgba(147,51,234,0.15);
 }
 
 /* Mini player stop button */

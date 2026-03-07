@@ -103,6 +103,7 @@ const filterMoreBtn    = document.getElementById('filterMoreBtn');
 const filterExpanded   = document.getElementById('filterExpanded');
 const filterMoreCount  = document.getElementById('filterMoreCount');
 const playerArtBg      = document.getElementById('playerArtBg');
+const stageArtBg       = document.getElementById('stageArtBg');
 const playerArtThumb   = document.getElementById('playerArtThumb');
 const favoritesSection = document.getElementById('favoritesSection');
 const favoritesStrip   = document.getElementById('favoritesStrip');
@@ -589,6 +590,9 @@ function _setPlayerArt(video) {
   if (playerArtBg) {
     playerArtBg.style.backgroundImage = thumb ? `url(${thumb})` : '';
   }
+  if (stageArtBg) {
+    stageArtBg.style.backgroundImage = thumb ? `url(${thumb})` : '';
+  }
   if (playerArtThumb) {
     if (thumb) {
       playerArtThumb.style.backgroundImage = `url(${thumb})`;
@@ -730,6 +734,7 @@ miniStop.addEventListener('click', () => {
   equalizer.classList.remove('playing');
   playerContainer.classList.remove('playing');
   if (playerArtBg) playerArtBg.style.backgroundImage = '';
+  if (stageArtBg)  stageArtBg.style.backgroundImage  = '';
   if (playerArtThumb) { playerArtThumb.style.backgroundImage = ''; playerArtThumb.classList.remove('loaded'); }
   document.querySelectorAll('.card.active').forEach(c => {
     c.classList.remove('active');
