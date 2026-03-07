@@ -1938,7 +1938,7 @@ body.concert-live .player-container {
 /* --- Crowd Silhouette --- */
 .crowd-silhouette {
   position: fixed; bottom: 0; left: 0; right: 0;
-  height: 100px; z-index: 8;
+  height: 120px; z-index: 8;
   pointer-events: none;
   opacity: 0;
   transition: opacity 1.4s ease;
@@ -2019,10 +2019,10 @@ body.concert-live .laser { height: 62vh; opacity: 0.72; }
 
 /* --- Guitar Silhouette --- */
 .guitar-wrap {
-  position: fixed; bottom: 92px; left: 6%;
+  position: fixed; bottom: 120px; left: 6%;
   width: 70px; height: 220px;
   transform: rotate(-8deg);
-  pointer-events: none; z-index: 7;
+  pointer-events: none; z-index: 9;
   opacity: 0.22;
   filter: drop-shadow(0 0 0px rgba(147,51,234,0));
   transition: opacity 0.9s, filter 0.9s;
@@ -2037,9 +2037,28 @@ body.concert-live .guitar-wrap {
   50%      { transform: rotate(-5deg); }
 }
 
+/* --- Mic Stand --- */
+.mic-stand-wrap {
+  position: fixed; bottom: 120px; left: 60%;
+  width: 50px; height: 210px;
+  pointer-events: none; z-index: 9;
+  opacity: 0.22;
+  filter: drop-shadow(0 0 0px rgba(147,51,234,0));
+  transition: opacity 0.9s, filter 0.9s;
+  animation: mic-sway 11s ease-in-out infinite;
+}
+body.concert-live .mic-stand-wrap {
+  opacity: 0.55;
+  filter: drop-shadow(0 0 12px rgba(180,130,255,0.6));
+}
+@keyframes mic-sway {
+  0%,100% { transform: rotate(1deg); }
+  50%      { transform: rotate(-1.5deg); }
+}
+
 /* --- Stage Floor Glow --- */
 .stage-floor-glow {
-  position: fixed; bottom: 97px; left: 0; right: 0;
+  position: fixed; bottom: 122px; left: 0; right: 0;
   height: 4px;
   background: linear-gradient(90deg,
     transparent 0%,

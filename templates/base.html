@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/css/style.css?v=27" />
+  <link rel="stylesheet" href="/static/css/style.css?v=28" />
   <meta name="google-site-verification" content="JEbL4Ady-ncf3y0xDqyVgUMU6ypR088v8GY-z1q7CWI" />
   {% block seo_head %}
   <link rel="canonical" href="https://www.karaokelover.com/" />
@@ -59,8 +59,9 @@
     </div>
     <!-- Crowd silhouette — fades in when music plays -->
     <div class="crowd-silhouette">
-      <svg class="crowd-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100" preserveAspectRatio="none">
-        <path d="M0,100 L0,68 L25,65 L35,45 L50,65 L70,62 L85,40 L100,62 L115,68 L130,60 L145,35 L155,55 L170,58 L185,30 L195,52 L210,60 L225,52 L240,28 L250,48 L268,60 L280,58 L298,25 L308,45 L322,60 L338,55 L352,32 L360,50 L380,62 L395,45 L408,20 L418,42 L432,60 L448,55 L462,38 L472,55 L490,62 L502,50 L518,25 L528,45 L545,60 L558,55 L572,32 L582,50 L598,62 L612,50 L628,28 L638,45 L655,62 L668,55 L682,38 L692,55 L708,62 L722,45 L738,22 L748,42 L762,60 L778,55 L792,35 L802,52 L818,62 L832,50 L848,28 L858,48 L872,60 L888,55 L902,32 L912,50 L928,62 L942,52 L958,25 L968,45 L982,62 L998,55 L1012,38 L1022,55 L1038,62 L1052,50 L1068,28 L1078,45 L1092,60 L1108,55 L1122,32 L1132,50 L1148,62 L1162,50 L1178,25 L1188,42 L1202,60 L1218,55 L1232,38 L1242,55 L1258,62 L1272,45 L1288,22 L1298,42 L1312,60 L1328,55 L1342,32 L1352,50 L1368,62 L1382,50 L1398,30 L1412,48 L1440,65 L1440,100 Z" fill="rgba(4,2,12,0.92)"/>
+      <svg class="crowd-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" preserveAspectRatio="none">
+        <!-- Bezier curves = smooth rounded heads; L spikes = raised arms -->
+        <path d="M 0,120 L 0,88 Q 20,58 40,88 Q 60,46 80,88 Q 100,70 120,88 L 135,32 L 140,22 L 145,32 Q 165,60 180,88 Q 200,50 220,88 Q 240,64 260,88 Q 280,44 300,88 L 315,28 L 320,18 L 325,28 Q 345,56 360,88 Q 380,60 400,88 Q 420,48 440,88 Q 460,68 480,88 L 495,35 L 500,24 L 505,35 Q 525,58 540,88 Q 560,52 580,88 Q 600,42 620,88 Q 640,66 660,88 L 675,30 L 680,20 L 685,30 Q 705,54 720,88 Q 740,58 760,88 Q 780,46 800,88 Q 820,68 840,88 L 855,32 L 860,22 L 865,32 Q 885,60 900,88 Q 920,50 940,88 Q 960,62 980,88 Q 1000,44 1020,88 L 1035,28 L 1040,18 L 1045,28 Q 1065,56 1080,88 Q 1100,60 1120,88 Q 1140,46 1160,88 Q 1180,68 1200,88 L 1215,34 L 1220,24 L 1225,34 Q 1245,58 1260,88 Q 1280,52 1300,88 Q 1320,44 1340,88 Q 1380,64 1420,88 Q 1432,80 1440,88 L 1440,120 Z" fill="rgba(4,2,12,0.92)"/>
       </svg>
     </div>
     <!-- Smoke / fog puffs -->
@@ -89,6 +90,28 @@
         <line x1="33" y1="14" x2="33" y2="148" stroke="rgba(200,170,255,0.25)" stroke-width="0.6"/>
         <line x1="35" y1="14" x2="35" y2="148" stroke="rgba(200,170,255,0.25)" stroke-width="0.6"/>
         <line x1="37" y1="14" x2="37" y2="148" stroke="rgba(200,170,255,0.25)" stroke-width="0.6"/>
+      </svg>
+    </div>
+    <!-- Mic stand -->
+    <div class="mic-stand-wrap">
+      <svg class="mic-stand-svg" viewBox="0 0 50 210" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Tripod legs -->
+        <line x1="25" y1="182" x2="2"  y2="208" stroke="rgba(80,50,120,0.7)" stroke-width="3" stroke-linecap="round"/>
+        <line x1="25" y1="182" x2="25" y2="210" stroke="rgba(80,50,120,0.7)" stroke-width="3" stroke-linecap="round"/>
+        <line x1="25" y1="182" x2="48" y2="208" stroke="rgba(80,50,120,0.7)" stroke-width="3" stroke-linecap="round"/>
+        <!-- Vertical pole -->
+        <rect x="23" y="32" width="4" height="150" rx="2" fill="rgba(80,50,120,0.7)"/>
+        <!-- Mic capsule -->
+        <ellipse cx="25" cy="23" rx="9" ry="14" fill="rgba(80,50,120,0.7)"/>
+        <!-- Grille mesh suggestion -->
+        <ellipse cx="25" cy="21" rx="6" ry="9" fill="none" stroke="rgba(180,150,240,0.35)" stroke-width="1"/>
+        <line x1="19" y1="16" x2="31" y2="16" stroke="rgba(180,150,240,0.2)" stroke-width="0.5"/>
+        <line x1="19" y1="20" x2="31" y2="20" stroke="rgba(180,150,240,0.2)" stroke-width="0.5"/>
+        <line x1="19" y1="25" x2="31" y2="25" stroke="rgba(180,150,240,0.2)" stroke-width="0.5"/>
+        <!-- Mic clip ring -->
+        <circle cx="25" cy="32" r="4" fill="none" stroke="rgba(80,50,120,0.7)" stroke-width="2"/>
+        <!-- Cable -->
+        <path d="M 25 182 C 35 194 14 202 24 210" stroke="rgba(80,50,120,0.4)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
       </svg>
     </div>
     <!-- Stage floor glow line -->
