@@ -2783,22 +2783,17 @@ button, a, [role="button"], input, select {
   .hero-sub { font-size: 14px; margin-bottom: 24px; }
 }
 
-/* 5. Filter bar — stack vertically on mobile so Filters button
-      is on its own row, away from the horizontal-scroll chips area.
-      This prevents iOS from treating taps on the button as scroll intent. */
+/* 5. Filter bar — on mobile, always show all filters (no toggle).
+      The ⊕ Filters toggle button is hidden; Era/Lang/Mood rows stay
+      permanently open. Genre chips scroll horizontally as before.
+      This eliminates the unreliable JS toggle on iOS entirely. */
 @media (max-width: 640px) {
-  .filter-primary-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-  /* Filters button first (above genre chips) */
-  .filter-more-btn {
-    order: -1;
-    min-height: 38px;
-    padding: 8px 18px;
-    font-size: 12.5px;
-    align-self: flex-start;
+  /* Hide the toggle button — not needed when everything is shown */
+  .filter-more-btn { display: none !important; }
+  /* Always show expanded filters */
+  .filter-expanded {
+    display: flex !important;
+    animation: none !important;
   }
   /* Chips fill full width */
   .filter-primary-chips {
@@ -2806,12 +2801,14 @@ button, a, [role="button"], input, select {
     overscroll-behavior-x: contain;
     padding: 4px 0;
   }
-  /* Bigger tap targets for chips */
+  /* Bigger tap targets for all chips */
   .filter-chip {
-    min-height: 34px;
-    padding: 6px 14px;
+    min-height: 36px;
+    padding: 7px 14px;
     font-size: 12px;
   }
+  /* Compact filter rows on mobile */
+  .filter-row-wrap { gap: 8px; padding: 2px 0; }
 }
 
 /* 6. Featured first card — fix on very small screens */
