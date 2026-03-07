@@ -2739,3 +2739,102 @@ body.concert-live .player-container {
   .share-modal-overlay { align-items: flex-end; padding: 0; }
   .share-modal-card { width: 100%; border-radius: 20px 20px 0 0; }
 }
+
+/* ==========================================
+   MOBILE OVERHAUL — touch + layout (v16)
+   ========================================== */
+
+/* 1. Remove 300ms tap delay on all interactive elements */
+button, a, [role="button"], input, select {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 2. Touch devices: show hover-only UI at resting state
+      (on desktop these are invisible until hover) */
+@media (hover: none) and (pointer: coarse) {
+  /* Queue + button on cards */
+  .queue-btn {
+    opacity: 1;
+    background: rgba(0,0,0,0.6);
+  }
+  /* Heart button */
+  .heart-btn { opacity: 0.85; }
+  /* Queue panel remove buttons */
+  .queue-item-remove { opacity: 0.65; }
+  /* Card play overlay — subtle on touch so it doesn't obscure thumb */
+  .card-play-overlay { opacity: 0; } /* only show when .card.active */
+}
+
+/* 3. Header — compact on small screens */
+@media (max-width: 520px) {
+  .logo-sub { display: none; }
+  .logo-icon { font-size: 22px; }
+  .logo-text { font-size: 17px; }
+  .header-inner { gap: 8px; }
+  .queue-toggle-btn { padding: 6px 9px; font-size: 14px; gap: 3px; }
+  .auth-signin-btn { padding: 7px 12px; font-size: 12px; }
+}
+
+/* 4. Hero — tighter on phones */
+@media (max-width: 520px) {
+  .hero { padding: 36px 16px 32px; }
+  .hero-badge { font-size: 11px; padding: 5px 14px; margin-bottom: 16px; }
+  .hero-sub { font-size: 14px; margin-bottom: 24px; }
+}
+
+/* 5. Filter bar — stack vertically on mobile so Filters button
+      is on its own row, away from the horizontal-scroll chips area.
+      This prevents iOS from treating taps on the button as scroll intent. */
+@media (max-width: 640px) {
+  .filter-primary-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  /* Filters button first (above genre chips) */
+  .filter-more-btn {
+    order: -1;
+    min-height: 38px;
+    padding: 8px 18px;
+    font-size: 12.5px;
+    align-self: flex-start;
+  }
+  /* Chips fill full width */
+  .filter-primary-chips {
+    width: 100%;
+    overscroll-behavior-x: contain;
+    padding: 4px 0;
+  }
+  /* Bigger tap targets for chips */
+  .filter-chip {
+    min-height: 34px;
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+}
+
+/* 6. Featured first card — fix on very small screens */
+@media (max-width: 480px) {
+  .results-grid .card:first-child {
+    flex-direction: column;
+    min-height: auto;
+  }
+  .results-grid .card:first-child .card-thumb-wrap {
+    width: 100%;
+    min-width: unset;
+    padding-top: 56.25%;
+    height: auto;
+  }
+  .results-grid .card:first-child .card-thumb {
+    position: absolute;
+    top: 0; left: 0;
+  }
+}
+
+/* 7. Search bar — tighter on very small screens */
+@media (max-width: 400px) {
+  .search-bar { padding: 4px 4px 4px 14px; gap: 6px; }
+  .search-input { font-size: 15px; }
+  .search-btn { padding: 10px 14px; font-size: 13px; }
+}
