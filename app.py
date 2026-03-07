@@ -20,12 +20,17 @@ N8N_LYRICS_WEBHOOK  = os.getenv('N8N_LYRICS_WEBHOOK')
 N8N_TRENDING_SECRET = os.getenv('N8N_TRENDING_SECRET', '')
 TRENDING_FILE       = os.path.join(os.path.dirname(__file__), 'trending.json')
 
-# YouTube API key rotation — add YOUTUBE_API_KEY_2, _3 in Railway env vars
+# YouTube API key rotation — add YOUTUBE_API_KEY_2 … _8 in Railway env vars
 # for automatic failover when a key's daily quota is exhausted
 _ALL_YT_KEYS = [k for k in [
     os.getenv('YOUTUBE_API_KEY'),
     os.getenv('YOUTUBE_API_KEY_2'),
     os.getenv('YOUTUBE_API_KEY_3'),
+    os.getenv('YOUTUBE_API_KEY_4'),
+    os.getenv('YOUTUBE_API_KEY_5'),
+    os.getenv('YOUTUBE_API_KEY_6'),
+    os.getenv('YOUTUBE_API_KEY_7'),
+    os.getenv('YOUTUBE_API_KEY_8'),
 ] if k]
 EXHAUSTED_KEYS   = {}        # key → unix timestamp when exhausted
 QUOTA_RESET_SECS = 24 * 3600 # YouTube quota resets every 24 h
