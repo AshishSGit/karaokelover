@@ -198,10 +198,15 @@ def _youtube_search(params):
 
 # Search result cache — avoids burning quota on repeated queries
 SEARCH_CACHE     = {}          # key → {'results': [...], 'ts': float}
-SEARCH_CACHE_TTL = 7 * 24 * 3600  # 7 days (karaoke results are stable)
-SEARCH_CACHE_MAX = 1000            # max entries; evict oldest when full
+SEARCH_CACHE_TTL = 30 * 24 * 3600  # 30 days (karaoke results barely change)
+SEARCH_CACHE_MAX = 5000            # generous limit; ~5MB RAM for 5000 entries
 CACHE_FILE       = os.path.join(os.path.dirname(__file__), 'search_cache.json')
-PREWARM_SONGS    = 50              # top N songs to warm on startup
+PREWARM_SONGS    = 200             # warm top N songs on startup
+
+# In-flight deduplication — prevents thundering herd:
+# if 100 users hit the same uncached query simultaneously, only 1 API call is made
+_INFLIGHT      = {}   # cache_key → threading.Event
+_INFLIGHT_LOCK = threading.Lock()
 
 DEFAULT_TRENDING = [
     {'artist': 'Adele',           'song': 'Hello'},
@@ -545,66 +550,92 @@ def search():
     if cached and now - cached['ts'] < SEARCH_CACHE_TTL:
         return jsonify({'results': cached['results'], 'cached': True})
 
-    params = {
-        'q': f'{query} karaoke',
-        'part': 'snippet',
-        'type': 'video',
-        'videoCategoryId': '10',
-        'maxResults': 20,
-        'order': 'relevance',
-        'videoEmbeddable': 'true',
-        'videoSyndicated': 'true',
-    }
-    if language:
-        params['relevanceLanguage'] = language
-    if region:
-        params['regionCode'] = region
-    # For 2020s, filter by upload date — karaoke uploads of new songs are recent
-    # For older eras, date filtering doesn't help (old songs re-uploaded constantly)
-    ERA_PUBLISHED_AFTER = {
-        '2020s': '2019-12-31T00:00:00Z',
-        '2010s': '2009-12-31T00:00:00Z',
-    }
-    ERA_PUBLISHED_BEFORE = {
-        '2010s': '2020-01-01T00:00:00Z',
-    }
-    if era in ERA_PUBLISHED_AFTER:
-        params['publishedAfter'] = ERA_PUBLISHED_AFTER[era]
-    if era in ERA_PUBLISHED_BEFORE:
-        params['publishedBefore'] = ERA_PUBLISHED_BEFORE[era]
+    # --- In-flight deduplication: if same query is already being fetched, wait ---
+    with _INFLIGHT_LOCK:
+        if cache_key in _INFLIGHT:
+            wait_event = _INFLIGHT[cache_key]
+            is_leader  = False
+        else:
+            wait_event = threading.Event()
+            _INFLIGHT[cache_key] = wait_event
+            is_leader = True
 
-    data, err_msg = _youtube_search(params)
-
-    if data is None:
-        # Serve stale cache if available — better than an error
+    if not is_leader:
+        # Another request is fetching — wait up to 15 s then serve from cache
+        wait_event.wait(timeout=15)
+        cached = SEARCH_CACHE.get(cache_key)
         if cached and cached.get('results'):
             return jsonify({'results': cached['results'], 'cached': True})
-        if err_msg == 'quota':
-            return jsonify({'error': 'Search is temporarily unavailable — daily limit reached. Please try again later.'}), 503
-        return jsonify({'error': err_msg or 'YouTube search failed. Please try again.'}), 500
+        return jsonify({'error': 'Search is temporarily unavailable. Please try again.'}), 503
 
-    results = []
-    for item in data.get('items', []):
-        vid_id = item.get('id', {}).get('videoId')
-        if not vid_id:
-            continue
-        snippet = item['snippet']
-        results.append({
-            'video_id':     vid_id,
-            'title':        _html.unescape(snippet['title']),
-            'channel':      _html.unescape(snippet['channelTitle']),
-            'thumbnail':    snippet['thumbnails']['medium']['url'],
-            'published_at': snippet['publishedAt'],
-        })
+    try:
+        params = {
+            'q': f'{query} karaoke',
+            'part': 'snippet',
+            'type': 'video',
+            'videoCategoryId': '10',
+            'maxResults': 20,
+            'order': 'relevance',
+            'videoEmbeddable': 'true',
+            'videoSyndicated': 'true',
+        }
+        if language:
+            params['relevanceLanguage'] = language
+        if region:
+            params['regionCode'] = region
+        # For 2020s, filter by upload date — karaoke uploads of new songs are recent
+        # For older eras, date filtering doesn't help (old songs re-uploaded constantly)
+        ERA_PUBLISHED_AFTER = {
+            '2020s': '2019-12-31T00:00:00Z',
+            '2010s': '2009-12-31T00:00:00Z',
+        }
+        ERA_PUBLISHED_BEFORE = {
+            '2010s': '2020-01-01T00:00:00Z',
+        }
+        if era in ERA_PUBLISHED_AFTER:
+            params['publishedAfter'] = ERA_PUBLISHED_AFTER[era]
+        if era in ERA_PUBLISHED_BEFORE:
+            params['publishedBefore'] = ERA_PUBLISHED_BEFORE[era]
 
-    # --- Cache store (evict oldest entries if full) ---
-    if len(SEARCH_CACHE) >= SEARCH_CACHE_MAX:
-        oldest = min(SEARCH_CACHE, key=lambda k: SEARCH_CACHE[k]['ts'])
-        del SEARCH_CACHE[oldest]
-    SEARCH_CACHE[cache_key] = {'results': results, 'ts': now}
-    _save_cache()   # persist so restarts don't lose warm cache
+        data, err_msg = _youtube_search(params)
 
-    return jsonify({'results': results})
+        if data is None:
+            # Serve stale cache if available — better than an error
+            if cached and cached.get('results'):
+                return jsonify({'results': cached['results'], 'cached': True})
+            if err_msg == 'quota':
+                return jsonify({'error': 'Search is temporarily unavailable — daily limit reached. Please try again later.'}), 503
+            return jsonify({'error': err_msg or 'YouTube search failed. Please try again.'}), 500
+
+        results = []
+        for item in data.get('items', []):
+            vid_id = item.get('id', {}).get('videoId')
+            if not vid_id:
+                continue
+            snippet = item['snippet']
+            results.append({
+                'video_id':     vid_id,
+                'title':        _html.unescape(snippet['title']),
+                'channel':      _html.unescape(snippet['channelTitle']),
+                'thumbnail':    snippet['thumbnails']['medium']['url'],
+                'published_at': snippet['publishedAt'],
+            })
+
+        # --- Cache store (evict oldest entries if full) ---
+        if len(SEARCH_CACHE) >= SEARCH_CACHE_MAX:
+            oldest = min(SEARCH_CACHE, key=lambda k: SEARCH_CACHE[k]['ts'])
+            del SEARCH_CACHE[oldest]
+        SEARCH_CACHE[cache_key] = {'results': results, 'ts': now}
+        _save_cache()   # persist so restarts don't lose warm cache
+
+        return jsonify({'results': results})
+
+    finally:
+        # Signal any waiting followers and remove from in-flight tracker
+        with _INFLIGHT_LOCK:
+            ev = _INFLIGHT.pop(cache_key, None)
+        if ev:
+            ev.set()
 
 
 @app.route('/api/lyrics')
