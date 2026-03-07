@@ -15,6 +15,7 @@ let shuffleMode    = false;
 let currentVideo   = null;
 let miniVisible    = false;
 let songQueue      = [];
+let _currentUid    = null;
 
 // ---- Feature constants (must be before INIT) ----
 const FAV_MAX = 100;
@@ -145,7 +146,6 @@ initSearchDropdown();
 // ==========================================
 
 const QUERY_MAX = 4;
-let _currentUid  = null;
 
 function queryKey() {
   return _currentUid ? `ks_queries_${_currentUid}` : null;
