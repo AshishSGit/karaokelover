@@ -618,7 +618,7 @@ function onCardClick(card, video, index) {
   playerTitle.textContent   = video.title;
   playerChannel.textContent = video.channel;
   _setPlayerArt(video);
-  playerSection.style.display = 'block';
+  playerSection.style.display = 'flex';
 
   // Update mini player
   updateMiniInfo(video);
@@ -686,7 +686,7 @@ function playAtIndex(index) {
     playerTitle.textContent   = video.title;
     playerChannel.textContent = video.channel || '';
     _setPlayerArt(video);
-    playerSection.style.display = 'block';
+    playerSection.style.display = 'flex';
     updateMiniInfo(video);
     if (ytReady) loadPlayer(video.video_id);
     else pendingVideoId = video.video_id;
@@ -829,7 +829,7 @@ function showResumeBanner() {
     playerTitle.textContent   = v.title;
     playerChannel.textContent = v.channel || '';
     _setPlayerArt(v);
-    playerSection.style.display = 'block';
+    playerSection.style.display = 'flex';
     updateMiniInfo(v);
     showMiniPlayer();
     fetchLyrics(v.title);
@@ -888,7 +888,7 @@ function renderHistory() {
       playerTitle.textContent   = video.title;
       playerChannel.textContent = video.channel;
       _setPlayerArt(video);
-      playerSection.style.display = 'block';
+      playerSection.style.display = 'flex';
       updateMiniInfo(video);
       if (ytReady) loadPlayer(video.video_id);
       else pendingVideoId = video.video_id;
@@ -997,7 +997,7 @@ miniPlayPause.addEventListener('click', () => {
   else ytPlayer.playVideo();
 });
 miniBack.addEventListener('click', () => {
-  if (currentVideo) playerSection.style.display = 'block';
+  if (currentVideo) playerSection.style.display = 'flex';
   // IntersectionObserver (position:fixed always intersects) hides mini player
 });
 
@@ -1195,7 +1195,7 @@ function renderFavorites() {
       playerTitle.textContent   = video.title;
       playerChannel.textContent = video.channel || '';
       _setPlayerArt(video);
-      playerSection.style.display = 'block';
+      playerSection.style.display = 'flex';
       updateMiniInfo(video);
       if (ytReady) loadPlayer(video.video_id);
       else pendingVideoId = video.video_id;
