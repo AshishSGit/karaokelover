@@ -1931,6 +1931,134 @@ body.concert-live .player-container {
   box-shadow: var(--shadow), 0 0 100px rgba(147,51,234,0.45), 0 0 200px rgba(147,51,234,0.15);
 }
 
+/* ==========================================
+   CONCERT VISUALS: CROWD, SMOKE, LASERS, GUITAR
+   ========================================== */
+
+/* --- Crowd Silhouette --- */
+.crowd-silhouette {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 100px; z-index: 8;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1.4s ease;
+}
+body.concert-live .crowd-silhouette { opacity: 1; }
+.crowd-svg { display: block; width: 100%; height: 100%; }
+
+/* --- Smoke Puffs --- */
+.smoke-puffs {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 380px; pointer-events: none; z-index: 6;
+}
+.smoke {
+  position: absolute; bottom: 0; border-radius: 50%;
+  background: radial-gradient(circle, rgba(180,150,255,0.09) 0%, rgba(100,60,180,0.03) 50%, transparent 70%);
+  animation: smoke-drift var(--dur, 16s) ease-out var(--delay, 0s) infinite;
+  opacity: 0;
+}
+.sp1 { left:  5%; width:220px; height:220px; --dur:16s; --delay:0s;   --dx: 25px; }
+.sp2 { left: 18%; width:300px; height:300px; --dur:22s; --delay:-7s;  --dx:-45px; }
+.sp3 { left: 38%; width:260px; height:260px; --dur:18s; --delay:-3s;  --dx: 35px; }
+.sp4 { left: 57%; width:210px; height:210px; --dur:15s; --delay:-10s; --dx:-28px; }
+.sp5 { left: 72%; width:280px; height:280px; --dur:24s; --delay:-13s; --dx: 48px; }
+.sp6 { left: 88%; width:190px; height:190px; --dur:17s; --delay:-5s;  --dx:-18px; }
+
+@keyframes smoke-drift {
+  0%   { transform: translateY(0) translateX(0) scale(0.4); opacity: 0; }
+  12%  { opacity: 0.55; }
+  100% { transform: translateY(-360px) translateX(var(--dx, 20px)) scale(2.8); opacity: 0; }
+}
+body.concert-live .smoke {
+  background: radial-gradient(circle, rgba(200,160,255,0.17) 0%, rgba(147,51,234,0.06) 50%, transparent 70%);
+}
+
+/* --- Laser Beams --- */
+.laser-beams {
+  position: fixed; top: 68px; left: 0; right: 0;
+  pointer-events: none; z-index: 145;
+}
+.laser {
+  position: absolute; top: 0; width: 2px; height: 0;
+  transform-origin: top center;
+  opacity: 0;
+  transition: height 0.9s ease, opacity 0.9s ease;
+  border-radius: 1px;
+}
+body.concert-live .laser { height: 62vh; opacity: 0.72; }
+
+.laser-m {
+  left: 22%;
+  background: linear-gradient(180deg, rgba(255,30,190,0.95) 0%, transparent 100%);
+  box-shadow: 0 0 10px rgba(255,30,190,0.65), 0 0 28px rgba(255,30,190,0.22);
+  animation: laser-sweep-l 9s ease-in-out infinite;
+}
+.laser-c {
+  left: 50%;
+  background: linear-gradient(180deg, rgba(0,230,255,0.95) 0%, transparent 100%);
+  box-shadow: 0 0 10px rgba(0,230,255,0.65), 0 0 28px rgba(0,230,255,0.22);
+  animation: laser-sweep-c 13s ease-in-out infinite;
+  animation-delay: -5s;
+}
+.laser-g {
+  left: 76%;
+  background: linear-gradient(180deg, rgba(60,255,100,0.95) 0%, transparent 100%);
+  box-shadow: 0 0 10px rgba(60,255,100,0.65), 0 0 28px rgba(60,255,100,0.22);
+  animation: laser-sweep-r 11s ease-in-out infinite;
+  animation-delay: -3s;
+}
+@keyframes laser-sweep-l {
+  0%,100% { transform: rotate(-32deg); } 50% { transform: rotate(12deg); }
+}
+@keyframes laser-sweep-c {
+  0%,100% { transform: rotate(6deg);   } 50% { transform: rotate(-6deg); }
+}
+@keyframes laser-sweep-r {
+  0%,100% { transform: rotate(28deg);  } 50% { transform: rotate(-18deg); }
+}
+
+/* --- Guitar Silhouette --- */
+.guitar-wrap {
+  position: fixed; bottom: 92px; left: 6%;
+  width: 70px; height: 220px;
+  transform: rotate(-8deg);
+  pointer-events: none; z-index: 7;
+  opacity: 0.22;
+  filter: drop-shadow(0 0 0px rgba(147,51,234,0));
+  transition: opacity 0.9s, filter 0.9s;
+  animation: guitar-sway 8s ease-in-out infinite;
+}
+body.concert-live .guitar-wrap {
+  opacity: 0.52;
+  filter: drop-shadow(0 0 14px rgba(147,51,234,0.55));
+}
+@keyframes guitar-sway {
+  0%,100% { transform: rotate(-8deg); }
+  50%      { transform: rotate(-5deg); }
+}
+
+/* --- Stage Floor Glow --- */
+.stage-floor-glow {
+  position: fixed; bottom: 97px; left: 0; right: 0;
+  height: 4px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(147,51,234,0.14) 18%,
+    rgba(245,196,66,0.11) 38%,
+    rgba(255,255,255,0.07) 50%,
+    rgba(236,72,153,0.11) 64%,
+    rgba(0,200,255,0.09) 80%,
+    transparent 100%);
+  filter: blur(2px);
+  pointer-events: none; z-index: 7;
+  opacity: 0.45;
+  transition: opacity 0.9s, box-shadow 0.9s;
+}
+body.concert-live .stage-floor-glow {
+  opacity: 1;
+  box-shadow: 0 0 30px rgba(147,51,234,0.22), 0 0 70px rgba(147,51,234,0.07);
+}
+
 /* Mini player stop button */
 .mini-stop-btn {
   background: transparent; border: none;
