@@ -32,8 +32,22 @@ _ALL_YT_KEYS = [k for k in [
     os.getenv('YOUTUBE_API_KEY_7'),
     os.getenv('YOUTUBE_API_KEY_8'),
 ] if k]
-EXHAUSTED_KEYS   = {}        # key → unix timestamp when exhausted
-QUOTA_RESET_SECS = 24 * 3600 # YouTube quota resets every 24 h
+EXHAUSTED_KEYS_FILE = os.path.join(os.path.dirname(__file__), 'exhausted_keys.json')
+QUOTA_RESET_SECS    = 24 * 3600  # YouTube quota resets every 24 h
+
+def _load_exhausted_keys():
+    """Load exhausted key timestamps from disk; drop entries older than 24h."""
+    try:
+        if os.path.exists(EXHAUSTED_KEYS_FILE):
+            with open(EXHAUSTED_KEYS_FILE) as f:
+                raw = json.load(f)
+            now = time.time()
+            return {k: v for k, v in raw.items() if now - v < QUOTA_RESET_SECS}
+    except Exception:
+        pass
+    return {}
+
+EXHAUSTED_KEYS = _load_exhausted_keys()
 
 def _get_active_key():
     """Return first key whose quota hasn't run out (or was exhausted >24h ago)."""
@@ -45,6 +59,11 @@ def _get_active_key():
 
 def _mark_exhausted(key):
     EXHAUSTED_KEYS[key] = time.time()
+    try:
+        with open(EXHAUSTED_KEYS_FILE, 'w') as f:
+            json.dump(EXHAUSTED_KEYS, f)
+    except Exception:
+        pass
 
 
 # ── Persistent cache ────────────────────────────────────────────────────────
