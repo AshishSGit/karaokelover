@@ -17,8 +17,11 @@ let miniVisible    = false;
 let songQueue      = [];
 
 // ---- Feature constants (must be before INIT) ----
-const FAV_KEY = 'ks_favorites';
 const FAV_MAX = 100;
+
+function favKey() {
+  return _currentUid ? `ks_favorites_${_currentUid}` : null;
+}
 
 // ---- Filter state ----
 const MOOD_KEYWORDS = {
@@ -106,6 +109,7 @@ const queuePlay        = document.getElementById('queuePlay');
 const queueClear       = document.getElementById('queueClear');
 const queueClose       = document.getElementById('queueClose');
 const queueList        = document.getElementById('queueList');
+const playerFavBtn     = document.getElementById('playerFavBtn');
 const shareSongBtn     = document.getElementById('shareSongBtn');
 const shareModal       = document.getElementById('shareModal');
 const shareModalClose  = document.getElementById('shareModalClose');
@@ -220,6 +224,7 @@ function initSearchDropdown() {
     if (isSignOut) {
       hideDropdown();
       renderHistory();
+      renderFavorites();
     } else if (user) {
       // Consolidate history from all possible sources into the UID key
       const _read = k => { try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch { return []; } };
@@ -239,6 +244,7 @@ function initSearchDropdown() {
 
       // Show from localStorage immediately (may be empty on first sign-in)
       renderHistory();
+      renderFavorites();
       showResumeBanner();
 
       // Sync from Firestore — then re-show history + banner with full data
@@ -611,6 +617,7 @@ function onCardClick(card, video, index) {
   addToHistory(video);
   fetchLyrics(video.title);
   fetchRecommendations(video.title);
+  updatePlayerFavBtn();
 }
 
 // ==========================================
@@ -674,12 +681,24 @@ function playAtIndex(index) {
     addToHistory(video);
     fetchLyrics(video.title);
     fetchRecommendations(video.title);
+    updatePlayerFavBtn();
   }
 }
 
 // ==========================================
 // CLOSE PLAYER
 // ==========================================
+
+playerFavBtn.addEventListener('click', () => {
+  if (!currentVideo) return;
+  const isNowFaved = toggleFavorite(currentVideo);
+  // Also sync heart btn on the active card in results grid
+  const activeCard = document.querySelector('.card.active');
+  if (activeCard) {
+    const hb = activeCard.querySelector('.heart-btn');
+    if (hb) { hb.classList.toggle('active', isNowFaved); hb.textContent = isNowFaved ? '❤️' : '🤍'; }
+  }
+});
 
 closePlayerBtn.addEventListener('click', () => {
   playerSection.style.display = 'none';
@@ -1030,7 +1049,9 @@ async function fetchTrending() {
 // ==========================================
 
 function getFavorites() {
-  try { return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); }
+  const key = favKey();
+  if (!key) return [];
+  try { return JSON.parse(localStorage.getItem(key) || '[]'); }
   catch { return []; }
 }
 
@@ -1039,6 +1060,8 @@ function isFavorited(video_id) {
 }
 
 function toggleFavorite(video) {
+  const key = favKey();
+  if (!key) { showToast('Sign in to save songs ❤️', ''); return false; }
   let favs = getFavorites();
   const idx = favs.findIndex(v => v.video_id === video.video_id);
   let isNowFaved;
@@ -1052,8 +1075,9 @@ function toggleFavorite(video) {
     isNowFaved = true;
     showToast('❤️ Saved!', 'fav');
   }
-  localStorage.setItem(FAV_KEY, JSON.stringify(favs));
+  localStorage.setItem(key, JSON.stringify(favs));
   renderFavorites();
+  updatePlayerFavBtn();
   return isNowFaved;
 }
 
@@ -1067,13 +1091,17 @@ function renderFavorites() {
     <div class="fav-card" data-id="${escapeHtml(v.video_id)}">
       <img src="${escapeHtml(v.thumbnail)}" alt="${escapeHtml(v.title)}" loading="lazy" />
       <div class="fav-card-title">${escapeHtml(v.title)}</div>
-      <span class="fav-card-heart">❤️</span>
+      <button class="fav-card-heart" title="Remove from saved" type="button">❤️</button>
     </div>
   `).join('');
   favoritesStrip.querySelectorAll('.fav-card').forEach(fc => {
+    const video = favs.find(v => v.video_id === fc.dataset.id);
+    if (!video) return;
+    fc.querySelector('.fav-card-heart').addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleFavorite(video); // re-renders + calls updatePlayerFavBtn
+    });
     fc.addEventListener('click', () => {
-      const video = favs.find(v => v.video_id === fc.dataset.id);
-      if (!video) return;
       currentResults = [video]; currentIndex = 0; currentVideo = video;
       playerTitle.textContent   = video.title;
       playerChannel.textContent = video.channel || '';
@@ -1084,13 +1112,22 @@ function renderFavorites() {
       else pendingVideoId = video.video_id;
       fetchLyrics(video.title);
       addToHistory(video);
+      updatePlayerFavBtn();
     });
   });
   favoritesSection.style.display = 'block';
 }
 
+function updatePlayerFavBtn() {
+  if (!playerFavBtn) return;
+  const faved = currentVideo && isFavorited(currentVideo.video_id);
+  playerFavBtn.textContent = faved ? '❤️ Saved' : '🤍 Save';
+  playerFavBtn.classList.toggle('active', !!faved);
+}
+
 favClearBtn.addEventListener('click', () => {
-  localStorage.removeItem(FAV_KEY);
+  const key = favKey();
+  if (key) localStorage.removeItem(key);
   renderFavorites();
   showToast('Favorites cleared', '');
 });
