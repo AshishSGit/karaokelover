@@ -961,6 +961,7 @@ function showMiniPlayer() {
   miniPlayer.style.display = 'flex';
   miniVisible = true;
   _triggerMiniGlow();
+  _startProgressBar(); // restart interval — hideMiniPlayer() cleared it and reset bar to 0%
 }
 
 function hideMiniPlayer() {
