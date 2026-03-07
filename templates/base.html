@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/css/style.css?v=20" />
+  <link rel="stylesheet" href="/static/css/style.css?v=21" />
   <meta name="google-site-verification" content="JEbL4Ady-ncf3y0xDqyVgUMU6ypR088v8GY-z1q7CWI" />
   {% block seo_head %}
   <link rel="canonical" href="https://www.karaokelover.com/" />
@@ -251,8 +251,9 @@
     </div>
   </section>
 
-  <!-- ========== PLAYER ========== -->
+  <!-- ========== PLAYER MODAL ========== -->
   <section class="player-section" id="playerSection" style="display:none;">
+    <div class="player-modal-backdrop" id="playerBackdrop"></div>
     <div class="section-wrap">
       <div class="player-container">
         <div class="player-art-bg" id="playerArtBg"></div>
@@ -277,10 +278,41 @@
           <div class="player-actions">
             <button class="player-fav-btn" id="playerFavBtn" type="button">🤍 Save</button>
             <button class="share-song-btn" id="shareSongBtn" type="button">↗ Share</button>
-            <button class="close-player-btn" id="closePlayer">✕ Close</button>
+            <button class="close-player-btn" id="closePlayer">⊖ Minimize</button>
           </div>
         </div>
       </div>
+
+      <!-- Lyrics — lives inside the modal card -->
+      <section class="lyrics-section" id="lyricsSection" style="display:none;">
+        <div class="lyrics-card">
+          <div class="lyrics-header">
+            <div class="lyrics-header-left">
+              <span class="lyrics-icon">🎵</span>
+              <div>
+                <h3 class="lyrics-title" id="lyricsTitle">Lyrics</h3>
+                <p class="lyrics-artist" id="lyricsArtist"></p>
+              </div>
+            </div>
+            <button class="lyrics-expand-btn" id="lyricsExpand">⛶ Sing Mode</button>
+          </div>
+          <div class="lyrics-body" id="lyricsBody">
+            <div class="lyrics-loading" id="lyricsLoading">
+              <div class="lyrics-skeleton"></div>
+              <div class="lyrics-skeleton short"></div>
+              <div class="lyrics-skeleton"></div>
+              <div class="lyrics-skeleton medium"></div>
+              <div class="lyrics-skeleton short"></div>
+              <div class="lyrics-skeleton"></div>
+            </div>
+            <div class="lyrics-text" id="lyricsText" style="display:none;"></div>
+            <div class="lyrics-not-found" id="lyricsNotFound" style="display:none;">
+              <span>🎼</span>
+              <p>Lyrics not available for this track.</p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   </section>
 
@@ -292,39 +324,6 @@
         <span class="rec-dot"></span><span class="rec-dot"></span><span class="rec-dot"></span>
       </div>
       <div class="rec-chips" id="recChips"></div>
-    </div>
-  </section>
-
-  <!-- ========== LYRICS ========== -->
-  <section class="lyrics-section" id="lyricsSection" style="display:none;">
-    <div class="section-wrap">
-      <div class="lyrics-card">
-        <div class="lyrics-header">
-          <div class="lyrics-header-left">
-            <span class="lyrics-icon">🎵</span>
-            <div>
-              <h3 class="lyrics-title" id="lyricsTitle">Lyrics</h3>
-              <p class="lyrics-artist" id="lyricsArtist"></p>
-            </div>
-          </div>
-          <button class="lyrics-expand-btn" id="lyricsExpand">⛶ Sing Mode</button>
-        </div>
-        <div class="lyrics-body" id="lyricsBody">
-          <div class="lyrics-loading" id="lyricsLoading">
-            <div class="lyrics-skeleton"></div>
-            <div class="lyrics-skeleton short"></div>
-            <div class="lyrics-skeleton"></div>
-            <div class="lyrics-skeleton medium"></div>
-            <div class="lyrics-skeleton short"></div>
-            <div class="lyrics-skeleton"></div>
-          </div>
-          <div class="lyrics-text" id="lyricsText" style="display:none;"></div>
-          <div class="lyrics-not-found" id="lyricsNotFound" style="display:none;">
-            <span>🎼</span>
-            <p>Lyrics not available for this track.</p>
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -375,7 +374,7 @@
 
   <!-- ========== MINI PLAYER ========== -->
   <div class="mini-player" id="miniPlayer" style="display:none;">
-    <div class="mini-progress"><div class="mini-progress-fill" id="miniProgressFill"></div></div>
+    <div class="mini-progress" id="miniProgress"><div class="mini-progress-fill" id="miniProgressFill"></div></div>
     <img class="mini-thumb" id="miniThumb" src="" alt="" />
     <div class="mini-info">
       <p class="mini-title" id="miniTitle"></p>
@@ -393,6 +392,7 @@
       <button class="mini-btn" id="miniNext" title="Next (→)">⏭</button>
     </div>
     <button class="mini-back-btn" id="miniBack">↑ Player</button>
+    <button class="mini-stop-btn" id="miniStop" title="Stop">✕</button>
   </div>
 
   <!-- ========== TOASTS ========== -->
@@ -492,7 +492,7 @@
 
   {% block auto_search %}{% endblock %}
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="/static/js/script.js?v=45"></script>
+  <script src="/static/js/script.js?v=46"></script>
   <script src="/static/js/auth.js?v=21"></script>
 </body>
 </html>

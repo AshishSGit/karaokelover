@@ -82,6 +82,9 @@ const equalizer      = document.getElementById('equalizer');
 const toastContainer = document.getElementById('toastContainer');
 const miniPlayer       = document.getElementById('miniPlayer');
 const miniProgressFill = document.getElementById('miniProgressFill');
+const miniProgress     = document.getElementById('miniProgress');
+const miniStop         = document.getElementById('miniStop');
+const playerBackdrop   = document.getElementById('playerBackdrop');
 const miniEq           = document.getElementById('miniEq');
 const recSection     = document.getElementById('recSection');
 const recChips       = document.getElementById('recChips');
@@ -615,7 +618,6 @@ function onCardClick(card, video, index) {
   playerChannel.textContent = video.channel;
   _setPlayerArt(video);
   playerSection.style.display = 'block';
-  playerSection.querySelector('.section-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   // Update mini player
   updateMiniInfo(video);
@@ -684,7 +686,6 @@ function playAtIndex(index) {
     playerChannel.textContent = video.channel || '';
     _setPlayerArt(video);
     playerSection.style.display = 'block';
-    playerSection.querySelector('.section-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
     updateMiniInfo(video);
     if (ytReady) loadPlayer(video.video_id);
     else pendingVideoId = video.video_id;
@@ -711,22 +712,34 @@ playerFavBtn.addEventListener('click', () => {
 });
 
 closePlayerBtn.addEventListener('click', () => {
+  // Minimize: hide modal overlay, keep video playing → MutationObserver shows mini player
+  playerSection.style.display = 'none';
+});
+
+// Backdrop click = same as minimize
+playerBackdrop.addEventListener('click', () => {
+  playerSection.style.display = 'none';
+});
+
+// Mini-stop: actually stop everything
+miniStop.addEventListener('click', () => {
+  if (ytPlayer) ytPlayer.stopVideo();
+  currentVideo = null;
+  hideMiniPlayer();
   playerSection.style.display = 'none';
   lyricsSection.style.display = 'none';
   equalizer.classList.remove('playing');
   playerContainer.classList.remove('playing');
   if (playerArtBg) playerArtBg.style.backgroundImage = '';
   if (playerArtThumb) { playerArtThumb.style.backgroundImage = ''; playerArtThumb.classList.remove('loaded'); }
-  hideMiniPlayer();
-  if (ytPlayer) ytPlayer.stopVideo();
   document.querySelectorAll('.card.active').forEach(c => {
     c.classList.remove('active');
     const ov = c.querySelector('.card-play-overlay');
     if (ov) ov.innerHTML = '▶';
   });
-  currentVideo = null;
   renderHistory();
   renderFavorites();
+  updatePlayerFavBtn();
 });
 
 // ==========================================
@@ -858,9 +871,15 @@ function renderHistory() {
     <div class="history-card" data-id="${escapeHtml(v.video_id)}">
       <img src="${escapeHtml(v.thumbnail)}" alt="${escapeHtml(v.title)}" loading="lazy" />
       <div class="history-card-title">${escapeHtml(v.title)}</div>
+      <button class="strip-queue-btn" title="Add to queue" type="button">＋</button>
     </div>
   `).join('');
   historyStrip.querySelectorAll('.history-card').forEach(hc => {
+    hc.querySelector('.strip-queue-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const video = hist.find(v => v.video_id === hc.dataset.id);
+      if (video) addToQueue(video);
+    });
     hc.addEventListener('click', () => {
       const video = hist.find(v => v.video_id === hc.dataset.id);
       if (!video) return;
@@ -870,7 +889,6 @@ function renderHistory() {
       _setPlayerArt(video);
       playerSection.style.display = 'block';
       updateMiniInfo(video);
-      showMiniPlayer();
       if (ytReady) loadPlayer(video.video_id);
       else pendingVideoId = video.video_id;
       fetchLyrics(video.title);
@@ -961,7 +979,9 @@ const playerSectionObserver = new MutationObserver(() => {
     playerObserver.observe(playerSection);
   } else {
     playerObserver.unobserve(playerSection);
-    hideMiniPlayer();
+    // Modal closed — show mini player if song is still loaded
+    if (currentVideo) showMiniPlayer();
+    else hideMiniPlayer();
   }
 });
 playerSectionObserver.observe(playerSection, { attributes: true, attributeFilter: ['style'] });
@@ -976,7 +996,19 @@ miniPlayPause.addEventListener('click', () => {
   else ytPlayer.playVideo();
 });
 miniBack.addEventListener('click', () => {
-  playerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (currentVideo) playerSection.style.display = 'block';
+  // IntersectionObserver (position:fixed always intersects) hides mini player
+});
+
+// Seekable progress bar: click to seek
+miniProgress.addEventListener('click', (e) => {
+  if (!ytPlayer || typeof ytPlayer.getDuration !== 'function') return;
+  try {
+    const rect = miniProgress.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const duration = ytPlayer.getDuration();
+    if (duration > 0) ytPlayer.seekTo(ratio * duration, true);
+  } catch { /* ytPlayer not ready */ }
 });
 
 // ==========================================
@@ -1143,6 +1175,7 @@ function renderFavorites() {
       <img src="${escapeHtml(v.thumbnail)}" alt="${escapeHtml(v.title)}" loading="lazy" />
       <div class="fav-card-title">${escapeHtml(v.title)}</div>
       <button class="fav-card-heart" title="Remove from saved" type="button">❤️</button>
+      <button class="strip-queue-btn" title="Add to queue" type="button">＋</button>
     </div>
   `).join('');
   favoritesStrip.querySelectorAll('.fav-card').forEach(fc => {
@@ -1152,6 +1185,10 @@ function renderFavorites() {
       e.stopPropagation();
       toggleFavorite(video); // re-renders + calls updatePlayerFavBtn
     });
+    fc.querySelector('.strip-queue-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      addToQueue(video);
+    });
     fc.addEventListener('click', () => {
       currentResults = [video]; currentIndex = 0; currentVideo = video;
       playerTitle.textContent   = video.title;
@@ -1159,7 +1196,6 @@ function renderFavorites() {
       _setPlayerArt(video);
       playerSection.style.display = 'block';
       updateMiniInfo(video);
-      showMiniPlayer();
       if (ytReady) loadPlayer(video.video_id);
       else pendingVideoId = video.video_id;
       fetchLyrics(video.title);

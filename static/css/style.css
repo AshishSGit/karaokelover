@@ -553,6 +553,9 @@ header, section, footer, .loading-overlay,
   display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px;
 }
 
+.history-card, .fav-card {
+  position: relative;
+}
 .history-card {
   flex-shrink: 0; width: 175px; cursor: pointer;
   border-radius: 12px; overflow: hidden;
@@ -571,21 +574,79 @@ header, section, footer, .loading-overlay,
   font-size: 12px; padding: 9px 10px 10px; line-height: 1.45; color: var(--text);
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
+/* + queue button on history and fav strip cards */
+.strip-queue-btn {
+  position: absolute; top: 6px; left: 6px;
+  background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.8); font-size: 15px; font-weight: 700;
+  width: 26px; height: 26px; border-radius: 50%;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  line-height: 1; padding: 0;
+  opacity: 0; transition: opacity 0.2s ease, background 0.2s ease, transform 0.15s ease;
+}
+.history-card:hover .strip-queue-btn,
+.fav-card:hover .strip-queue-btn { opacity: 1; }
+.strip-queue-btn:hover { background: rgba(147,51,234,0.7); color: #fff; transform: scale(1.12); }
+@media (hover: none) and (pointer: coarse) {
+  .strip-queue-btn { opacity: 0.75; }
+}
 
 /* ==========================================
    PLAYER SECTION
    ========================================== */
 
-.player-section { padding: 32px 0 0; animation: fade-up 0.35s ease; }
+/* ===== PLAYER MODAL OVERLAY ===== */
+.player-section {
+  position: fixed; inset: 0; z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+
+@keyframes modal-backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes modal-card-up {
+  from { opacity: 0; transform: translateY(48px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.player-modal-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.84);
+  backdrop-filter: blur(18px) saturate(160%);
+  animation: modal-backdrop-in 0.28s ease;
+  cursor: pointer;
+}
+
+/* Modal card — the inner scrollable container */
+.player-section > .section-wrap {
+  position: relative; z-index: 1;
+  max-width: 720px; width: 100%;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto; overflow-x: hidden;
+  overscroll-behavior: contain;
+  background: rgba(9,9,20,0.98);
+  border: 1px solid rgba(147,51,234,0.2);
+  border-radius: 24px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.9), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.06);
+  padding: 0;
+  margin: 0;
+  animation: modal-card-up 0.42s cubic-bezier(0.34,1.4,0.64,1);
+}
+/* Scrollbar inside modal */
+.player-section > .section-wrap::-webkit-scrollbar { width: 4px; }
+.player-section > .section-wrap::-webkit-scrollbar-track { background: transparent; }
+.player-section > .section-wrap::-webkit-scrollbar-thumb { background: rgba(147,51,234,0.3); border-radius: 4px; }
 
 .player-container {
-  background: var(--glass);
-  backdrop-filter: blur(24px) saturate(180%);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius);
+  background: transparent;
+  backdrop-filter: none;
+  border: none;
+  border-radius: 0;
   overflow: hidden;
-  display: grid; grid-template-columns: 1fr 300px;
-  box-shadow: var(--shadow), var(--glow-hot);
+  display: flex; flex-direction: column;
+  box-shadow: none;
   position: relative;
 }
 
@@ -626,6 +687,7 @@ header, section, footer, .loading-overlay,
 .player-wrap {
   position: relative; z-index: 1;
   width: 100%; padding-top: 56.25%; background: #000;
+  border-radius: 22px 22px 0 0; overflow: hidden;
 }
 .player-wrap iframe,
 .player-wrap #ytPlayer {
@@ -635,10 +697,29 @@ header, section, footer, .loading-overlay,
 
 .player-info {
   position: relative; z-index: 1;
-  padding: 20px 20px 24px;
+  padding: 20px 24px 24px;
   display: flex; flex-direction: column; gap: 12px;
-  border-left: 1px solid var(--border);
-  background: rgba(0,0,0,0.08);
+  border-left: none;
+  border-top: none;
+  background: transparent;
+}
+
+/* Lyrics inside modal card */
+.player-section .lyrics-section {
+  border-top: 1px solid rgba(147,51,234,0.12);
+  padding: 0 24px 24px;
+}
+.player-section .lyrics-card {
+  background: transparent; border: none; box-shadow: none; padding: 0; border-radius: 0;
+}
+
+/* Mobile: bottom sheet */
+@media (max-width: 640px) {
+  .player-section { align-items: flex-end; padding: 0; }
+  .player-section > .section-wrap {
+    border-radius: 22px 22px 0 0; max-height: 94vh; max-width: 100%;
+  }
+  .player-wrap { border-radius: 20px 20px 0 0; }
 }
 
 .now-playing-badge {
@@ -1323,8 +1404,6 @@ header, section, footer, .loading-overlay,
 
 @media (max-width: 960px) {
   .results-grid { grid-template-columns: repeat(3, 1fr); }
-  .player-container { grid-template-columns: 1fr; }
-  .player-info { border-left: none; border-top: 1px solid var(--border); }
 }
 
 @media (max-width: 640px) {
@@ -1814,23 +1893,25 @@ body.concert-live .player-container {
   box-shadow: var(--shadow), 0 0 80px rgba(147,51,234,0.35);
 }
 
-/* ---- Player section top neon accent ---- */
-
-.player-section {
-  position: relative;
+/* Mini player stop button */
+.mini-stop-btn {
+  background: transparent; border: none;
+  color: rgba(255,255,255,0.25); font-size: 14px;
+  width: 28px; height: 28px; border-radius: 50%;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: color var(--transition), background var(--transition);
+  padding: 0;
 }
-.player-section::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 70%; height: 1px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(147,51,234,0.5) 30%,
-    rgba(236,72,153,0.5) 70%,
-    transparent 100%);
-  box-shadow: 0 0 16px rgba(147,51,234,0.3);
+.mini-stop-btn:hover { color: #f87171; background: rgba(248,113,113,0.12); }
+
+/* Seekable mini progress bar */
+.mini-progress {
+  cursor: pointer;
+  transition: height 0.15s ease;
+}
+.mini-progress:hover { height: 5px; }
+.mini-progress:hover .mini-progress-fill {
+  box-shadow: 0 0 16px rgba(192,132,252,0.95);
 }
 
 /* ---- Search bar — warm spotlight on focus ---- */
