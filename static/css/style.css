@@ -582,7 +582,7 @@ header, section, footer, .loading-overlay,
   width: 26px; height: 26px; border-radius: 50%;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   line-height: 1; padding: 0;
-  opacity: 0; transition: opacity 0.2s ease, background 0.2s ease, transform 0.15s ease;
+  opacity: 0.45; transition: opacity 0.2s ease, background 0.2s ease, transform 0.15s ease;
 }
 .history-card:hover .strip-queue-btn,
 .fav-card:hover .strip-queue-btn { opacity: 1; }
@@ -2638,7 +2638,7 @@ body.concert-live .player-container {
   border-radius: 7px; width: 26px; height: 22px;
   font-size: 15px; font-weight: 700; line-height: 1;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
-  opacity: 0;
+  opacity: 0.4;
   transition: opacity var(--transition), background var(--transition), transform var(--transition);
   pointer-events: auto;
 }
