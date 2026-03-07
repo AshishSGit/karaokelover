@@ -206,6 +206,9 @@ function initSearchDropdown() {
   searchInput.addEventListener('focus', showDropdown);
   searchInput.addEventListener('input', () => renderDropdown(searchInput.value.trim()));
   searchInput.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideDropdown(); });
+  // On mobile: blur fires when user taps outside the input; delay 200ms so
+  // mousedown on a dropdown item (which uses e.preventDefault to keep focus) fires first
+  searchInput.addEventListener('blur', () => setTimeout(hideDropdown, 200));
   sdClear.addEventListener('click', () => {
     const key = queryKey();
     if (key) localStorage.removeItem(key);

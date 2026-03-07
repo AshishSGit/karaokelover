@@ -323,11 +323,12 @@ header, section, footer, .loading-overlay,
 }
 .search-dropdown.open { display: block; }
 /* Hide filter bar + popular section when search history dropdown is open */
+/* NOTE: no pointer-events:none — visibility:hidden alone prevents interaction
+   and pointer-events:none on a parent blocks child taps on mobile (iOS bug) */
 .search-form.dropdown-open ~ .filter-bar,
 .search-form.dropdown-open ~ .quick-picks {
   opacity: 0 !important;
   visibility: hidden !important;
-  pointer-events: none;
   transition: opacity 0.15s ease, visibility 0.15s ease;
 }
 .filter-bar, .quick-picks {
