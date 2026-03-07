@@ -13,9 +13,10 @@ let currentResults = [];
 let currentIndex   = -1;
 let shuffleMode    = false;
 let currentVideo   = null;
-let miniVisible    = false;
-let songQueue      = [];
-let _currentUid    = null;
+let miniVisible      = false;
+let songQueue        = [];
+let _currentUid      = null;
+let progressInterval = null;
 
 // ---- Feature constants (must be before INIT) ----
 const FAV_MAX = 100;
@@ -79,7 +80,9 @@ const errorState     = document.getElementById('errorState');
 const errorMsg       = document.getElementById('errorMsg');
 const equalizer      = document.getElementById('equalizer');
 const toastContainer = document.getElementById('toastContainer');
-const miniPlayer     = document.getElementById('miniPlayer');
+const miniPlayer       = document.getElementById('miniPlayer');
+const miniProgressFill = document.getElementById('miniProgressFill');
+const miniEq           = document.getElementById('miniEq');
 const recSection     = document.getElementById('recSection');
 const recChips       = document.getElementById('recChips');
 const recLoading     = document.getElementById('recLoading');
@@ -462,6 +465,13 @@ function onPlayerStateChange(e) {
   document.body.classList.toggle('concert-live', playing);
   miniPlayPause.textContent = playing ? '⏸' : '▶';
 
+  // EQ bars: animate when playing, freeze when paused/stopped
+  if (miniEq) miniEq.classList.toggle('paused', !playing);
+
+  // Progress bar: poll when playing, pause otherwise
+  if (playing) _startProgressBar();
+  else if (e.data !== YT.PlayerState.BUFFERING) _stopProgressBar();
+
   if (e.data === YT.PlayerState.ENDED) playNext();
 }
 
@@ -807,12 +817,10 @@ function showResumeBanner() {
     _setPlayerArt(v);
     playerSection.style.display = 'block';
     updateMiniInfo(v);
+    showMiniPlayer();
     fetchLyrics(v.title);
-    waitForYtReady().then(() => {
-      loadPlayer(v.video_id);
-      playerSection.querySelector('.section-wrap')
-        .scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+    updatePlayerFavBtn();
+    waitForYtReady().then(() => loadPlayer(v.video_id));
   };
 
   resumeBannerDismiss.onclick = () => {
@@ -862,10 +870,12 @@ function renderHistory() {
       _setPlayerArt(video);
       playerSection.style.display = 'block';
       updateMiniInfo(video);
+      showMiniPlayer();
       if (ytReady) loadPlayer(video.video_id);
       else pendingVideoId = video.video_id;
       fetchLyrics(video.title);
       addToHistory(video);
+      updatePlayerFavBtn();
     });
   });
   historySection.style.display = 'block';
@@ -876,20 +886,61 @@ function renderHistory() {
 // ==========================================
 
 function updateMiniInfo(video) {
-  miniTitle.textContent   = video.title;
-  miniChannel.textContent = video.channel;
-  if (video.thumbnail) miniThumb.src = video.thumbnail;
+  const alreadyVisible = miniVisible;
+  if (alreadyVisible) {
+    // Fade info out, swap, fade back in
+    miniPlayer.classList.add('song-changing');
+    setTimeout(() => {
+      miniTitle.textContent   = video.title;
+      miniChannel.textContent = video.channel || '';
+      if (video.thumbnail) miniThumb.src = video.thumbnail;
+      miniPlayer.classList.remove('song-changing');
+      _triggerMiniGlow();
+    }, 160);
+  } else {
+    miniTitle.textContent   = video.title;
+    miniChannel.textContent = video.channel || '';
+    if (video.thumbnail) miniThumb.src = video.thumbnail;
+  }
+  _startProgressBar();
+}
+
+function _triggerMiniGlow() {
+  miniPlayer.classList.remove('song-loaded');
+  void miniPlayer.offsetWidth; // reflow to restart animation
+  miniPlayer.classList.add('song-loaded');
+  setTimeout(() => miniPlayer.classList.remove('song-loaded'), 1000);
+}
+
+function _startProgressBar() {
+  clearInterval(progressInterval);
+  progressInterval = setInterval(() => {
+    if (!miniProgressFill || !ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
+    try {
+      const curr = ytPlayer.getCurrentTime();
+      const dur  = ytPlayer.getDuration();
+      if (dur > 0) miniProgressFill.style.width = ((curr / dur) * 100).toFixed(2) + '%';
+    } catch { /* ytPlayer not ready */ }
+  }, 500);
+}
+
+function _stopProgressBar() {
+  clearInterval(progressInterval);
+  progressInterval = null;
 }
 
 function showMiniPlayer() {
   if (!currentVideo) return;
   miniPlayer.style.display = 'flex';
   miniVisible = true;
+  _triggerMiniGlow();
 }
 
 function hideMiniPlayer() {
   miniPlayer.style.display = 'none';
   miniVisible = false;
+  _stopProgressBar();
+  if (miniProgressFill) miniProgressFill.style.width = '0%';
 }
 
 // IntersectionObserver: show mini player when main player is out of view
@@ -1108,6 +1159,7 @@ function renderFavorites() {
       _setPlayerArt(video);
       playerSection.style.display = 'block';
       updateMiniInfo(video);
+      showMiniPlayer();
       if (ytReady) loadPlayer(video.video_id);
       else pendingVideoId = video.video_id;
       fetchLyrics(video.title);
