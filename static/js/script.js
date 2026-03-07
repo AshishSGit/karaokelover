@@ -618,7 +618,7 @@ function onCardClick(card, video, index) {
   playerTitle.textContent   = video.title;
   playerChannel.textContent = video.channel;
   _setPlayerArt(video);
-  playerSection.style.display = 'flex';
+  playerSection.style.display = 'block';
 
   // Update mini player
   updateMiniInfo(video);
@@ -686,7 +686,7 @@ function playAtIndex(index) {
     playerTitle.textContent   = video.title;
     playerChannel.textContent = video.channel || '';
     _setPlayerArt(video);
-    playerSection.style.display = 'flex';
+    playerSection.style.display = 'block';
     updateMiniInfo(video);
     if (ytReady) loadPlayer(video.video_id);
     else pendingVideoId = video.video_id;
@@ -713,14 +713,12 @@ playerFavBtn.addEventListener('click', () => {
 });
 
 closePlayerBtn.addEventListener('click', () => {
-  // Minimize: hide modal overlay, keep video playing → MutationObserver shows mini player
-  playerSection.style.display = 'none';
+  // Scroll back to search bar — video keeps playing, mini player appears via IntersectionObserver
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// Backdrop click = same as minimize
-playerBackdrop.addEventListener('click', () => {
-  playerSection.style.display = 'none';
-});
+// Backdrop is hidden in stage mode; no-op
+playerBackdrop.addEventListener('click', () => {});
 
 // Mini-stop: actually stop everything
 miniStop.addEventListener('click', () => {
@@ -829,7 +827,7 @@ function showResumeBanner() {
     playerTitle.textContent   = v.title;
     playerChannel.textContent = v.channel || '';
     _setPlayerArt(v);
-    playerSection.style.display = 'flex';
+    playerSection.style.display = 'block';
     updateMiniInfo(v);
     showMiniPlayer();
     fetchLyrics(v.title);
@@ -888,7 +886,7 @@ function renderHistory() {
       playerTitle.textContent   = video.title;
       playerChannel.textContent = video.channel;
       _setPlayerArt(video);
-      playerSection.style.display = 'flex';
+      playerSection.style.display = 'block';
       updateMiniInfo(video);
       if (ytReady) loadPlayer(video.video_id);
       else pendingVideoId = video.video_id;
@@ -997,8 +995,8 @@ miniPlayPause.addEventListener('click', () => {
   else ytPlayer.playVideo();
 });
 miniBack.addEventListener('click', () => {
-  if (currentVideo) playerSection.style.display = 'flex';
-  // IntersectionObserver (position:fixed always intersects) hides mini player
+  // Scroll to the stage (it's already visible in the page flow)
+  if (currentVideo) playerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
 // Seekable progress bar: click to seek
@@ -1195,7 +1193,7 @@ function renderFavorites() {
       playerTitle.textContent   = video.title;
       playerChannel.textContent = video.channel || '';
       _setPlayerArt(video);
-      playerSection.style.display = 'flex';
+      playerSection.style.display = 'block';
       updateMiniInfo(video);
       if (ytReady) loadPlayer(video.video_id);
       else pendingVideoId = video.video_id;
