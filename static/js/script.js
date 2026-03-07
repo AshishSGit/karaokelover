@@ -976,9 +976,11 @@ const playerObserver = new IntersectionObserver((entries) => {
 const playerSectionObserver = new MutationObserver(() => {
   if (playerSection.style.display !== 'none') {
     playerObserver.observe(playerSection);
+    // Immediately hide mini player and scroll to the stage
+    hideMiniPlayer();
+    setTimeout(() => playerSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   } else {
     playerObserver.unobserve(playerSection);
-    // Modal closed — show mini player if song is still loaded
     if (currentVideo) showMiniPlayer();
     else hideMiniPlayer();
   }

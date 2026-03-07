@@ -654,23 +654,13 @@ header, section, footer, .loading-overlay,
 /* sticky needs to override relative */
 .player-section > .section-wrap > .player-container { position: sticky; top: 80px; }
 
-/* Cinematic blurred album art — fills the full stage behind all content */
+/* Cinematic blurred album art — stays inside player-container card */
 .player-art-bg {
-  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  z-index: 0;
+  position: absolute; inset: 0; z-index: 0;
   background-size: cover; background-position: center;
-  filter: blur(80px) brightness(0.1) saturate(2.5);
-  transform: scale(1.3);
-  transition: background-image 0.8s ease;
-  pointer-events: none;
-}
-
-/* Dark overlay on top of art-bg so text stays readable */
-.player-section::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(3,3,10,0.88) 0%, rgba(6,3,16,0.94) 100%);
-  z-index: 0;
+  filter: blur(60px) brightness(0.22) saturate(2);
+  transform: scale(1.25);
+  transition: background-image 0.7s ease;
   pointer-events: none;
 }
 
