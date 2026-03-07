@@ -20,6 +20,7 @@ let progressInterval = null;
 
 // ---- Feature constants (must be before INIT) ----
 const FAV_MAX = 100;
+const QUEUE_KEY = 'ks_queue';
 
 function favKey() {
   return _currentUid ? `ks_favorites_${_currentUid}` : null;
@@ -144,6 +145,7 @@ const resumeBannerDismiss = document.getElementById('resumeBannerDismiss');
 initParticles();
 renderHistory();
 renderFavorites();
+loadQueue();
 fetchTrending();
 initFilters();
 initSearchDropdown();
@@ -699,6 +701,8 @@ function playAtIndex(index) {
     fetchRecommendations(video.title);
     updatePlayerFavBtn();
   }
+  // Refresh now-playing highlight in queue panel if open
+  if (queuePanel && queuePanel.style.display !== 'none') renderQueueList();
 }
 
 // ==========================================
@@ -1232,23 +1236,35 @@ favClearBtn.addEventListener('click', () => {
 // QUEUE
 // ==========================================
 
+function saveQueue() {
+  localStorage.setItem(QUEUE_KEY, JSON.stringify(songQueue));
+}
+
+function loadQueue() {
+  try { songQueue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]'); } catch(e) { songQueue = []; }
+  updateQueueUI();
+}
+
 function addToQueue(video) {
   if (songQueue.some(v => v.video_id === video.video_id)) {
     showToast('Already in queue', ''); return;
   }
   songQueue.push(video);
   updateQueueUI();
+  saveQueue();
   showToast(`🎵 Added to queue (${songQueue.length})`, 'success');
 }
 
 function removeFromQueue(video_id) {
   songQueue = songQueue.filter(v => v.video_id !== video_id);
   updateQueueUI();
+  saveQueue();
 }
 
 function clearQueue() {
   songQueue = [];
   updateQueueUI();
+  saveQueue();
 }
 
 function updateQueueUI() {
@@ -1266,17 +1282,19 @@ function renderQueueList() {
     queueList.innerHTML = '<p class="queue-empty-msg">Your queue is empty.<br>Click ＋ on any song card to add it.</p>';
     return;
   }
-  queueList.innerHTML = songQueue.map((v, i) => `
-    <div class="queue-item" data-idx="${i}">
-      <span class="queue-item-num">${i + 1}</span>
+  queueList.innerHTML = songQueue.map((v, i) => {
+    const isPlaying = currentVideo && v.video_id === currentVideo.video_id;
+    return `
+    <div class="queue-item${isPlaying ? ' queue-item--playing' : ''}" data-idx="${i}">
+      <span class="queue-item-num">${isPlaying ? '▶' : i + 1}</span>
       <img class="queue-item-thumb" src="${escapeHtml(v.thumbnail)}" alt="" loading="lazy" />
       <div class="queue-item-info">
         <div class="queue-item-title">${escapeHtml(v.title)}</div>
-        <div class="queue-item-channel">${escapeHtml(v.channel || '')}</div>
+        <div class="queue-item-channel">${escapeHtml(v.channel || '')}${isPlaying ? '<span class="queue-now-playing-tag">NOW PLAYING</span>' : ''}</div>
       </div>
       <button class="queue-item-remove" data-id="${escapeHtml(v.video_id)}" title="Remove" type="button">✕</button>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
   queueList.querySelectorAll('.queue-item-remove').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();

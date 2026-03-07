@@ -2792,6 +2792,29 @@ body.concert-live .player-container {
 .queue-item:hover .queue-item-remove { opacity: 1; }
 .queue-item-remove:hover { color: #EC4899; background: rgba(236,72,153,0.12); }
 
+/* Now-playing row */
+.queue-item--playing {
+  background: rgba(147,51,234,0.1);
+  border-left: 2px solid rgba(147,51,234,0.65);
+}
+.queue-item--playing .queue-item-num {
+  color: #a78bfa;
+  font-size: 14px;
+}
+.queue-now-playing-tag {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  color: #a78bfa;
+  background: rgba(147,51,234,0.18);
+  border-radius: 4px;
+  padding: 1px 5px;
+  margin-left: 6px;
+  vertical-align: middle;
+  text-transform: uppercase;
+}
+
 /* ==========================================
    SHARE BUTTON (in player)
    ========================================== */
