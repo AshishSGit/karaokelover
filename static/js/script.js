@@ -898,6 +898,7 @@ function renderHistory() {
       fetchLyrics(video.title);
       addToHistory(video);
       updatePlayerFavBtn();
+      setTimeout(() => playerSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
     });
   });
   historySection.style.display = 'block';
@@ -1207,6 +1208,7 @@ function renderFavorites() {
       fetchLyrics(video.title);
       addToHistory(video);
       updatePlayerFavBtn();
+      setTimeout(() => playerSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
     });
   });
   favoritesSection.style.display = 'block';
