@@ -322,16 +322,18 @@ header, section, footer, .loading-overlay,
   animation: sd-in 0.18s cubic-bezier(0.34,1.4,0.64,1);
 }
 .search-dropdown.open { display: block; }
-/* Hide popular section (quick-picks) when search history dropdown is open */
-/* filter-bar is NOT hidden — hiding it with visibility:hidden blocks mobile taps
-   even when the dropdown closes (iOS drops events on visibility:hidden elements) */
-.search-form.dropdown-open ~ .quick-picks {
+/* Hide quick-picks + filter-bar when search history dropdown is open.
+   Use opacity+pointer-events (NOT visibility:hidden) — visibility:hidden
+   causes iOS to silently drop tap events on the element even after it becomes
+   visible again, permanently breaking the filter chips on mobile. */
+.search-form.dropdown-open ~ .quick-picks,
+.search-form.dropdown-open ~ .filter-bar {
   opacity: 0 !important;
-  visibility: hidden !important;
-  transition: opacity 0.15s ease, visibility 0.15s ease;
+  pointer-events: none !important;
+  transition: opacity 0.15s ease;
 }
 .quick-picks {
-  transition: opacity 0.15s ease, visibility 0.15s ease;
+  transition: opacity 0.15s ease;
   visibility: visible;
 }
 @keyframes sd-in {
