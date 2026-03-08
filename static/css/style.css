@@ -713,6 +713,49 @@ header, section, footer, .loading-overlay,
   background: transparent;
 }
 
+/* ── Compact player control bar ──────────────────────────── */
+.player-bar {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 18px 12px;
+  background: linear-gradient(180deg, rgba(14,9,32,0.9) 0%, rgba(8,5,18,0.97) 100%);
+  border-top: 1px solid rgba(147,51,234,0.18);
+}
+
+/* Shimmer line separating video from bar */
+.player-bar::before {
+  content: '';
+  position: absolute; top: -1px; left: 8%; right: 8%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(192,132,252,0.5), rgba(249,168,212,0.35), rgba(192,132,252,0.5), transparent);
+  pointer-events: none;
+}
+body.concert-live .player-bar::before {
+  background: linear-gradient(90deg, transparent, rgba(192,132,252,0.8), rgba(249,168,212,0.6), rgba(192,132,252,0.8), transparent);
+  filter: blur(0.5px);
+}
+
+.player-bar-info { flex: 1; min-width: 0; }
+.player-bar .player-title {
+  font-size: 14px; font-weight: 700; margin: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  line-height: 1.35;
+}
+.player-bar .player-channel {
+  font-size: 11px; margin: 2px 0 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.player-bar-nav { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.player-bar-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+
+/* Icon-only save/share in bar */
+.player-bar .player-fav-btn,
+.player-bar .share-song-btn {
+  width: 34px; height: 34px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; font-size: 14px;
+}
+.player-bar .close-player-btn { padding: 7px 14px; font-size: 12px; }
+
 /* Right column — lyrics card, sticky and internally scrollable */
 .player-section .lyrics-section {
   position: sticky; top: 80px;
