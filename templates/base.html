@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/css/style.css?v=30" />
+  <link rel="stylesheet" href="/static/css/style.css?v=31" />
   <meta name="google-site-verification" content="JEbL4Ady-ncf3y0xDqyVgUMU6ypR088v8GY-z1q7CWI" />
   {% block seo_head %}
   <link rel="canonical" href="https://www.karaokelover.com/" />
@@ -72,19 +72,71 @@
       <div class="laser laser-c"></div>
       <div class="laser laser-g"></div>
     </div>
-    <!-- Guitar silhouette -->
+    <!-- Electric guitar (Stratocaster) silhouette -->
     <div class="guitar-wrap">
-      <svg class="guitar-svg" viewBox="0 0 70 220" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect x="30" y="0" width="10" height="90" rx="3" fill="rgba(60,30,90,0.55)"/>
-        <rect x="24" y="0" width="22" height="14" rx="3" fill="rgba(60,30,90,0.55)"/>
-        <ellipse cx="35" cy="120" rx="24" ry="28" fill="rgba(60,30,90,0.55)"/>
-        <ellipse cx="35" cy="175" rx="32" ry="38" fill="rgba(60,30,90,0.55)"/>
-        <circle cx="35" cy="165" r="10" fill="rgba(4,2,12,0.6)"/>
-        <line x1="33" y1="14" x2="33" y2="148" stroke="rgba(200,170,255,0.25)" stroke-width="0.6"/>
-        <line x1="35" y1="14" x2="35" y2="148" stroke="rgba(200,170,255,0.25)" stroke-width="0.6"/>
-        <line x1="37" y1="14" x2="37" y2="148" stroke="rgba(200,170,255,0.25)" stroke-width="0.6"/>
+      <svg class="guitar-svg" viewBox="0 0 70 225" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Headstock (Fender paddle style, tapered) -->
+        <path d="M29,0 L41,0 Q47,0 47,8 L47,18 L23,18 L23,8 Q23,0 29,0 Z" fill="rgba(60,30,90,0.6)"/>
+        <!-- Tuner pegs — 3 per side -->
+        <rect x="14" y="3"  width="10" height="3" rx="1.5" fill="rgba(60,30,90,0.6)"/>
+        <rect x="14" y="8"  width="10" height="3" rx="1.5" fill="rgba(60,30,90,0.6)"/>
+        <rect x="14" y="13" width="10" height="3" rx="1.5" fill="rgba(60,30,90,0.6)"/>
+        <rect x="46" y="3"  width="10" height="3" rx="1.5" fill="rgba(60,30,90,0.6)"/>
+        <rect x="46" y="8"  width="10" height="3" rx="1.5" fill="rgba(60,30,90,0.6)"/>
+        <rect x="46" y="13" width="10" height="3" rx="1.5" fill="rgba(60,30,90,0.6)"/>
+        <!-- Neck -->
+        <rect x="29" y="16" width="12" height="84" rx="1.5" fill="rgba(60,30,90,0.6)"/>
+        <!-- Stratocaster body: asymmetric double cutaway
+             Upper horn (bass side) extends further up than lower horn (treble side) -->
+        <path d="
+          M 29,98
+          C 22,95 14,88 8,80
+          C 4,73 3,66 6,63
+          C 9,60 13,61 16,67
+          C 19,74 20,84 20,93
+          C 16,102 13,114 13,128
+          C 12,143 15,157 20,168
+          C 25,180 33,192 38,196
+          C 45,201 54,196 60,186
+          C 65,175 67,160 63,148
+          C 61,136 59,126 63,118
+          C 67,111 67,104 63,98
+          C 59,93 54,94 53,100
+          C 49,107 45,106 41,100
+          L 41,98 Z
+        " fill="rgba(60,30,90,0.6)"/>
+        <!-- 6 strings (neck section only) -->
+        <line x1="30" y1="16" x2="30" y2="118" stroke="rgba(200,170,255,0.18)" stroke-width="0.5"/>
+        <line x1="32" y1="16" x2="32" y2="118" stroke="rgba(200,170,255,0.18)" stroke-width="0.5"/>
+        <line x1="34" y1="16" x2="34" y2="118" stroke="rgba(200,170,255,0.18)" stroke-width="0.5"/>
+        <line x1="36" y1="16" x2="36" y2="118" stroke="rgba(200,170,255,0.18)" stroke-width="0.5"/>
+        <line x1="38" y1="16" x2="38" y2="118" stroke="rgba(200,170,255,0.18)" stroke-width="0.5"/>
+        <line x1="40" y1="16" x2="40" y2="118" stroke="rgba(200,170,255,0.18)" stroke-width="0.5"/>
+        <!-- 3 single-coil pickups -->
+        <rect x="29" y="126" width="14" height="5" rx="1" fill="rgba(4,2,12,0.55)"/>
+        <rect x="29" y="137" width="14" height="5" rx="1" fill="rgba(4,2,12,0.55)"/>
+        <rect x="29" y="148" width="14" height="5" rx="1" fill="rgba(4,2,12,0.55)"/>
+        <!-- Tremolo bridge block -->
+        <rect x="27" y="160" width="18" height="7" rx="2" fill="rgba(4,2,12,0.5)"/>
       </svg>
     </div>
+    <!-- Pyrotechnic fire jets — concert-live only -->
+    <div class="pyro" aria-hidden="true">
+      <div class="fire-col fire-col-l">
+        <div class="flame fl-a"></div>
+        <div class="flame fl-b"></div>
+        <div class="flame fl-c"></div>
+        <div class="flame fl-d"></div>
+      </div>
+      <div class="fire-col fire-col-r">
+        <div class="flame fl-e"></div>
+        <div class="flame fl-f"></div>
+        <div class="flame fl-g"></div>
+        <div class="flame fl-h"></div>
+      </div>
+    </div>
+    <!-- Stage strobe -->
+    <div class="stage-strobe" aria-hidden="true"></div>
     <!-- Mic stand -->
     <div class="mic-stand-wrap">
       <svg class="mic-stand-svg" viewBox="0 0 50 210" fill="none" xmlns="http://www.w3.org/2000/svg">
