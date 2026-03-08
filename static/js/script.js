@@ -712,6 +712,7 @@ function playAtIndex(index) {
 playerFavBtn.addEventListener('click', () => {
   if (!currentVideo) return;
   const isNowFaved = toggleFavorite(currentVideo);
+  updatePlayerFavBtn();
   // Also sync heart btn on the active card in results grid
   const activeCard = document.querySelector('.card.active');
   if (activeCard) {
@@ -1222,7 +1223,7 @@ function renderFavorites() {
 function updatePlayerFavBtn() {
   if (!playerFavBtn) return;
   const faved = currentVideo && isFavorited(currentVideo.video_id);
-  playerFavBtn.textContent = faved ? '❤️ Saved' : '🤍 Save';
+  playerFavBtn.textContent = faved ? '♥' : '♡';
   playerFavBtn.classList.toggle('active', !!faved);
 }
 

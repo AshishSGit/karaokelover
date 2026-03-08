@@ -735,6 +735,13 @@ body.concert-live .player-bar::before {
 }
 
 .player-bar-info { flex: 1; min-width: 0; }
+
+/* Title row: song name + heart icon side by side */
+.player-bar-title-row {
+  display: flex; align-items: center; gap: 8px; min-width: 0;
+}
+.player-bar-title-row .player-title { flex: 1; min-width: 0; }
+
 .player-bar .player-title {
   font-size: 14px; font-weight: 700; margin: 0;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -744,11 +751,22 @@ body.concert-live .player-bar::before {
   font-size: 11px; margin: 2px 0 0;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+
+/* Spotify-style heart — lives next to the song title */
+.bar-heart {
+  background: none; border: none;
+  color: rgba(180,140,255,0.45);
+  font-size: 20px; line-height: 1; padding: 0 2px;
+  cursor: pointer; flex-shrink: 0;
+  transition: color 0.18s ease, transform 0.15s ease;
+  font-family: sans-serif;
+}
+.bar-heart:hover { color: rgba(236,72,153,0.75); transform: scale(1.18); }
+.bar-heart.active { color: #EC4899; }
+
 .player-bar-nav { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
 .player-bar-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
 
-/* Icon-only save/share in bar */
-.player-bar .player-fav-btn,
 .player-bar .share-song-btn {
   width: 34px; height: 34px; padding: 0;
   display: flex; align-items: center; justify-content: center;

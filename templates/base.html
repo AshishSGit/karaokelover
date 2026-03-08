@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/css/style.css?v=31" />
+  <link rel="stylesheet" href="/static/css/style.css?v=32" />
   <meta name="google-site-verification" content="JEbL4Ady-ncf3y0xDqyVgUMU6ypR088v8GY-z1q7CWI" />
   {% block seo_head %}
   <link rel="canonical" href="https://www.karaokelover.com/" />
@@ -368,7 +368,10 @@
         </div>
         <div class="player-bar">
           <div class="player-bar-info">
-            <h2 class="player-title" id="playerTitle"></h2>
+            <div class="player-bar-title-row">
+              <h2 class="player-title" id="playerTitle"></h2>
+              <button class="bar-heart" id="playerFavBtn" type="button" title="Save to favourites">♡</button>
+            </div>
             <p class="player-channel" id="playerChannel"></p>
           </div>
           <div class="player-bar-nav">
@@ -377,7 +380,6 @@
             <button class="player-nav-btn" id="nextBtn" title="Next (→)">⏭</button>
           </div>
           <div class="player-bar-actions">
-            <button class="player-fav-btn" id="playerFavBtn" type="button" title="Save to favourites">🤍</button>
             <button class="share-song-btn" id="shareSongBtn" type="button" title="Share">↗</button>
             <button class="close-player-btn" id="closePlayer">✕ Exit</button>
           </div>
@@ -593,7 +595,7 @@
 
   {% block auto_search %}{% endblock %}
   <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="/static/js/script.js?v=53"></script>
+  <script src="/static/js/script.js?v=54"></script>
   <script src="/static/js/auth.js?v=21"></script>
 </body>
 </html>
