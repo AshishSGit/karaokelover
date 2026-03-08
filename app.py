@@ -18,7 +18,11 @@ LRCLIB_URL          = 'https://lrclib.net/api'
 ANTHROPIC_API_KEY   = os.getenv('ANTHROPIC_API_KEY')
 N8N_LYRICS_WEBHOOK  = os.getenv('N8N_LYRICS_WEBHOOK')
 N8N_TRENDING_SECRET = os.getenv('N8N_TRENDING_SECRET', '')
-TRENDING_FILE       = os.path.join(os.path.dirname(__file__), 'trending.json')
+# Persistent data directory — set RAILWAY_DATA_DIR=/data in Railway env vars
+# and mount a Railway volume at /data so caches survive across deploys.
+# Falls back to the app directory if the env var isn't set.
+_DATA_DIR     = os.getenv('RAILWAY_DATA_DIR', os.path.dirname(__file__))
+TRENDING_FILE = os.path.join(_DATA_DIR, 'trending.json')
 
 # YouTube API key rotation — add YOUTUBE_API_KEY_2 … _8 in Railway env vars
 # for automatic failover when a key's daily quota is exhausted
@@ -32,7 +36,7 @@ _ALL_YT_KEYS = [k for k in [
     os.getenv('YOUTUBE_API_KEY_7'),
     os.getenv('YOUTUBE_API_KEY_8'),
 ] if k]
-EXHAUSTED_KEYS_FILE = os.path.join(os.path.dirname(__file__), 'exhausted_keys.json')
+EXHAUSTED_KEYS_FILE = os.path.join(_DATA_DIR, 'exhausted_keys.json')
 QUOTA_RESET_SECS    = 24 * 3600  # YouTube quota resets every 24 h
 
 def _load_exhausted_keys():
@@ -200,8 +204,8 @@ def _youtube_search(params):
 SEARCH_CACHE     = {}          # key → {'results': [...], 'ts': float}
 SEARCH_CACHE_TTL = 30 * 24 * 3600  # 30 days (karaoke results barely change)
 SEARCH_CACHE_MAX = 5000            # generous limit; ~5MB RAM for 5000 entries
-CACHE_FILE       = os.path.join(os.path.dirname(__file__), 'search_cache.json')
-PREWARM_SONGS    = 200             # warm top N songs on startup
+CACHE_FILE       = os.path.join(_DATA_DIR, 'search_cache.json')
+PREWARM_SONGS    = 50              # warm top N songs on startup (100 units each; keep low to preserve quota)
 
 # In-flight deduplication — prevents thundering herd:
 # if 100 users hit the same uncached query simultaneously, only 1 API call is made
