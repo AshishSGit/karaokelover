@@ -485,11 +485,14 @@ function onPlayerStateChange(e) {
   if (playing) _startProgressBar();
   else if (e.data !== YT.PlayerState.BUFFERING) _stopProgressBar();
 
-  // Synced lyrics: start/stop with playback
+  // Synced lyrics: start on PLAYING, pause interval on PAUSED/STOPPED (not BUFFERING)
   if (_syncActive) {
     const targetBody = singMode.style.display !== 'none' ? singBody : lyricsBody;
-    if (playing) startLrcSync(targetBody);
-    else stopLrcSync();
+    if (playing) {
+      startLrcSync(targetBody);
+    } else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) {
+      _pauseSyncInterval();
+    }
   }
 
   if (e.data === YT.PlayerState.ENDED) playNext();
@@ -773,48 +776,54 @@ miniStop.addEventListener('click', () => {
 // LYRICS — Synced (LRC) + Plain fallback
 // ==========================================
 
-let _lrcLines       = [];    // [{time, text, el}] for synced mode
-let _syncInterval   = null;  // polling interval ID
-let _syncActive     = false; // true when synced lyrics are loaded
-let _userScrolling  = false; // true briefly after user manually scrolls
-let _scrollTimer    = null;
+let _lrcLines      = [];    // [{time, text, el}]
+let _syncInterval  = null;  // setInterval ID
+let _syncActive    = false; // true when synced LRC data is loaded
+let _userScrolling = false;
+let _scrollTimer   = null;
 
-// Parse LRC format into sorted [{time (seconds), text}] array
 function parseLRC(lrc) {
   const lines = [];
   const re = /\[(\d+):(\d+(?:\.\d+)?)\](.*)/g;
   let m;
   while ((m = re.exec(lrc)) !== null) {
     const time = parseInt(m[1], 10) * 60 + parseFloat(m[2]);
-    const text = m[3].trim();
-    lines.push({ time, text });
+    lines.push({ time, text: m[3].trim() });
   }
   return lines.sort((a, b) => a.time - b.time);
 }
 
-// Render synced lyrics as individual <span> elements
 function renderSyncedLyrics(lines, container) {
   container.innerHTML = '';
   lines.forEach((line, i) => {
     const el = document.createElement('div');
-    el.className = 'lyric-line';
-    el.textContent = line.text || ' ';
-    if (!line.text) el.classList.add('lyric-blank');
+    el.className = 'lyric-line' + (line.text ? '' : ' lyric-blank');
+    el.textContent = line.text || '';
     container.appendChild(el);
     _lrcLines[i].el = el;
   });
 }
 
-// Start the sync polling loop
+// Only clears the polling interval — keeps _lrcLines and _syncActive intact
+function _pauseSyncInterval() {
+  if (_syncInterval) { clearInterval(_syncInterval); _syncInterval = null; }
+}
+
+// Full reset — call when loading a new song
+function resetLrcState() {
+  _pauseSyncInterval();
+  _lrcLines   = [];
+  _syncActive = false;
+}
+
 function startLrcSync(targetBody) {
-  stopLrcSync();
-  if (!_lrcLines.length || !ytPlayer) return;
+  _pauseSyncInterval();                        // stop old interval only
+  if (!_lrcLines.length || !ytPlayer) return; // data still intact
   let lastIdx = -1;
 
   _syncInterval = setInterval(() => {
     if (!ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
     const t = ytPlayer.getCurrentTime();
-    // Find the last line whose time <= current time
     let idx = -1;
     for (let i = 0; i < _lrcLines.length; i++) {
       if (_lrcLines[i].time <= t) idx = i;
@@ -823,31 +832,22 @@ function startLrcSync(targetBody) {
     if (idx === lastIdx || idx < 0) return;
     lastIdx = idx;
 
-    // Remove active from previous, add to current
     _lrcLines.forEach((l, i) => {
       if (!l.el) return;
       l.el.classList.toggle('lyric-active', i === idx);
       l.el.classList.toggle('lyric-past',   i < idx);
     });
 
-    // Auto-scroll to keep active line centred — only if user isn't scrolling
     if (!_userScrolling && _lrcLines[idx].el) {
-      const el   = _lrcLines[idx].el;
-      const body = targetBody;
-      const top  = el.offsetTop - body.clientHeight / 2 + el.clientHeight / 2;
-      body.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      const el  = _lrcLines[idx].el;
+      const top = el.offsetTop - targetBody.clientHeight / 2 + el.clientHeight / 2;
+      targetBody.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
     }
   }, 200);
 }
 
-function stopLrcSync() {
-  if (_syncInterval) { clearInterval(_syncInterval); _syncInterval = null; }
-  _lrcLines  = [];
-  _syncActive = false;
-}
-
 async function fetchLyrics(videoTitle) {
-  stopLrcSync();
+  resetLrcState();
   lyricsSection.style.display  = 'block';
   lyricsText.style.display     = 'none';
   lyricsNotFound.style.display = 'none';
