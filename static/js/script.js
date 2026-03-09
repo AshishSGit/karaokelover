@@ -68,6 +68,9 @@ const lyricsText     = document.getElementById('lyricsText');
 const lyricsNotFound = document.getElementById('lyricsNotFound');
 const lyricsBody     = document.getElementById('lyricsBody');
 const lyricsExpand   = document.getElementById('lyricsExpand');
+const nowPlayingCard = document.getElementById('nowPlayingCard');
+const npTitle        = document.getElementById('npTitle');
+const npArtist       = document.getElementById('npArtist');
 const singMode       = document.getElementById('singMode');
 const singClose      = document.getElementById('singClose');
 const singTitle      = document.getElementById('singTitle');
@@ -769,6 +772,7 @@ miniStop.addEventListener('click', () => {
     const ov = c.querySelector('.card-play-overlay');
     if (ov) ov.innerHTML = '▶';
   });
+  _hideNowPlayingCard();
   renderHistory();
   renderFavorites();
   updatePlayerFavBtn();
@@ -868,8 +872,24 @@ function _scrollActiveLyric(el) {
   // No scrollable container found (mobile layout) — don't scroll the page
 }
 
+function _showNowPlayingCard() {
+  lyricsSection.style.display = 'none';
+  playerSection.classList.add('no-lyrics');
+  nowPlayingCard.style.display = 'block';
+  if (currentVideo) {
+    npTitle.textContent  = currentVideo.title || '';
+    npArtist.textContent = currentVideo.channel ? `by ${currentVideo.channel}` : '';
+  }
+}
+
+function _hideNowPlayingCard() {
+  playerSection.classList.remove('no-lyrics');
+  nowPlayingCard.style.display = 'none';
+}
+
 async function fetchLyrics(videoTitle) {
   resetLrcState();
+  _hideNowPlayingCard();
   lyricsSection.style.display  = 'block';
   lyricsText.style.display     = 'none';
   lyricsNotFound.style.display = 'none';
@@ -881,7 +901,7 @@ async function fetchLyrics(videoTitle) {
     const res  = await fetch(`/api/lyrics?title=${encodeURIComponent(videoTitle)}`);
     const data = await res.json();
     lyricsLoading.style.display = 'none';
-    if (!res.ok || data.error) { lyricsSection.style.display = 'none'; return; }
+    if (!res.ok || data.error) { _showNowPlayingCard(); return; }
 
     lyricsTitle.textContent = data.song || 'Lyrics';
     const artistLabel = data.artist ? `by ${data.artist}` : '';
@@ -910,7 +930,7 @@ async function fetchLyrics(videoTitle) {
       lyricsBody.scrollTop = 0;
     }
   } catch {
-    lyricsSection.style.display = 'none';
+    _showNowPlayingCard();
   }
 }
 
