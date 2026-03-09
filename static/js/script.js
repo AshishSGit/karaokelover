@@ -951,7 +951,8 @@ window.addEventListener('popstate', () => {
 
 // Mini-stop: actually stop everything
 miniStop.addEventListener('click', () => {
-  document.body.classList.remove('url-video'); // restore full hero
+  document.body.classList.remove('url-video');
+  playerSection.classList.remove('has-lyrics');
   if (ytPlayer) ytPlayer.stopVideo();
   currentVideo = null;
   try { history.replaceState({}, '', '/'); } catch {}
@@ -1071,6 +1072,7 @@ function _scrollActiveLyric(el) {
 function _showNowPlayingCard() {
   lyricsSection.style.display = 'none';
   playerSection.classList.add('no-lyrics');
+  playerSection.classList.remove('has-lyrics'); // ensure single-column until lyrics ready
   nowPlayingCard.style.display = 'block';
   if (currentVideo) {
     npTitle.textContent  = currentVideo.title || '';
@@ -1117,7 +1119,8 @@ async function fetchLyrics(videoTitle) {
       lyricsBody.scrollTop = 0;
     }
 
-    // Lyrics ready — switch from vibes card to two-column lyrics layout
+    // Lyrics ready — activate two-column layout, hide vibes card, show lyrics
+    playerSection.classList.add('has-lyrics');
     _hideNowPlayingCard();
     lyricsSection.style.display = 'block';
 
