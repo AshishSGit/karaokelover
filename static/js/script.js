@@ -255,15 +255,16 @@ function _checkUrlState() {
   playerSection.style.display    = 'block';
   updateMiniInfo(v);
 
-  // Scroll to player using scrollIntoView (reliable regardless of offsetTop/layout timing).
-  // rAF ensures browser has painted display:block before we scroll.
-  // Second attempt at 500ms catches any layout shift from async trending chips.
-  const _scrollNow = () => {
-    playerSection.scrollIntoView({ block: 'start', behavior: 'instant' });
-    window.scrollBy({ top: -65 }); // clear the fixed header
+  // Prevent browser from restoring its own scroll position after refresh.
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  // getBoundingClientRect gives document-relative top after layout, minus header offset.
+  // Two attempts: rAF (after display:block paint) + 600ms (after trending chips load).
+  const _scrollToPlayer = () => {
+    const y = playerSection.getBoundingClientRect().top + (window.scrollY || window.pageYOffset) - 65;
+    window.scrollTo(0, Math.max(0, y));
   };
-  requestAnimationFrame(_scrollNow);
-  setTimeout(_scrollNow, 500);
+  requestAnimationFrame(_scrollToPlayer);
+  setTimeout(_scrollToPlayer, 600);
 
   if (startSec > 2) {
     const mm = Math.floor(startSec / 60);
@@ -1380,9 +1381,8 @@ const playerObserver = new IntersectionObserver((entries) => {
 const playerSectionObserver = new MutationObserver(() => {
   if (playerSection.style.display !== 'none') {
     playerObserver.observe(playerSection);
-    // Immediately hide mini player and scroll to the stage
+    // Immediately hide mini player; each caller handles its own scroll.
     hideMiniPlayer();
-    setTimeout(() => playerSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   } else {
     playerObserver.unobserve(playerSection);
     if (currentVideo) showMiniPlayer();
