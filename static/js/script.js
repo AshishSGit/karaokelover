@@ -1176,6 +1176,7 @@ function closeSingMode() {
 
 function showResumeBanner() {
   if (resumeBanner.style.display === 'flex') return; // already showing
+  if (playerSection.style.display === 'block') return; // player already open — no banner needed
 
   // Prefer _POS_KEY (most recent position, always consistent with continue-singing strip)
   let v = null, startSec = 0;
@@ -1251,7 +1252,7 @@ function addToHistory(video) {
 
 function renderHistory() {
   const hist = getHistory();
-  if (hist.length === 0 || resultsSection.style.display !== 'none') {
+  if (hist.length === 0 || resultsSection.style.display !== 'none' || playerSection.style.display === 'block') {
     historySection.style.display = 'none'; return;
   }
   historyStrip.innerHTML = hist.map(v => `
@@ -1560,8 +1561,11 @@ function toggleFavorite(video) {
 
 function renderFavorites() {
   const favs = getFavorites();
-  if (favs.length === 0 || resultsSection.style.display !== 'none') {
-    favoritesSection.style.display = 'none'; return;
+  if (favs.length === 0 || resultsSection.style.display !== 'none' || playerSection.style.display === 'block') {
+    favoritesSection.style.display = 'none';
+    // Still refresh the heart button even when hiding the section (Firestore just loaded)
+    if (currentVideo) updatePlayerFavBtn();
+    return;
   }
   favHeading.innerHTML = `❤️ Saved Songs <span style="color:var(--muted);font-weight:500">(${favs.length})</span>`;
   favoritesStrip.innerHTML = favs.map(v => `
