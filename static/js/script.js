@@ -235,6 +235,8 @@ function initSearchDropdown() {
       renderHistory();
       renderFavorites();
     } else if (user) {
+      // If search input is already focused, re-render dropdown now that UID is available
+      if (document.activeElement === searchInput) showDropdown();
       // Consolidate history from all possible sources into the UID key
       const _read = k => { try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch { return []; } };
       const uidHist   = _read(histKey());
