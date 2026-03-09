@@ -8,7 +8,43 @@
 // ---- Global state ----
 let ytPlayer       = null;
 let ytReady        = false;
-let pendingVideoId = null;
+let pendingVideoId     = null;
+let _pendingStartSec   = 0;
+
+// ---- Playback position persistence ----
+const _POS_KEY  = 'klLastPlay';
+const _PPOS_KEY = 'klPositions';
+
+function _savePosition() {
+  if (!currentVideo || !ytPlayer || !ytPlayer.getCurrentTime) return;
+  const t = ytPlayer.getCurrentTime();
+  if (t < 3) return;
+  try {
+    localStorage.setItem(_POS_KEY, JSON.stringify({
+      video_id: currentVideo.video_id, title: currentVideo.title,
+      channel: currentVideo.channel || '', thumbnail: currentVideo.thumbnail || '',
+      time: t, savedAt: Date.now()
+    }));
+    const pp = JSON.parse(localStorage.getItem(_PPOS_KEY) || '{}');
+    pp[currentVideo.video_id] = t;
+    localStorage.setItem(_PPOS_KEY, JSON.stringify(pp));
+  } catch {}
+}
+
+function _getSavedTime(videoId) {
+  try {
+    const pp = JSON.parse(localStorage.getItem(_PPOS_KEY) || '{}');
+    return pp[videoId] || 0;
+  } catch { return 0; }
+}
+
+// Save position every 5 seconds while playing
+setInterval(() => {
+  if (ytPlayer && ytPlayer.getPlayerState &&
+      ytPlayer.getPlayerState() === 1 /* PLAYING */) {
+    _savePosition();
+  }
+}, 5000);
 let currentResults = [];
 let currentIndex   = -1;
 let shuffleMode    = false;
@@ -152,6 +188,40 @@ loadQueue();
 fetchTrending();
 initFilters();
 initSearchDropdown();
+_checkLastPlaying();
+
+function _checkLastPlaying() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(_POS_KEY) || 'null');
+    if (!saved || !saved.video_id) return;
+    if (Date.now() - saved.savedAt > 4 * 3600 * 1000) { localStorage.removeItem(_POS_KEY); return; }
+    const v = { video_id: saved.video_id, title: saved.title, channel: saved.channel || '', thumbnail: saved.thumbnail || '' };
+    resumeBannerText.textContent = saved.title;
+    resumeBanner.style.display = 'flex';
+    resumeBannerBtn.onclick = () => {
+      resumeBanner.style.display = 'none';
+      currentResults = [v]; currentIndex = 0; currentVideo = v;
+      playerTitle.textContent   = v.title;
+      playerChannel.textContent = v.channel;
+      _setPlayerArt(v);
+      historySection.style.display  = 'none';
+      favoritesSection.style.display = 'none';
+      playerSection.style.display = 'block';
+      setTimeout(() => window.scrollTo(0, Math.max(0, playerSection.offsetTop - 65)), 0);
+      updateMiniInfo(v);
+      fetchLyrics(v.title);
+      addToHistory(v);
+      updatePlayerFavBtn();
+      const startTime = Math.max(0, saved.time - 2);
+      waitForYtReady().then(() => loadPlayer(v.video_id, startTime));
+    };
+  } catch {}
+}
+
+// Save position when user leaves / hides the tab
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') _savePosition();
+});
 
 // ==========================================
 // SEARCH HISTORY DROPDOWN
@@ -452,19 +522,26 @@ function waitForYtReady(timeout = 8000) {
 function onYouTubeIframeAPIReady() {
   ytReady = true;
   if (pendingVideoId !== null) {
-    loadPlayer(pendingVideoId);
+    loadPlayer(pendingVideoId, _pendingStartSec);
     pendingVideoId = null;
+    _pendingStartSec = 0;
   }
 }
 
-function loadPlayer(videoId) {
-  resumeBanner.style.display = 'none'; // hide toast once a song is playing
+function loadPlayer(videoId, startSeconds = 0) {
+  resumeBanner.style.display = 'none';
   if (ytPlayer) {
-    ytPlayer.loadVideoById(videoId);
+    if (startSeconds > 2) {
+      ytPlayer.loadVideoById({ videoId, startSeconds: Math.floor(startSeconds) });
+    } else {
+      ytPlayer.loadVideoById(videoId);
+    }
   } else {
+    const playerVars = { autoplay: 1, rel: 0, modestbranding: 1, origin: window.location.origin };
+    if (startSeconds > 2) playerVars.start = Math.floor(startSeconds);
     ytPlayer = new YT.Player('ytPlayer', {
       videoId,
-      playerVars: { autoplay: 1, rel: 0, modestbranding: 1, origin: window.location.origin },
+      playerVars,
       events: {
         onReady:       (e) => e.target.playVideo(),
         onStateChange: onPlayerStateChange,
@@ -889,48 +966,49 @@ function _hideNowPlayingCard() {
 
 async function fetchLyrics(videoTitle) {
   resetLrcState();
-  _hideNowPlayingCard();
-  lyricsSection.style.display  = 'block';
-  lyricsText.style.display     = 'none';
-  lyricsNotFound.style.display = 'none';
-  lyricsLoading.style.display  = 'block';
-  lyricsTitle.textContent      = 'Lyrics';
-  lyricsArtist.textContent     = '';
+  // Start full-width immediately — switch to two-column only if lyrics load
+  _showNowPlayingCard();
+  lyricsSection.style.display = 'none';
 
   try {
     const res  = await fetch(`/api/lyrics?title=${encodeURIComponent(videoTitle)}`);
     const data = await res.json();
-    lyricsLoading.style.display = 'none';
-    if (!res.ok || data.error) { _showNowPlayingCard(); return; }
+    if (!res.ok || data.error) { return; } // vibes card stays
 
+    // Prepare all lyrics content BEFORE revealing the panel (no flash)
     lyricsTitle.textContent = data.song || 'Lyrics';
     const artistLabel = data.artist ? `by ${data.artist}` : '';
     const aiBadge = data.source === 'ai' ? ' <span class="ai-badge">✦ AI</span>' : '';
     lyricsArtist.innerHTML = escapeHtml(artistLabel) + aiBadge;
+    lyricsLoading.style.display  = 'none';
+    lyricsNotFound.style.display = 'none';
 
     if (data.syncedLyrics) {
-      // Synced mode — render timed lines
       _lrcLines  = parseLRC(data.syncedLyrics);
       _syncActive = true;
       lyricsText.className = 'lyrics-text synced';
       renderSyncedLyrics(_lrcLines, lyricsText);
       lyricsText.style.display = 'block';
       lyricsBody.scrollTop = 0;
-      // Start syncing only if player is already playing
-      if (ytPlayer && ytPlayer.getPlayerState &&
-          ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
-        startLrcSync(lyricsBody);
-      }
     } else {
-      // Plain lyrics fallback
       _syncActive = false;
       lyricsText.className = 'lyrics-text';
       lyricsText.innerHTML = formatLyrics(data.lyrics);
       lyricsText.style.display = 'block';
       lyricsBody.scrollTop = 0;
     }
+
+    // Lyrics ready — switch from vibes card to two-column lyrics layout
+    _hideNowPlayingCard();
+    lyricsSection.style.display = 'block';
+
+    // Start sync if already playing
+    if (_syncActive && ytPlayer && ytPlayer.getPlayerState &&
+        ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+      startLrcSync(lyricsBody);
+    }
   } catch {
-    _showNowPlayingCard();
+    // vibes card stays showing — already set at top of fetchLyrics
   }
 }
 
@@ -1101,8 +1179,9 @@ function renderHistory() {
       playerSection.style.display = 'block';
       setTimeout(() => window.scrollTo(0, Math.max(0, playerSection.offsetTop - 65)), 0);
       updateMiniInfo(video);
-      if (ytReady) loadPlayer(video.video_id);
-      else pendingVideoId = video.video_id;
+      const _hs = Math.max(0, _getSavedTime(video.video_id) - 2);
+      if (ytReady) loadPlayer(video.video_id, _hs);
+      else { pendingVideoId = video.video_id; _pendingStartSec = _hs; }
       fetchLyrics(video.title);
       addToHistory(video);
       updatePlayerFavBtn();
