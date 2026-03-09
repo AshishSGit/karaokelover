@@ -191,31 +191,7 @@ initSearchDropdown();
 _checkLastPlaying();
 
 function _checkLastPlaying() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(_POS_KEY) || 'null');
-    if (!saved || !saved.video_id) return;
-    if (Date.now() - saved.savedAt > 4 * 3600 * 1000) { localStorage.removeItem(_POS_KEY); return; }
-    const v = { video_id: saved.video_id, title: saved.title, channel: saved.channel || '', thumbnail: saved.thumbnail || '' };
-    resumeBannerText.textContent = saved.title;
-    resumeBanner.style.display = 'flex';
-    resumeBannerBtn.onclick = () => {
-      resumeBanner.style.display = 'none';
-      currentResults = [v]; currentIndex = 0; currentVideo = v;
-      playerTitle.textContent   = v.title;
-      playerChannel.textContent = v.channel;
-      _setPlayerArt(v);
-      historySection.style.display  = 'none';
-      favoritesSection.style.display = 'none';
-      playerSection.style.display = 'block';
-      setTimeout(() => window.scrollTo(0, Math.max(0, playerSection.offsetTop - 65)), 0);
-      updateMiniInfo(v);
-      fetchLyrics(v.title);
-      addToHistory(v);
-      updatePlayerFavBtn();
-      const startTime = Math.max(0, saved.time - 2);
-      waitForYtReady().then(() => loadPlayer(v.video_id, startTime));
-    };
-  } catch {}
+  showResumeBanner(); // unified — showResumeBanner checks _POS_KEY first
 }
 
 // Save position when user leaves / hides the tab
@@ -1093,16 +1069,32 @@ function closeSingMode() {
 
 function showResumeBanner() {
   if (resumeBanner.style.display === 'flex') return; // already showing
-  // Try UID-keyed history first, then fall back to old global key
-  let hist = getHistory();
-  if (!hist.length) {
-    try { hist = JSON.parse(localStorage.getItem('ks_history') || '[]'); } catch { hist = []; }
-  }
-  if (!hist.length) return; // no history — nothing to resume
-  resumeBannerBtn.style.display = '';
-  const v = hist[0]; // most recently played
-  if (!v.video_id) return;
 
+  // Prefer _POS_KEY (most recent position, always consistent with continue-singing strip)
+  let v = null, startSec = 0;
+  try {
+    const saved = JSON.parse(localStorage.getItem(_POS_KEY) || 'null');
+    if (saved && saved.video_id && (Date.now() - saved.savedAt < 4 * 3600 * 1000)) {
+      v = { video_id: saved.video_id, title: saved.title, channel: saved.channel || '', thumbnail: saved.thumbnail || '' };
+      startSec = Math.max(0, (saved.time || 0) - 2);
+    } else if (saved) {
+      localStorage.removeItem(_POS_KEY);
+    }
+  } catch {}
+
+  // Fall back to history if no recent position saved
+  if (!v) {
+    let hist = getHistory();
+    if (!hist.length) {
+      try { hist = JSON.parse(localStorage.getItem('ks_history') || '[]'); } catch { hist = []; }
+    }
+    if (!hist.length) return;
+    v = hist[0];
+    if (!v || !v.video_id) return;
+    startSec = Math.max(0, _getSavedTime(v.video_id) - 2);
+  }
+
+  resumeBannerBtn.style.display = '';
   resumeBannerText.textContent = v.title;
   resumeBanner.style.display = 'flex';
 
@@ -1119,8 +1111,9 @@ function showResumeBanner() {
     updateMiniInfo(v);
     showMiniPlayer();
     fetchLyrics(v.title);
+    addToHistory(v);
     updatePlayerFavBtn();
-    waitForYtReady().then(() => loadPlayer(v.video_id));
+    waitForYtReady().then(() => loadPlayer(v.video_id, startSec));
   };
 
   resumeBannerDismiss.onclick = () => {
