@@ -296,7 +296,7 @@ function _checkUrlState() {
   }
 
   if (v.title !== 'Loading…') {
-    fetchLyrics(v.title);
+    fetchLyrics(v.title, true); // show loading skeleton immediately (no vibes card delay)
     fetchRecommendations(v.title);
     addToHistory(v);
     updatePlayerFavBtn();
@@ -1085,16 +1085,30 @@ function _hideNowPlayingCard() {
   nowPlayingCard.style.display = 'none';
 }
 
-async function fetchLyrics(videoTitle) {
+async function fetchLyrics(videoTitle, skipVibesCard = false) {
   resetLrcState();
-  // Start full-width immediately — switch to two-column only if lyrics load
-  _showNowPlayingCard();
-  lyricsSection.style.display = 'none';
+  if (skipVibesCard) {
+    // Refresh/resume: show two-column with lyrics loading skeleton immediately (no vibes card flash)
+    nowPlayingCard.style.display = 'none';
+    playerSection.classList.remove('no-lyrics');
+    playerSection.classList.add('has-lyrics');
+    lyricsLoading.style.display = 'block';
+    lyricsText.style.display = 'none';
+    lyricsNotFound.style.display = 'none';
+    lyricsSection.style.display = 'block';
+  } else {
+    // Normal play: vibes card shows while lyrics load, switch to two-column only if found
+    _showNowPlayingCard();
+    lyricsSection.style.display = 'none';
+  }
 
   try {
     const res  = await fetch(`/api/lyrics?title=${encodeURIComponent(videoTitle)}`);
     const data = await res.json();
-    if (!res.ok || data.error) { return; } // vibes card stays
+    if (!res.ok || data.error) {
+      if (skipVibesCard) { _showNowPlayingCard(); lyricsSection.style.display = 'none'; }
+      return;
+    }
 
     // Prepare all lyrics content BEFORE revealing the panel (no flash)
     lyricsTitle.textContent = data.song || 'Lyrics';
@@ -1130,7 +1144,8 @@ async function fetchLyrics(videoTitle) {
       startLrcSync(lyricsBody);
     }
   } catch {
-    // vibes card stays showing — already set at top of fetchLyrics
+    if (skipVibesCard) { _showNowPlayingCard(); lyricsSection.style.display = 'none'; }
+    // else: vibes card stays showing — already set at top of fetchLyrics
   }
 }
 
