@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/css/style.css?v=39" />
+  <link rel="stylesheet" href="/static/css/style.css?v=40" />
   <meta name="google-site-verification" content="JEbL4Ady-ncf3y0xDqyVgUMU6ypR088v8GY-z1q7CWI" />
   {% block seo_head %}
   <link rel="canonical" href="https://www.karaokelover.com/" />
@@ -78,6 +78,25 @@
     </div>
     <!-- Stage floor glow line -->
     <div class="stage-floor-glow"></div>
+    <!-- Crowd silhouette — appears when music plays -->
+    <div class="crowd-silhouette" aria-hidden="true">
+      <svg class="crowd-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100" preserveAspectRatio="none">
+        <path d="M0,100 L0,68 L25,65 L35,45 L50,65 L70,62 L85,40 L100,62 L115,68 L130,60 L145,35 L155,55 L170,58 L185,30 L195,52 L210,60 L225,52 L240,28 L250,48 L268,60 L280,58 L298,25 L308,45 L322,60 L338,55 L352,32 L360,50 L380,62 L395,45 L408,20 L418,42 L432,60 L448,55 L462,38 L472,55 L490,62 L502,50 L518,25 L528,45 L545,60 L558,55 L572,32 L582,50 L598,62 L612,50 L628,28 L638,45 L655,62 L668,55 L682,38 L692,55 L708,62 L722,45 L738,22 L748,42 L762,60 L778,55 L792,35 L802,52 L818,62 L832,50 L848,28 L858,48 L872,60 L888,55 L902,32 L912,50 L928,62 L942,52 L958,25 L968,45 L982,62 L998,55 L1012,38 L1022,55 L1038,62 L1052,50 L1068,28 L1078,45 L1092,60 L1108,55 L1122,32 L1132,50 L1148,62 L1162,50 L1178,25 L1188,42 L1202,60 L1218,55 L1232,38 L1242,55 L1258,62 L1272,45 L1288,22 L1298,42 L1312,60 L1328,55 L1342,32 L1352,50 L1368,62 L1382,50 L1398,30 L1412,48 L1440,65 L1440,100 Z" fill="rgba(4,2,12,0.92)"/>
+      </svg>
+    </div>
+    <!-- Decorative guitar silhouette -->
+    <div class="guitar-wrap" aria-hidden="true">
+      <svg class="guitar-svg" viewBox="0 0 70 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="30" y="0" width="10" height="90" rx="3" fill="rgba(60,30,90,0.55)"/>
+        <rect x="24" y="0" width="22" height="14" rx="3" fill="rgba(60,30,90,0.55)"/>
+        <ellipse cx="35" cy="120" rx="24" ry="28" fill="rgba(60,30,90,0.55)"/>
+        <ellipse cx="35" cy="175" rx="32" ry="38" fill="rgba(60,30,90,0.55)"/>
+        <circle cx="35" cy="165" r="10" fill="rgba(4,2,12,0.6)"/>
+        <line x1="35" y1="14" x2="35" y2="148" stroke="rgba(200,170,255,0.2)" stroke-width="0.5"/>
+        <line x1="33" y1="14" x2="33" y2="148" stroke="rgba(200,170,255,0.2)" stroke-width="0.5"/>
+        <line x1="37" y1="14" x2="37" y2="148" stroke="rgba(200,170,255,0.2)" stroke-width="0.5"/>
+      </svg>
+    </div>
   </div>
 
   <!-- ========== HEADER ========== -->
