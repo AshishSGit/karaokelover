@@ -38,6 +38,29 @@ function _getSavedTime(videoId) {
   } catch { return 0; }
 }
 
+// ---- URL State (refresh/back button persistence) ----
+function _updateVideoUrl(videoId) {
+  try {
+    const url = new URL(window.location);
+    const hadVideo = url.searchParams.has('v');
+    url.searchParams.set('v', videoId);
+    url.searchParams.delete('q');
+    if (hadVideo) {
+      history.replaceState({ videoId }, '', url.toString());
+    } else {
+      // First video play in session — push so back button returns to home
+      history.pushState({ videoId }, '', url.toString());
+    }
+    // Pulse the share button to signal the URL is now shareable
+    if (typeof shareSongBtn !== 'undefined' && shareSongBtn) {
+      shareSongBtn.classList.remove('url-updated');
+      void shareSongBtn.offsetWidth;
+      shareSongBtn.classList.add('url-updated');
+      setTimeout(() => shareSongBtn.classList.remove('url-updated'), 700);
+    }
+  } catch {}
+}
+
 // Save position every 5 seconds while playing
 setInterval(() => {
   if (ytPlayer && ytPlayer.getPlayerState &&
@@ -188,10 +211,67 @@ loadQueue();
 fetchTrending();
 initFilters();
 initSearchDropdown();
-_checkLastPlaying();
+// URL state takes priority — if ?v= is in URL, load that video directly
+if (!_checkUrlState()) _checkLastPlaying();
+// Auto-search if ?q= was shared (backward compat)
+const _initQ = new URLSearchParams(location.search).get('q');
+if (_initQ) doSearch(_initQ);
 
 function _checkLastPlaying() {
   showResumeBanner(); // unified — showResumeBanner checks _POS_KEY first
+}
+
+// ---- URL state: auto-load video on refresh or shared link ----
+function _checkUrlState() {
+  const videoId = new URLSearchParams(location.search).get('v');
+  if (!videoId) return false;
+
+  // Find saved metadata: prefer _POS_KEY (same device refresh), then history
+  let v = null, startSec = 0;
+  try {
+    const saved = JSON.parse(localStorage.getItem(_POS_KEY) || 'null');
+    if (saved && saved.video_id === videoId) {
+      v = { video_id: saved.video_id, title: saved.title, channel: saved.channel || '', thumbnail: saved.thumbnail || '' };
+      startSec = Math.max(0, (saved.time || 0) - 2);
+    }
+  } catch {}
+
+  if (!v) {
+    let hist = getHistory();
+    if (!hist.length) try { hist = JSON.parse(localStorage.getItem('ks_history') || '[]'); } catch { hist = []; }
+    const found = hist.find(h => h.video_id === videoId);
+    if (found) { v = found; startSec = Math.max(0, _getSavedTime(videoId) - 2); }
+  }
+
+  // Shared link from another device — no metadata available, load gracefully
+  if (!v) v = { video_id: videoId, title: 'Loading…', channel: '', thumbnail: '' };
+
+  currentResults = [v]; currentIndex = 0; currentVideo = v;
+  playerTitle.textContent   = v.title;
+  playerChannel.textContent = v.channel;
+  _setPlayerArt(v);
+  historySection.style.display   = 'none';
+  favoritesSection.style.display = 'none';
+  playerSection.style.display    = 'block';
+  updateMiniInfo(v);
+
+  if (startSec > 2) {
+    const mm = Math.floor(startSec / 60);
+    const ss = String(Math.floor(startSec % 60)).padStart(2, '0');
+    showToast(`▶ Resuming from ${mm}:${ss}`, 'success');
+  }
+
+  if (ytReady) loadPlayer(videoId, startSec);
+  else { pendingVideoId = videoId; _pendingStartSec = startSec; }
+
+  if (v.title !== 'Loading…') {
+    fetchLyrics(v.title);
+    fetchRecommendations(v.title);
+    addToHistory(v);
+    updatePlayerFavBtn();
+  }
+
+  return true;
 }
 
 // Save position when user leaves / hides the tab
@@ -506,6 +586,7 @@ function onYouTubeIframeAPIReady() {
 
 function loadPlayer(videoId, startSeconds = 0) {
   resumeBanner.style.display = 'none';
+  _updateVideoUrl(videoId);
   if (ytPlayer) {
     if (startSeconds > 2) {
       ytPlayer.loadVideoById({ videoId, startSeconds: Math.floor(startSeconds) });
@@ -519,7 +600,24 @@ function loadPlayer(videoId, startSeconds = 0) {
       videoId,
       playerVars,
       events: {
-        onReady:       (e) => e.target.playVideo(),
+        onReady: (e) => {
+          e.target.playVideo();
+          // If video was loaded via shared URL with no local metadata, fetch it now
+          if (currentVideo && currentVideo.title === 'Loading…') {
+            const d = e.target.getVideoData();
+            if (d && d.title) {
+              currentVideo.title   = d.title;
+              currentVideo.channel = d.author || '';
+              playerTitle.textContent   = d.title;
+              playerChannel.textContent = d.author || '';
+              updateMiniInfo(currentVideo);
+              fetchLyrics(d.title);
+              fetchRecommendations(d.title);
+              addToHistory(currentVideo);
+              updatePlayerFavBtn();
+            }
+          }
+        },
         onStateChange: onPlayerStateChange,
         onError:       onPlayerError,
       },
@@ -808,10 +906,19 @@ closePlayerBtn.addEventListener('click', () => {
 // Backdrop is hidden in stage mode; no-op
 playerBackdrop.addEventListener('click', () => {});
 
+// Back button: if URL no longer has ?v=, scroll home (player keeps playing)
+window.addEventListener('popstate', () => {
+  if (!new URLSearchParams(location.search).get('v') && currentVideo) {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showToast('Music keeps playing ↓', '');
+  }
+});
+
 // Mini-stop: actually stop everything
 miniStop.addEventListener('click', () => {
   if (ytPlayer) ytPlayer.stopVideo();
   currentVideo = null;
+  try { history.replaceState({}, '', '/'); } catch {}
   hideMiniPlayer();
   playerSection.style.display = 'none';
   lyricsSection.style.display = 'none';
@@ -1628,8 +1735,8 @@ document.addEventListener('click', (e) => {
 
 function shareCurrentSong() {
   if (!currentVideo) return;
-  const url  = `${window.location.origin}?q=${encodeURIComponent(currentVideo.title)}`;
-  const text = `I'm singing "${currentVideo.title}" on KaraokeLover.com 🎤`;
+  const url  = `${window.location.origin}?v=${currentVideo.video_id}`;
+  const text = `Sing along with me! 🎤 "${currentVideo.title}" on KaraokeLover.com`;
 
   if (navigator.share) {
     navigator.share({ title: currentVideo.title, text, url }).catch(() => {});
