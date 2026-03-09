@@ -485,6 +485,13 @@ function onPlayerStateChange(e) {
   if (playing) _startProgressBar();
   else if (e.data !== YT.PlayerState.BUFFERING) _stopProgressBar();
 
+  // Synced lyrics: start/stop with playback
+  if (_syncActive) {
+    const targetBody = singMode.style.display !== 'none' ? singBody : lyricsBody;
+    if (playing) startLrcSync(targetBody);
+    else stopLrcSync();
+  }
+
   if (e.data === YT.PlayerState.ENDED) playNext();
 }
 
@@ -762,7 +769,85 @@ miniStop.addEventListener('click', () => {
 // LYRICS
 // ==========================================
 
+// ==========================================
+// LYRICS — Synced (LRC) + Plain fallback
+// ==========================================
+
+let _lrcLines       = [];    // [{time, text, el}] for synced mode
+let _syncInterval   = null;  // polling interval ID
+let _syncActive     = false; // true when synced lyrics are loaded
+let _userScrolling  = false; // true briefly after user manually scrolls
+let _scrollTimer    = null;
+
+// Parse LRC format into sorted [{time (seconds), text}] array
+function parseLRC(lrc) {
+  const lines = [];
+  const re = /\[(\d+):(\d+(?:\.\d+)?)\](.*)/g;
+  let m;
+  while ((m = re.exec(lrc)) !== null) {
+    const time = parseInt(m[1], 10) * 60 + parseFloat(m[2]);
+    const text = m[3].trim();
+    lines.push({ time, text });
+  }
+  return lines.sort((a, b) => a.time - b.time);
+}
+
+// Render synced lyrics as individual <span> elements
+function renderSyncedLyrics(lines, container) {
+  container.innerHTML = '';
+  lines.forEach((line, i) => {
+    const el = document.createElement('div');
+    el.className = 'lyric-line';
+    el.textContent = line.text || ' ';
+    if (!line.text) el.classList.add('lyric-blank');
+    container.appendChild(el);
+    _lrcLines[i].el = el;
+  });
+}
+
+// Start the sync polling loop
+function startLrcSync(targetBody) {
+  stopLrcSync();
+  if (!_lrcLines.length || !ytPlayer) return;
+  let lastIdx = -1;
+
+  _syncInterval = setInterval(() => {
+    if (!ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
+    const t = ytPlayer.getCurrentTime();
+    // Find the last line whose time <= current time
+    let idx = -1;
+    for (let i = 0; i < _lrcLines.length; i++) {
+      if (_lrcLines[i].time <= t) idx = i;
+      else break;
+    }
+    if (idx === lastIdx || idx < 0) return;
+    lastIdx = idx;
+
+    // Remove active from previous, add to current
+    _lrcLines.forEach((l, i) => {
+      if (!l.el) return;
+      l.el.classList.toggle('lyric-active', i === idx);
+      l.el.classList.toggle('lyric-past',   i < idx);
+    });
+
+    // Auto-scroll to keep active line centred — only if user isn't scrolling
+    if (!_userScrolling && _lrcLines[idx].el) {
+      const el   = _lrcLines[idx].el;
+      const body = targetBody;
+      const top  = el.offsetTop - body.clientHeight / 2 + el.clientHeight / 2;
+      body.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    }
+  }, 200);
+}
+
+function stopLrcSync() {
+  if (_syncInterval) { clearInterval(_syncInterval); _syncInterval = null; }
+  _lrcLines  = [];
+  _syncActive = false;
+}
+
 async function fetchLyrics(videoTitle) {
+  stopLrcSync();
   lyricsSection.style.display  = 'block';
   lyricsText.style.display     = 'none';
   lyricsNotFound.style.display = 'none';
@@ -775,13 +860,33 @@ async function fetchLyrics(videoTitle) {
     const data = await res.json();
     lyricsLoading.style.display = 'none';
     if (!res.ok || data.error) { lyricsSection.style.display = 'none'; return; }
-    lyricsTitle.textContent  = data.song   || 'Lyrics';
+
+    lyricsTitle.textContent = data.song || 'Lyrics';
     const artistLabel = data.artist ? `by ${data.artist}` : '';
     const aiBadge = data.source === 'ai' ? ' <span class="ai-badge">✦ AI</span>' : '';
-    lyricsArtist.innerHTML   = escapeHtml(artistLabel) + aiBadge;
-    lyricsText.innerHTML     = formatLyrics(data.lyrics);
-    lyricsText.style.display = 'block';
-    lyricsBody.scrollTop     = 0;
+    lyricsArtist.innerHTML = escapeHtml(artistLabel) + aiBadge;
+
+    if (data.syncedLyrics) {
+      // Synced mode — render timed lines
+      _lrcLines  = parseLRC(data.syncedLyrics);
+      _syncActive = true;
+      lyricsText.className = 'lyrics-text synced';
+      renderSyncedLyrics(_lrcLines, lyricsText);
+      lyricsText.style.display = 'block';
+      lyricsBody.scrollTop = 0;
+      // Start syncing only if player is already playing
+      if (ytPlayer && ytPlayer.getPlayerState &&
+          ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+        startLrcSync(lyricsBody);
+      }
+    } else {
+      // Plain lyrics fallback
+      _syncActive = false;
+      lyricsText.className = 'lyrics-text';
+      lyricsText.innerHTML = formatLyrics(data.lyrics);
+      lyricsText.style.display = 'block';
+      lyricsBody.scrollTop = 0;
+    }
   } catch {
     lyricsSection.style.display = 'none';
   }
@@ -796,6 +901,13 @@ function formatLyrics(raw) {
   }).join('\n');
 }
 
+// Pause auto-scroll briefly when user manually scrolls the lyrics panel
+lyricsBody.addEventListener('scroll', () => {
+  _userScrolling = true;
+  clearTimeout(_scrollTimer);
+  _scrollTimer = setTimeout(() => { _userScrolling = false; }, 3000);
+}, { passive: true });
+
 // ---- Sing Mode ----
 lyricsExpand.addEventListener('click', openSingMode);
 singClose.addEventListener('click', closeSingMode);
@@ -803,15 +915,48 @@ singClose.addEventListener('click', closeSingMode);
 function openSingMode() {
   if (lyricsText.style.display === 'none') return;
   singTitle.textContent  = lyricsTitle.textContent;
-  singArtist.textContent = lyricsArtist.textContent;
-  singBody.innerHTML     = lyricsText.innerHTML;
+  singArtist.innerHTML   = lyricsArtist.innerHTML;
   singMode.style.display = 'flex';
   document.body.style.overflow = 'hidden';
+
+  if (_syncActive && _lrcLines.length) {
+    // Re-render synced lines in sing mode body
+    singBody.innerHTML = '';
+    singBody.className = 'sing-body synced';
+    _lrcLines.forEach((line, i) => {
+      const el = document.createElement('div');
+      el.className = 'lyric-line';
+      if (_lrcLines[i].el) el.className = _lrcLines[i].el.className; // carry over active/past
+      el.textContent = line.text || ' ';
+      if (!line.text) el.classList.add('lyric-blank');
+      singBody.appendChild(el);
+      _lrcLines[i].el = el; // redirect sync to sing mode elements
+    });
+    startLrcSync(singBody);
+
+    // Pause scrolling on manual scroll in sing mode too
+    singBody.addEventListener('scroll', () => {
+      _userScrolling = true;
+      clearTimeout(_scrollTimer);
+      _scrollTimer = setTimeout(() => { _userScrolling = false; }, 3000);
+    }, { passive: true, once: false });
+  } else {
+    singBody.innerHTML = lyricsText.innerHTML;
+    singBody.className = 'sing-body';
+  }
 }
 
 function closeSingMode() {
   singMode.style.display = 'none';
   document.body.style.overflow = '';
+  // Redirect sync back to the sidebar lyrics panel
+  if (_syncActive && _lrcLines.length) {
+    _lrcLines.forEach((line, i) => {
+      const el = lyricsText.children[i];
+      if (el) _lrcLines[i].el = el;
+    });
+    startLrcSync(lyricsBody);
+  }
 }
 
 

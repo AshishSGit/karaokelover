@@ -3375,3 +3375,39 @@ button, a, [role="button"], input, select {
   border-color: rgba(147,51,234,0.6);
   color: #f3e8ff;
 }
+
+/* ==========================================
+   Synced Lyrics
+   ========================================== */
+.lyrics-text.synced,
+.sing-body.synced {
+  white-space: normal;
+}
+.lyric-line {
+  display: block;
+  padding: 6px 4px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(180,150,255,0.4);
+  border-radius: 6px;
+  transition: color 0.25s, transform 0.2s, font-size 0.2s;
+  cursor: default;
+  min-height: 1.6em;
+}
+.lyric-blank { min-height: 0.8em; }
+.lyric-past  { color: rgba(180,150,255,0.28); }
+.lyric-active {
+  color: #f3e8ff;
+  font-size: 17px;
+  font-weight: 700;
+  transform: translateX(4px);
+  text-shadow: 0 0 20px rgba(147,51,234,0.5);
+}
+
+/* Sing mode synced — bigger active line */
+.sing-body.synced .lyric-line  { font-size: 18px; padding: 8px 6px; }
+.sing-body.synced .lyric-active {
+  font-size: 26px;
+  transform: translateX(6px);
+  text-shadow: 0 0 30px rgba(147,51,234,0.7), 0 0 60px rgba(236,72,153,0.3);
+}

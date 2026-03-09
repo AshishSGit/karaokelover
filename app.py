@@ -1070,10 +1070,14 @@ def lyrics():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-    best = next((r for r in results if r.get('plainLyrics')), None) if results else None
+    # Prefer entries that have syncedLyrics (timed LRC), fall back to plainLyrics
+    best_synced = next((r for r in results if r.get('syncedLyrics')), None) if results else None
+    best_plain  = next((r for r in results if r.get('plainLyrics')),  None) if results else None
+    best = best_synced or best_plain
     if best:
         return jsonify({
-            'lyrics': best['plainLyrics'],
+            'lyrics':       best.get('plainLyrics', ''),
+            'syncedLyrics': best.get('syncedLyrics', ''),
             'artist': best.get('artistName', artist or ''),
             'song':   best.get('trackName',  song),
         })
