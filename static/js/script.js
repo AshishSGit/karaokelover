@@ -215,13 +215,18 @@ function hideDropdown() {
   searchForm.classList.remove('dropdown-open');
 }
 
+let _dropdownPending = false; // user clicked search before auth resolved
+
 function initSearchDropdown() {
-  searchInput.addEventListener('focus', showDropdown);
+  searchInput.addEventListener('focus', () => {
+    if (!_currentUid) { _dropdownPending = true; return; } // auth not ready yet
+    showDropdown();
+  });
   searchInput.addEventListener('input', () => renderDropdown(searchInput.value.trim()));
   searchInput.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideDropdown(); });
   // On mobile: blur fires when user taps outside the input; delay 200ms so
   // mousedown on a dropdown item (which uses e.preventDefault to keep focus) fires first
-  searchInput.addEventListener('blur', () => setTimeout(hideDropdown, 200));
+  searchInput.addEventListener('blur', () => { _dropdownPending = false; setTimeout(hideDropdown, 200); });
   sdClear.addEventListener('click', () => {
     const key = queryKey();
     if (key) localStorage.removeItem(key);
@@ -235,8 +240,8 @@ function initSearchDropdown() {
       renderHistory();
       renderFavorites();
     } else if (user) {
-      // If search input is already focused, re-render dropdown now that UID is available
-      if (document.activeElement === searchInput) showDropdown();
+      // User clicked search before auth resolved — show dropdown now
+      if (_dropdownPending) { _dropdownPending = false; showDropdown(); }
       // Consolidate history from all possible sources into the UID key
       const _read = k => { try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch { return []; } };
       const uidHist   = _read(histKey());
