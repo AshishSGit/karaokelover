@@ -642,6 +642,7 @@ function onCardClick(card, video, index) {
   playerChannel.textContent = video.channel;
   _setPlayerArt(video);
   playerSection.style.display = 'block';
+  setTimeout(() => window.scrollTo(0, playerSection.offsetTop), 0);
 
   // Update mini player
   updateMiniInfo(video);
@@ -710,6 +711,7 @@ function playAtIndex(index) {
     playerChannel.textContent = video.channel || '';
     _setPlayerArt(video);
     playerSection.style.display = 'block';
+    setTimeout(() => window.scrollTo(0, playerSection.offsetTop), 0);
     updateMiniInfo(video);
     if (ytReady) loadPlayer(video.video_id);
     else pendingVideoId = video.video_id;
@@ -993,6 +995,7 @@ function showResumeBanner() {
     playerChannel.textContent = v.channel || '';
     _setPlayerArt(v);
     playerSection.style.display = 'block';
+    setTimeout(() => window.scrollTo(0, playerSection.offsetTop), 0);
     updateMiniInfo(v);
     showMiniPlayer();
     fetchLyrics(v.title);
@@ -1052,13 +1055,13 @@ function renderHistory() {
       playerChannel.textContent = video.channel;
       _setPlayerArt(video);
       playerSection.style.display = 'block';
+      setTimeout(() => window.scrollTo(0, playerSection.offsetTop), 0);
       updateMiniInfo(video);
       if (ytReady) loadPlayer(video.video_id);
       else pendingVideoId = video.video_id;
       fetchLyrics(video.title);
       addToHistory(video);
       updatePlayerFavBtn();
-      setTimeout(() => playerSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
     });
   });
   historySection.style.display = 'block';
