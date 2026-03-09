@@ -537,6 +537,7 @@ header, section, footer, .loading-overlay,
     bottom: 0; right: 0; left: 0; width: auto;
     border-radius: 16px 16px 0 0;
     border-bottom: none;
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
   }
 }
 

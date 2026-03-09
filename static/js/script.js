@@ -841,9 +841,7 @@ function startLrcSync(targetBody) {
     });
 
     if (!_userScrolling && _lrcLines[idx].el) {
-      const el  = _lrcLines[idx].el;
-      const top = el.offsetTop - targetBody.clientHeight / 2 + el.clientHeight / 2;
-      targetBody.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      _lrcLines[idx].el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }, 200);
 }
@@ -904,11 +902,14 @@ function formatLyrics(raw) {
 }
 
 // Pause auto-scroll briefly when user manually scrolls the lyrics panel
-lyricsBody.addEventListener('scroll', () => {
+// Listen on lyricsSection too — that's the real scroller in player context
+function _onManualScroll() {
   _userScrolling = true;
   clearTimeout(_scrollTimer);
   _scrollTimer = setTimeout(() => { _userScrolling = false; }, 3000);
-}, { passive: true });
+}
+lyricsBody.addEventListener('scroll',    _onManualScroll, { passive: true });
+lyricsSection.addEventListener('scroll', _onManualScroll, { passive: true });
 
 // ---- Sing Mode ----
 lyricsExpand.addEventListener('click', openSingMode);
