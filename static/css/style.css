@@ -3567,6 +3567,24 @@ button, a, [role="button"], input, select {
 .pro-btn:active { transform: scale(0.97); }
 
 /* ==========================================
+   PLAYER-FIRST MODE (body.url-video)
+   Applied when page loads with ?v= URL so the player is immediately
+   visible without scrolling. Hero collapses to search-bar only.
+   ========================================== */
+
+body.url-video .hero {
+  padding: 16px 24px 12px;
+  min-height: unset;
+}
+body.url-video .hero::after           { display: none; }
+body.url-video .hero-center-light     { display: none; }
+body.url-video .hero-badge,
+body.url-video .hero-title,
+body.url-video .hero-sub              { display: none; }
+body.url-video .filter-bar,
+body.url-video .quick-picks           { display: none; }
+
+/* ==========================================
    URL STATE — Share button pulse + live indicator (v46)
    ========================================== */
 

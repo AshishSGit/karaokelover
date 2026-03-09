@@ -230,6 +230,9 @@ function _checkUrlState() {
   const videoId = new URLSearchParams(location.search).get('v');
   if (!videoId) return false;
 
+  // Collapse hero → player section is immediately visible, no scrolling required.
+  document.body.classList.add('url-video');
+
   // Find saved metadata: prefer _POS_KEY (same device refresh), then history
   let v = null, startSec = 0;
   try {
@@ -259,16 +262,13 @@ function _checkUrlState() {
   playerSection.style.display    = 'block';
   updateMiniInfo(v);
 
-  // Prevent browser from restoring its own scroll position after refresh.
+  // Hero is collapsed (body.url-video), so player section is near the top.
+  // A single rAF is enough to land right on it after the first paint.
   if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-  // getBoundingClientRect gives document-relative top after layout, minus header offset.
-  // Two attempts: rAF (after display:block paint) + 600ms (after trending chips load).
-  const _scrollToPlayer = () => {
-    const y = playerSection.getBoundingClientRect().top + (window.scrollY || window.pageYOffset) - 65;
+  requestAnimationFrame(() => {
+    const y = playerSection.getBoundingClientRect().top + window.scrollY - 65;
     window.scrollTo(0, Math.max(0, y));
-  };
-  requestAnimationFrame(_scrollToPlayer);
-  setTimeout(_scrollToPlayer, 600);
+  });
 
   // Show resume overlay — don't autoplay on refresh (browsers block it, causing broken state).
   // User explicitly clicks ▶ Resume, then loadPlayer() runs.
@@ -931,23 +931,27 @@ playerFavBtn.addEventListener('click', () => {
 });
 
 closePlayerBtn.addEventListener('click', () => {
-  // Scroll back to search bar — video keeps playing, mini player appears via IntersectionObserver
+  document.body.classList.remove('url-video'); // restore full hero
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
 // Backdrop is hidden in stage mode; no-op
 playerBackdrop.addEventListener('click', () => {});
 
-// Back button: if URL no longer has ?v=, scroll home (player keeps playing)
+// Back button: if URL no longer has ?v=, restore hero and scroll home
 window.addEventListener('popstate', () => {
-  if (!new URLSearchParams(location.search).get('v') && currentVideo) {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    showToast('Music keeps playing ↓', '');
+  if (!new URLSearchParams(location.search).get('v')) {
+    document.body.classList.remove('url-video');
+    if (currentVideo) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showToast('Music keeps playing ↓', '');
+    }
   }
 });
 
 // Mini-stop: actually stop everything
 miniStop.addEventListener('click', () => {
+  document.body.classList.remove('url-video'); // restore full hero
   if (ytPlayer) ytPlayer.stopVideo();
   currentVideo = null;
   try { history.replaceState({}, '', '/'); } catch {}
