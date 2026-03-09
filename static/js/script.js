@@ -1547,8 +1547,7 @@ async function fetchTrending() {
       btn.textContent = s.song;
       btn.addEventListener('click', () => {
         searchInput.value = q;
-        activeTab = 'all';
-        updateTabs();
+        clearAllFilters();
         doSearch(q);
       });
       trendingChips.appendChild(btn);
@@ -1626,6 +1625,8 @@ function renderFavorites() {
       addToQueue(video);
     });
     fc.addEventListener('click', () => {
+      favoritesSection.style.display = 'none';
+      historySection.style.display = 'none';
       currentResults = [video]; currentIndex = 0; currentVideo = video;
       playerTitle.textContent   = video.title;
       playerChannel.textContent = video.channel || '';
@@ -1838,8 +1839,7 @@ async function fetchRecommendations(videoTitle) {
       btn.textContent = `${r.song}${r.artist ? ' — ' + r.artist : ''}`;
       btn.addEventListener('click', () => {
         searchInput.value = q;
-        activeTab = 'all';
-        updateTabs();
+        clearAllFilters();
         doSearch(q);
         window.scrollTo({ top: 0, behavior: 'smooth' });
       });

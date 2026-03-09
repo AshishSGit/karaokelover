@@ -71,6 +71,11 @@ async function signInWithGoogle() {
     _pendingWelcome = true;
     _closeModal();
   } catch (err) {
+    if (err.code === 'auth/popup-blocked') {
+      // iOS Safari / popup blockers — fall back to full-page redirect
+      auth.signInWithRedirect(provider);
+      return;
+    }
     _showAuthError(_friendlyError(err));
   }
 }
@@ -404,10 +409,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (dd) dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
     });
 
-  /* Close dropdown on outside click */
-  document.addEventListener('click', () => {
+  /* Close dropdown on outside click only */
+  document.addEventListener('click', (e) => {
     const dd = document.getElementById('userDropdown');
-    if (dd) dd.style.display = 'none';
+    if (dd && !dd.contains(e.target)) dd.style.display = 'none';
   });
 
   /* Sign out */
