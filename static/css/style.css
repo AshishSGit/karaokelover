@@ -3579,7 +3579,7 @@ button, a, [role="button"], input, select {
    ========================================== */
 
 body.url-video .hero {
-  padding: 16px 24px 12px;
+  padding: 0;
   min-height: unset;
 }
 body.url-video .hero::after           { display: none; }
@@ -3589,6 +3589,10 @@ body.url-video .hero-title,
 body.url-video .hero-sub              { display: none; }
 body.url-video .filter-bar,
 body.url-video .quick-picks           { display: none; }
+body.url-video .search-form           { display: none; }
+/* Player section fills content height only (no full-viewport min-height) */
+body.url-video .player-section        { min-height: unset; }
+body.url-video .player-section > .section-wrap { padding-top: 8px; }
 
 /* ==========================================
    URL STATE — Share button pulse + live indicator (v46)
