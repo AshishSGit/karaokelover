@@ -3505,6 +3505,33 @@ button, a, [role="button"], input, select {
 }
 
 /* ==========================================
+   PLAYER LOADING SHIMMER (v47)
+   — shows while YouTube iframe is initialising
+   ========================================== */
+
+@keyframes player-shimmer {
+  0%   { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Empty ytPlayer div (before iframe is created) shows a shimmer */
+#ytPlayer:empty {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  background: linear-gradient(
+    90deg,
+    rgba(20,12,42,0.9) 0%,
+    rgba(60,30,100,0.5) 40%,
+    rgba(147,51,234,0.15) 50%,
+    rgba(60,30,100,0.5) 60%,
+    rgba(20,12,42,0.9) 100%
+  );
+  background-size: 200% 100%;
+  animation: player-shimmer 1.8s ease-in-out infinite;
+}
+
+/* ==========================================
    URL STATE — Share button pulse + live indicator (v46)
    ========================================== */
 

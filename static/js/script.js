@@ -255,6 +255,16 @@ function _checkUrlState() {
   playerSection.style.display    = 'block';
   updateMiniInfo(v);
 
+  // Scroll to player immediately, then again after trending/DOM settles
+  window.scrollTo(0, 0); // ensure we're at top first so offsetTop calculation is clean
+  setTimeout(() => {
+    window.scrollTo({ top: Math.max(0, playerSection.offsetTop - 65) });
+  }, 0);
+  // Second scroll after async content (trending chips) may have shifted layout
+  setTimeout(() => {
+    window.scrollTo({ top: Math.max(0, playerSection.offsetTop - 65) });
+  }, 400);
+
   if (startSec > 2) {
     const mm = Math.floor(startSec / 60);
     const ss = String(Math.floor(startSec % 60)).padStart(2, '0');
@@ -265,7 +275,11 @@ function _checkUrlState() {
   else { pendingVideoId = videoId; _pendingStartSec = startSec; }
 
   if (v.title !== 'Loading…') {
-    fetchLyrics(v.title);
+    // Delay fetchLyrics slightly so the YouTube iframe has time to load first
+    // (avoids showing the no-lyrics vibes card before we know if lyrics exist)
+    setTimeout(() => {
+      if (currentVideo && currentVideo.video_id === videoId) fetchLyrics(v.title);
+    }, 600);
     fetchRecommendations(v.title);
     addToHistory(v);
     updatePlayerFavBtn();
