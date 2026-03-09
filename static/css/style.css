@@ -3532,6 +3532,41 @@ button, a, [role="button"], input, select {
 }
 
 /* ==========================================
+   PLAYER RESUME OVERLAY (refresh / back-button state)
+   ========================================== */
+
+/* Covers the player-wrap (which already has position:relative + overflow:hidden) */
+.player-resume-overlay {
+  position: absolute; inset: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(4, 2, 12, 0.72);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.pro-thumb {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; opacity: 0.3;
+}
+.pro-content {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 14px; padding: 20px; text-align: center;
+}
+.pro-position {
+  font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(255,255,255,0.55); margin: 0;
+}
+.pro-btn {
+  background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+  color: #fff; border: none; border-radius: 50px;
+  padding: 13px 44px; font-size: 1.05rem; font-family: inherit;
+  font-weight: 700; letter-spacing: 0.04em; cursor: pointer;
+  box-shadow: 0 0 32px rgba(147,51,234,0.55), 0 4px 16px rgba(0,0,0,0.45);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.pro-btn:hover  { transform: scale(1.07); box-shadow: 0 0 50px rgba(147,51,234,0.75); }
+.pro-btn:active { transform: scale(0.97); }
+
+/* ==========================================
    URL STATE — Share button pulse + live indicator (v46)
    ========================================== */
 

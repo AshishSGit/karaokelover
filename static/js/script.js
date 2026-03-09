@@ -199,6 +199,10 @@ const resumeBanner     = document.getElementById('resumeBanner');
 const resumeBannerText = document.getElementById('resumeBannerText');
 const resumeBannerBtn  = document.getElementById('resumeBannerBtn');
 const resumeBannerDismiss = document.getElementById('resumeBannerDismiss');
+const playerResumeOverlay = document.getElementById('playerResumeOverlay');
+const proThumb    = document.getElementById('proThumb');
+const proPosition = document.getElementById('proPosition');
+const proBtn      = document.getElementById('proBtn');
 
 // ==========================================
 // INIT
@@ -266,14 +270,30 @@ function _checkUrlState() {
   requestAnimationFrame(_scrollToPlayer);
   setTimeout(_scrollToPlayer, 600);
 
-  if (startSec > 2) {
-    const mm = Math.floor(startSec / 60);
-    const ss = String(Math.floor(startSec % 60)).padStart(2, '0');
-    showToast(`▶ Resuming from ${mm}:${ss}`, 'success');
+  // Show resume overlay — don't autoplay on refresh (browsers block it, causing broken state).
+  // User explicitly clicks ▶ Resume, then loadPlayer() runs.
+  if (playerResumeOverlay) {
+    if (proThumb) proThumb.src = v.thumbnail || '';
+    if (proPosition) {
+      if (startSec > 2) {
+        const mm = Math.floor(startSec / 60);
+        const ss = String(Math.floor(startSec % 60)).padStart(2, '0');
+        proPosition.textContent = `Paused at ${mm}:${ss}`;
+      } else {
+        proPosition.textContent = 'Tap to start';
+      }
+    }
+    playerResumeOverlay.style.display = 'flex';
+    if (proBtn) proBtn.onclick = () => {
+      playerResumeOverlay.style.display = 'none';
+      if (ytReady) loadPlayer(videoId, startSec);
+      else { pendingVideoId = videoId; _pendingStartSec = startSec; }
+    };
+  } else {
+    // Fallback: no overlay element — load directly
+    if (ytReady) loadPlayer(videoId, startSec);
+    else { pendingVideoId = videoId; _pendingStartSec = startSec; }
   }
-
-  if (ytReady) loadPlayer(videoId, startSec);
-  else { pendingVideoId = videoId; _pendingStartSec = startSec; }
 
   if (v.title !== 'Loading…') {
     fetchLyrics(v.title);
@@ -597,6 +617,7 @@ function onYouTubeIframeAPIReady() {
 
 function loadPlayer(videoId, startSeconds = 0) {
   resumeBanner.style.display = 'none';
+  if (playerResumeOverlay) playerResumeOverlay.style.display = 'none';
   _updateVideoUrl(videoId);
   if (ytPlayer) {
     if (startSeconds > 2) {
