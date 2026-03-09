@@ -821,7 +821,7 @@ body.concert-live .player-bar::before {
     padding: 16px 16px 40px;
   }
   .player-section > .section-wrap > .player-container { position: relative; top: 0; }
-  .player-section .lyrics-section { position: relative; top: 0; max-height: none; overflow-y: visible; }
+  .player-section .lyrics-section { position: relative; top: 0; max-height: 52vh; overflow-y: auto; }
 }
 
 .now-playing-badge {

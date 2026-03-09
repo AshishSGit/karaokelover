@@ -641,8 +641,10 @@ function onCardClick(card, video, index) {
   playerTitle.textContent   = video.title;
   playerChannel.textContent = video.channel;
   _setPlayerArt(video);
+  historySection.style.display  = 'none';
+  favoritesSection.style.display = 'none';
   playerSection.style.display = 'block';
-  setTimeout(() => window.scrollTo(0, playerSection.offsetTop), 0);
+  setTimeout(() => window.scrollTo(0, Math.max(0, playerSection.offsetTop - 65)), 0);
 
   // Update mini player
   updateMiniInfo(video);
@@ -710,8 +712,10 @@ function playAtIndex(index) {
     playerTitle.textContent   = video.title;
     playerChannel.textContent = video.channel || '';
     _setPlayerArt(video);
+    historySection.style.display  = 'none';
+    favoritesSection.style.display = 'none';
     playerSection.style.display = 'block';
-    setTimeout(() => window.scrollTo(0, playerSection.offsetTop), 0);
+    setTimeout(() => window.scrollTo(0, Math.max(0, playerSection.offsetTop - 65)), 0);
     updateMiniInfo(video);
     if (ytReady) loadPlayer(video.video_id);
     else pendingVideoId = video.video_id;
@@ -843,9 +847,25 @@ function startLrcSync(targetBody) {
     });
 
     if (!_userScrolling && _lrcLines[idx].el) {
-      _lrcLines[idx].el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      _scrollActiveLyric(_lrcLines[idx].el);
     }
   }, 200);
+}
+
+// Scroll active lyric into view within its container ONLY — never touch page scroll
+function _scrollActiveLyric(el) {
+  let node = el.parentElement;
+  while (node && node !== document.body) {
+    const oy = window.getComputedStyle(node).overflowY;
+    if (oy === 'auto' || oy === 'scroll') {
+      const elRect   = el.getBoundingClientRect();
+      const nodeRect = node.getBoundingClientRect();
+      node.scrollBy({ top: elRect.top - nodeRect.top - node.clientHeight / 2 + el.clientHeight / 2, behavior: 'smooth' });
+      return;
+    }
+    node = node.parentElement;
+  }
+  // No scrollable container found (mobile layout) — don't scroll the page
 }
 
 async function fetchLyrics(videoTitle) {
@@ -994,8 +1014,10 @@ function showResumeBanner() {
     playerTitle.textContent   = v.title;
     playerChannel.textContent = v.channel || '';
     _setPlayerArt(v);
+    historySection.style.display  = 'none';
+    favoritesSection.style.display = 'none';
     playerSection.style.display = 'block';
-    setTimeout(() => window.scrollTo(0, playerSection.offsetTop), 0);
+    setTimeout(() => window.scrollTo(0, Math.max(0, playerSection.offsetTop - 65)), 0);
     updateMiniInfo(v);
     showMiniPlayer();
     fetchLyrics(v.title);
@@ -1054,8 +1076,10 @@ function renderHistory() {
       playerTitle.textContent   = video.title;
       playerChannel.textContent = video.channel;
       _setPlayerArt(video);
+      historySection.style.display  = 'none';
+      favoritesSection.style.display = 'none';
       playerSection.style.display = 'block';
-      setTimeout(() => window.scrollTo(0, playerSection.offsetTop), 0);
+      setTimeout(() => window.scrollTo(0, Math.max(0, playerSection.offsetTop - 65)), 0);
       updateMiniInfo(video);
       if (ytReady) loadPlayer(video.video_id);
       else pendingVideoId = video.video_id;
