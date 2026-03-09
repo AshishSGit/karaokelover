@@ -782,12 +782,14 @@ let _syncActive    = false; // true when synced LRC data is loaded
 let _userScrolling = false;
 let _scrollTimer   = null;
 
+const LRC_OFFSET = 1.5; // seconds — delays highlight to match karaoke track (tune if needed)
+
 function parseLRC(lrc) {
   const lines = [];
   const re = /\[(\d+):(\d+(?:\.\d+)?)\](.*)/g;
   let m;
   while ((m = re.exec(lrc)) !== null) {
-    const time = parseInt(m[1], 10) * 60 + parseFloat(m[2]);
+    const time = parseInt(m[1], 10) * 60 + parseFloat(m[2]) + LRC_OFFSET;
     lines.push({ time, text: m[3].trim() });
   }
   return lines.sort((a, b) => a.time - b.time);
