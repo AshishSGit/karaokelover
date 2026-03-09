@@ -437,8 +437,363 @@ SONG_PAGES = [
     {'artist': 'Aimyon',            'song': 'Marigold',                       'slug': 'marigold-aimyon'},
     {'artist': 'YOASOBI',           'song': 'Idol',                           'slug': 'yoasobi-idol'},
     {'artist': 'Official HIGE DANdism', 'song': 'Pretender',                  'slug': 'pretender-higedan'},
+    # ── More Pop Hits ──────────────────────────────────────────────────────
+    {'artist': 'Taylor Swift',      'song': 'Style',                          'slug': 'taylor-style'},
+    {'artist': 'Taylor Swift',      'song': 'Fearless',                       'slug': 'taylor-fearless'},
+    {'artist': 'Taylor Swift',      'song': 'Red',                            'slug': 'taylor-red'},
+    {'artist': 'Taylor Swift',      'song': 'Wildest Dreams',                 'slug': 'wildest-dreams'},
+    {'artist': 'Taylor Swift',      'song': 'Cardigan',                       'slug': 'cardigan'},
+    {'artist': 'Taylor Swift',      'song': 'August',                         'slug': 'august-taylor'},
+    {'artist': 'Taylor Swift',      'song': 'All Too Well',                   'slug': 'all-too-well'},
+    {'artist': 'Taylor Swift',      'song': 'Enchanted',                      'slug': 'enchanted'},
+    {'artist': 'Ariana Grande',     'song': 'No Tears Left to Cry',          'slug': 'no-tears-left-to-cry'},
+    {'artist': 'Ariana Grande',     'song': 'Into You',                       'slug': 'into-you'},
+    {'artist': 'Ariana Grande',     'song': 'God Is a Woman',                 'slug': 'god-is-a-woman'},
+    {'artist': 'Ariana Grande',     'song': 'positions',                      'slug': 'ariana-positions'},
+    {'artist': 'Billie Eilish',     'song': 'Ocean Eyes',                     'slug': 'ocean-eyes'},
+    {'artist': 'Billie Eilish',     'song': 'When the Party\'s Over',         'slug': 'when-the-partys-over'},
+    {'artist': 'Billie Eilish',     'song': 'Lovely',                         'slug': 'lovely'},
+    {'artist': 'Billie Eilish',     'song': 'What Was I Made For',            'slug': 'what-was-i-made-for'},
+    {'artist': 'Olivia Rodrigo',    'song': 'brutal',                         'slug': 'brutal-olivia'},
+    {'artist': 'Olivia Rodrigo',    'song': 'traitor',                        'slug': 'traitor-olivia'},
+    {'artist': 'Olivia Rodrigo',    'song': 'deja vu',                        'slug': 'deja-vu-olivia'},
+    {'artist': 'Olivia Rodrigo',    'song': 'favorite crime',                 'slug': 'favorite-crime'},
+    {'artist': 'Dua Lipa',          'song': 'Physical',                       'slug': 'dua-physical'},
+    {'artist': 'Dua Lipa',          'song': 'Be the One',                     'slug': 'be-the-one'},
+    {'artist': 'Dua Lipa',          'song': 'IDGAF',                          'slug': 'dua-idgaf'},
+    {'artist': 'Harry Styles',      'song': 'Adore You',                      'slug': 'adore-you'},
+    {'artist': 'Harry Styles',      'song': 'Sign of the Times',              'slug': 'sign-of-the-times'},
+    {'artist': 'Harry Styles',      'song': 'Golden',                         'slug': 'golden-harry'},
+    {'artist': 'Ed Sheeran',        'song': 'Castle on the Hill',             'slug': 'castle-on-the-hill'},
+    {'artist': 'Ed Sheeran',        'song': 'Galway Girl',                    'slug': 'galway-girl'},
+    {'artist': 'Ed Sheeran',        'song': 'Happier',                        'slug': 'ed-happier'},
+    {'artist': 'Ed Sheeran',        'song': 'Bad Habits',                     'slug': 'bad-habits'},
+    {'artist': 'Ed Sheeran',        'song': 'Overpass Graffiti',              'slug': 'overpass-graffiti'},
+    {'artist': 'Justin Bieber',     'song': 'Sorry',                          'slug': 'sorry-bieber'},
+    {'artist': 'Justin Bieber',     'song': 'What Do You Mean',               'slug': 'what-do-you-mean'},
+    {'artist': 'Justin Bieber',     'song': 'Peaches',                        'slug': 'peaches-bieber'},
+    {'artist': 'Justin Bieber',     'song': 'Ghost',                          'slug': 'ghost-bieber'},
+    {'artist': 'Selena Gomez',      'song': 'Same Old Love',                  'slug': 'same-old-love'},
+    {'artist': 'Selena Gomez',      'song': 'Bad Liar',                       'slug': 'bad-liar'},
+    {'artist': 'Selena Gomez',      'song': 'Wolves',                         'slug': 'wolves-selena'},
+    {'artist': 'Selena Gomez',      'song': 'Come & Get It',                  'slug': 'come-and-get-it'},
+    {'artist': 'Miley Cyrus',       'song': 'Wrecking Ball',                  'slug': 'wrecking-ball'},
+    {'artist': 'Miley Cyrus',       'song': 'The Climb',                      'slug': 'the-climb'},
+    {'artist': 'Miley Cyrus',       'song': 'Party in the USA',               'slug': 'party-in-the-usa'},
+    {'artist': 'Sabrina Carpenter', 'song': 'Please Please Please',           'slug': 'please-please-please'},
+    {'artist': 'Sabrina Carpenter', 'song': 'Feather',                        'slug': 'feather'},
+    {'artist': 'Gracie Abrams',     'song': 'That\'s So True',                'slug': 'thats-so-true'},
+    {'artist': 'Chappell Roan',     'song': 'Hot to Go',                      'slug': 'hot-to-go'},
+    {'artist': 'Chappell Roan',     'song': 'Good Luck Babe',                 'slug': 'good-luck-babe'},
+    {'artist': 'Charli XCX',        'song': 'Boom Clap',                      'slug': 'boom-clap'},
+    {'artist': 'Charli XCX',        'song': 'Break the Rules',                'slug': 'break-the-rules'},
+    {'artist': 'SZA',               'song': 'Good Days',                      'slug': 'sza-good-days'},
+    {'artist': 'SZA',               'song': 'Kill Bill',                      'slug': 'sza-kill-bill'},
+    {'artist': 'SZA',               'song': 'Snooze',                         'slug': 'sza-snooze'},
+    {'artist': 'Khalid',            'song': 'Young Dumb & Broke',             'slug': 'young-dumb-and-broke'},
+    {'artist': 'Khalid',            'song': 'Talk',                           'slug': 'khalid-talk'},
+    {'artist': 'Halsey',            'song': 'Without Me',                     'slug': 'without-me-halsey'},
+    {'artist': 'Halsey',            'song': 'Colors',                         'slug': 'colors-halsey'},
+    {'artist': 'Camila Cabello',    'song': 'Crying in the Club',             'slug': 'crying-in-the-club'},
+    {'artist': 'Camila Cabello',    'song': 'Never Be the Same',              'slug': 'never-be-the-same'},
+    {'artist': 'Lana Del Rey',      'song': 'Summertime Sadness',             'slug': 'summertime-sadness'},
+    {'artist': 'Lana Del Rey',      'song': 'Video Games',                    'slug': 'video-games-lana'},
+    {'artist': 'Lana Del Rey',      'song': 'Young and Beautiful',            'slug': 'young-and-beautiful'},
+    {'artist': 'Lana Del Rey',      'song': 'Born to Die',                    'slug': 'born-to-die'},
+    {'artist': 'Troye Sivan',       'song': 'Rush',                           'slug': 'troye-rush'},
+    {'artist': 'Troye Sivan',       'song': 'Heaven',                         'slug': 'troye-heaven'},
+    {'artist': 'Shawn Mendes',      'song': 'Mercy',                          'slug': 'shawn-mercy'},
+    {'artist': 'Shawn Mendes',      'song': 'In My Blood',                    'slug': 'in-my-blood'},
+    {'artist': 'Shawn Mendes',      'song': 'Stitches',                       'slug': 'stitches'},
+    {'artist': 'Niall Horan',       'song': 'Slow Hands',                     'slug': 'slow-hands'},
+    {'artist': 'Niall Horan',       'song': 'This Town',                      'slug': 'this-town'},
+    # ── More Rock & Alternative ─────────────────────────────────────────────
+    {'artist': 'Foo Fighters',      'song': 'Best of You',                    'slug': 'best-of-you'},
+    {'artist': 'Foo Fighters',      'song': 'Everlong',                       'slug': 'everlong'},
+    {'artist': 'Foo Fighters',      'song': 'Learn to Fly',                   'slug': 'learn-to-fly'},
+    {'artist': 'Coldplay',          'song': 'The Scientist',                  'slug': 'the-scientist'},
+    {'artist': 'Coldplay',          'song': 'Clocks',                         'slug': 'clocks'},
+    {'artist': 'Coldplay',          'song': 'Viva la Vida',                   'slug': 'viva-la-vida'},
+    {'artist': 'Coldplay',          'song': 'A Sky Full of Stars',            'slug': 'sky-full-of-stars'},
+    {'artist': 'Coldplay',          'song': 'Something Just Like This',       'slug': 'something-just-like-this'},
+    {'artist': 'Muse',              'song': 'Madness',                        'slug': 'madness-muse'},
+    {'artist': 'Muse',              'song': 'Uprising',                       'slug': 'uprising-muse'},
+    {'artist': 'Arctic Monkeys',    'song': 'Do I Wanna Know',                'slug': 'do-i-wanna-know'},
+    {'artist': 'Arctic Monkeys',    'song': 'R U Mine',                       'slug': 'r-u-mine'},
+    {'artist': 'Arctic Monkeys',    'song': 'I Wanna Be Yours',               'slug': 'i-wanna-be-yours'},
+    {'artist': 'The 1975',          'song': 'Chocolate',                      'slug': 'chocolate-1975'},
+    {'artist': 'The 1975',          'song': 'Love It If We Made It',          'slug': 'love-it-if-we-made-it'},
+    {'artist': 'Fall Out Boy',      'song': 'Sugar We\'re Going Down',        'slug': 'sugar-were-going-down'},
+    {'artist': 'Fall Out Boy',      'song': 'Centuries',                      'slug': 'centuries'},
+    {'artist': 'Panic! at the Disco','song': 'I Write Sins Not Tragedies',    'slug': 'i-write-sins'},
+    {'artist': 'Panic! at the Disco','song': 'High Hopes',                    'slug': 'high-hopes'},
+    {'artist': 'My Chemical Romance','song': 'Welcome to the Black Parade',   'slug': 'welcome-to-the-black-parade'},
+    {'artist': 'My Chemical Romance','song': 'I\'m Not Okay',                 'slug': 'im-not-okay'},
+    {'artist': 'Twenty One Pilots', 'song': 'Stressed Out',                   'slug': 'stressed-out'},
+    {'artist': 'Twenty One Pilots', 'song': 'Ride',                           'slug': 'ride-top'},
+    {'artist': 'Twenty One Pilots', 'song': 'Heathens',                       'slug': 'heathens'},
+    {'artist': 'Paramore',          'song': 'Still Into You',                 'slug': 'still-into-you'},
+    {'artist': 'Paramore',          'song': 'The Only Exception',             'slug': 'the-only-exception'},
+    {'artist': 'Paramore',          'song': 'Decode',                         'slug': 'decode'},
+    {'artist': 'Matchbox Twenty',   'song': '3 AM',                           'slug': '3am-matchbox'},
+    {'artist': 'Snow Patrol',       'song': 'Chasing Cars',                   'slug': 'chasing-cars'},
+    {'artist': 'OneRepublic',       'song': 'Apologize',                      'slug': 'apologize'},
+    {'artist': 'OneRepublic',       'song': 'Counting Stars',                 'slug': 'counting-stars'},
+    {'artist': 'Maroon 5',          'song': 'Moves Like Jagger',              'slug': 'moves-like-jagger'},
+    {'artist': 'Maroon 5',          'song': 'She Will Be Loved',              'slug': 'she-will-be-loved'},
+    {'artist': 'Maroon 5',          'song': 'Maps',                           'slug': 'maps-maroon'},
+    {'artist': 'Train',             'song': 'Drops of Jupiter',               'slug': 'drops-of-jupiter'},
+    {'artist': 'The Lumineers',     'song': 'Ho Hey',                         'slug': 'ho-hey'},
+    {'artist': 'The Lumineers',     'song': 'Ophelia',                        'slug': 'ophelia-lumineers'},
+    {'artist': 'Vance Joy',         'song': 'Riptide',                        'slug': 'riptide'},
+    {'artist': 'Hozier',            'song': 'Take Me to Church',              'slug': 'take-me-to-church'},
+    {'artist': 'Hozier',            'song': 'From Eden',                      'slug': 'from-eden'},
+    {'artist': 'James Bay',         'song': 'Hold Back the River',            'slug': 'hold-back-the-river'},
+    {'artist': 'James Bay',         'song': 'Let It Go',                      'slug': 'james-bay-let-it-go'},
+    {'artist': 'Bon Iver',          'song': 'Skinny Love',                    'slug': 'skinny-love'},
+    {'artist': 'Sufjan Stevens',    'song': 'Mystery of Love',                'slug': 'mystery-of-love'},
+    # ── More R&B / Soul ─────────────────────────────────────────────────────
+    {'artist': 'Beyonce',           'song': 'Lemonade',                       'slug': 'beyonce-lemonade'},
+    {'artist': 'Beyonce',           'song': 'Love On Top',                    'slug': 'love-on-top'},
+    {'artist': 'Beyonce',           'song': 'Drunk in Love',                  'slug': 'drunk-in-love'},
+    {'artist': 'Frank Ocean',       'song': 'Thinking Bout You',              'slug': 'thinking-bout-you'},
+    {'artist': 'Frank Ocean',       'song': 'Chanel',                         'slug': 'chanel-frank'},
+    {'artist': 'The Weeknd',        'song': 'Earned It',                      'slug': 'earned-it'},
+    {'artist': 'The Weeknd',        'song': 'After Hours',                    'slug': 'after-hours-weeknd'},
+    {'artist': 'Daniel Caesar',     'song': 'Best Part',                      'slug': 'best-part'},
+    {'artist': 'H.E.R.',            'song': 'Focus',                          'slug': 'focus-her'},
+    {'artist': 'Giveon',            'song': 'Heartbreak Anniversary',         'slug': 'heartbreak-anniversary'},
+    {'artist': 'Silk Sonic',        'song': 'Leave the Door Open',            'slug': 'leave-the-door-open'},
+    {'artist': 'Bruno Mars',        'song': 'That\'s What I Like',            'slug': 'thats-what-i-like'},
+    {'artist': 'Bruno Mars',        'song': 'Treasure',                       'slug': 'treasure'},
+    {'artist': 'Bruno Mars',        'song': 'Locked Out of Heaven',           'slug': 'locked-out-of-heaven'},
+    {'artist': 'Charlie Wilson',    'song': 'You Are',                        'slug': 'you-are-charlie'},
+    {'artist': 'John Legend',       'song': 'Ordinary People',                'slug': 'ordinary-people'},
+    {'artist': 'John Legend',       'song': 'Save Room',                      'slug': 'save-room'},
+    {'artist': 'Alicia Keys',       'song': 'If I Ain\'t Got You',            'slug': 'if-i-aint-got-you'},
+    {'artist': 'Alicia Keys',       'song': 'Empire State of Mind',           'slug': 'empire-state-of-mind'},
+    {'artist': 'Alicia Keys',       'song': 'Girl on Fire',                   'slug': 'girl-on-fire'},
+    {'artist': 'Mary J. Blige',     'song': 'No More Drama',                  'slug': 'no-more-drama'},
+    # ── Country ─────────────────────────────────────────────────────────────
+    {'artist': 'Dolly Parton',      'song': 'Jolene',                         'slug': 'jolene'},
+    {'artist': 'Dolly Parton',      'song': '9 to 5',                         'slug': '9-to-5'},
+    {'artist': 'Johnny Cash',       'song': 'Ring of Fire',                   'slug': 'ring-of-fire'},
+    {'artist': 'Johnny Cash',       'song': 'Hurt',                           'slug': 'hurt-cash'},
+    {'artist': 'Kenny Rogers',      'song': 'The Gambler',                    'slug': 'the-gambler'},
+    {'artist': 'Garth Brooks',      'song': 'Friends in Low Places',          'slug': 'friends-in-low-places'},
+    {'artist': 'Garth Brooks',      'song': 'The Dance',                      'slug': 'the-dance'},
+    {'artist': 'Luke Bryan',        'song': 'Play It Again',                  'slug': 'play-it-again'},
+    {'artist': 'Luke Combs',        'song': 'Fast Car',                       'slug': 'fast-car-combs'},
+    {'artist': 'Luke Combs',        'song': 'When It Rains It Pours',         'slug': 'when-it-rains'},
+    {'artist': 'Morgan Wallen',     'song': 'Wasted on You',                  'slug': 'wasted-on-you'},
+    {'artist': 'Morgan Wallen',     'song': 'Last Night',                     'slug': 'last-night-wallen'},
+    {'artist': 'Zac Brown Band',    'song': 'Chicken Fried',                  'slug': 'chicken-fried'},
+    {'artist': 'Blake Shelton',     'song': 'God\'s Country',                 'slug': 'gods-country'},
+    {'artist': 'Carrie Underwood',  'song': 'Before He Cheats',               'slug': 'before-he-cheats'},
+    {'artist': 'Carrie Underwood',  'song': 'Blown Away',                     'slug': 'blown-away'},
+    {'artist': 'Miranda Lambert',   'song': 'The House That Built Me',        'slug': 'the-house-that-built-me'},
+    {'artist': 'Brad Paisley',      'song': 'Then',                           'slug': 'then-brad'},
+    {'artist': 'Tim McGraw',        'song': 'Live Like You Were Dying',       'slug': 'live-like-you-were-dying'},
+    {'artist': 'Keith Urban',       'song': 'Blue Ain\'t Your Color',         'slug': 'blue-aint-your-color'},
+    {'artist': 'Thomas Rhett',      'song': 'Die a Happy Man',                'slug': 'die-a-happy-man'},
+    # ── More Classics ───────────────────────────────────────────────────────
+    {'artist': 'ABBA',              'song': 'Mamma Mia',                      'slug': 'mamma-mia'},
+    {'artist': 'ABBA',              'song': 'Voulez-Vous',                    'slug': 'voulez-vous'},
+    {'artist': 'ABBA',              'song': 'Fernando',                       'slug': 'fernando-abba'},
+    {'artist': 'ABBA',              'song': 'The Winner Takes It All',        'slug': 'the-winner-takes-it-all'},
+    {'artist': 'Elton John',        'song': 'Your Song',                      'slug': 'your-song'},
+    {'artist': 'Elton John',        'song': 'Crocodile Rock',                 'slug': 'crocodile-rock'},
+    {'artist': 'Elton John',        'song': 'Don\'t Let the Sun Go Down',     'slug': 'dont-let-the-sun-go-down'},
+    {'artist': 'Michael Jackson',   'song': 'Beat It',                        'slug': 'beat-it'},
+    {'artist': 'Michael Jackson',   'song': 'Rock With You',                  'slug': 'rock-with-you'},
+    {'artist': 'Michael Jackson',   'song': 'Human Nature',                   'slug': 'human-nature'},
+    {'artist': 'Prince',            'song': 'Purple Rain',                    'slug': 'purple-rain'},
+    {'artist': 'Prince',            'song': 'Kiss',                           'slug': 'prince-kiss'},
+    {'artist': 'Fleetwood Mac',     'song': 'Dreams',                         'slug': 'dreams-fleetwood'},
+    {'artist': 'Fleetwood Mac',     'song': 'The Chain',                      'slug': 'the-chain'},
+    {'artist': 'Fleetwood Mac',     'song': 'Landslide',                      'slug': 'landslide'},
+    {'artist': 'Stevie Nicks',      'song': 'Edge of Seventeen',              'slug': 'edge-of-seventeen'},
+    {'artist': 'Heart',             'song': 'Alone',                          'slug': 'alone-heart'},
+    {'artist': 'Pat Benatar',       'song': 'Love Is a Battlefield',          'slug': 'love-is-a-battlefield'},
+    {'artist': 'Joan Jett',         'song': 'I Love Rock \'n\' Roll',         'slug': 'i-love-rock-n-roll'},
+    {'artist': 'Meat Loaf',         'song': 'I\'d Do Anything for Love',      'slug': 'id-do-anything-for-love'},
+    {'artist': 'REO Speedwagon',    'song': 'Can\'t Fight This Feeling',      'slug': 'cant-fight-this-feeling'},
+    {'artist': 'Journey',           'song': 'Open Arms',                      'slug': 'open-arms'},
+    {'artist': 'Journey',           'song': 'Faithfully',                     'slug': 'faithfully'},
+    {'artist': 'Steve Perry',       'song': 'Oh Sherrie',                     'slug': 'oh-sherrie'},
+    {'artist': 'Bob Dylan',         'song': 'Blowin\' in the Wind',           'slug': 'blowin-in-the-wind'},
+    {'artist': 'Simon & Garfunkel', 'song': 'The Sound of Silence',          'slug': 'sound-of-silence'},
+    {'artist': 'Simon & Garfunkel', 'song': 'Mrs Robinson',                  'slug': 'mrs-robinson'},
+    # ── Hip-Hop ─────────────────────────────────────────────────────────────
+    {'artist': 'Eminem',            'song': 'Without Me',                     'slug': 'eminem-without-me'},
+    {'artist': 'Eminem',            'song': 'Stan',                           'slug': 'stan'},
+    {'artist': 'Eminem',            'song': 'The Real Slim Shady',            'slug': 'the-real-slim-shady'},
+    {'artist': 'Drake',             'song': 'God\'s Plan',                    'slug': 'gods-plan'},
+    {'artist': 'Drake',             'song': 'One Dance',                      'slug': 'one-dance'},
+    {'artist': 'Drake',             'song': 'Hotline Bling',                  'slug': 'hotline-bling'},
+    {'artist': 'Kendrick Lamar',    'song': 'HUMBLE.',                        'slug': 'humble-kendrick'},
+    {'artist': 'Kendrick Lamar',    'song': 'DNA.',                           'slug': 'dna-kendrick'},
+    {'artist': 'Cardi B',           'song': 'I Like It',                      'slug': 'i-like-it-cardi'},
+    {'artist': 'Cardi B',           'song': 'WAP',                            'slug': 'wap'},
+    {'artist': 'Nicki Minaj',       'song': 'Super Bass',                     'slug': 'super-bass'},
+    {'artist': 'Post Malone',       'song': 'Rockstar',                       'slug': 'rockstar-post'},
+    {'artist': 'Post Malone',       'song': 'Better Now',                     'slug': 'better-now-post'},
+    {'artist': 'Post Malone',       'song': 'White Iverson',                  'slug': 'white-iverson'},
+    {'artist': 'Juice WRLD',        'song': 'Lucid Dreams',                   'slug': 'lucid-dreams'},
+    {'artist': 'Juice WRLD',        'song': 'Legends',                        'slug': 'legends-juice'},
+    {'artist': 'XXXTentacion',      'song': 'Sad!',                           'slug': 'sad-xxxt'},
+    {'artist': 'Lil Nas X',         'song': 'Old Town Road',                  'slug': 'old-town-road'},
+    {'artist': 'Lil Nas X',         'song': 'Montero',                        'slug': 'montero'},
+    {'artist': 'Jack Harlow',       'song': 'First Class',                    'slug': 'first-class-harlow'},
+    {'artist': 'Doja Cat',          'song': 'Kiss Me More',                   'slug': 'kiss-me-more'},
+    {'artist': 'Doja Cat',          'song': 'Woman',                          'slug': 'woman-doja'},
+    {'artist': 'Megan Thee Stallion','song': 'Savage',                        'slug': 'savage-megan'},
+    {'artist': 'Tyler the Creator', 'song': 'See You Again',                  'slug': 'see-you-again-tyler'},
+    # ── More Christmas ───────────────────────────────────────────────────────
+    {'artist': 'Wham!',             'song': 'Last Christmas',                 'slug': 'last-christmas'},
+    {'artist': 'Bing Crosby',       'song': 'White Christmas',                'slug': 'white-christmas'},
+    {'artist': 'Andy Williams',     'song': 'It\'s the Most Wonderful Time',  'slug': 'most-wonderful-time'},
+    {'artist': 'Bobby Helms',       'song': 'Jingle Bell Rock',               'slug': 'jingle-bell-rock'},
+    {'artist': 'Brenda Lee',        'song': 'Rockin\' Around the Christmas Tree','slug': 'rockin-around-christmas'},
+    {'artist': 'Michael Bublé',     'song': 'It\'s Beginning to Look Like Christmas','slug': 'beginning-to-look-like-christmas'},
+    {'artist': 'Michael Bublé',     'song': 'Santa Baby',                     'slug': 'santa-baby'},
+    {'artist': 'Nat King Cole',     'song': 'The Christmas Song',             'slug': 'the-christmas-song'},
+    # ── More OPM / Filipino ─────────────────────────────────────────────────
+    {'artist': 'Eraserheads',       'song': 'Ang Huling El Bimbo',            'slug': 'ang-huling-el-bimbo'},
+    {'artist': 'Eraserheads',       'song': 'Ligaya',                         'slug': 'ligaya'},
+    {'artist': 'Rivermaya',         'song': 'You\'ll Be Safe Here',           'slug': 'youll-be-safe-here'},
+    {'artist': 'Rivermaya',         'song': '214',                            'slug': 'rivermaya-214'},
+    {'artist': 'Hale',              'song': 'The Day You Said Goodnight',     'slug': 'the-day-you-said-goodnight'},
+    {'artist': 'December Avenue',   'song': 'Aking Araw',                     'slug': 'aking-araw'},
+    {'artist': 'Arthur Nery',       'song': 'Palagi',                         'slug': 'palagi'},
+    {'artist': 'Cup of Joe',        'song': 'Paraluman',                      'slug': 'paraluman'},
+    # ── More K-Pop ───────────────────────────────────────────────────────────
+    {'artist': 'EXO',               'song': 'Ko Ko Bop',                      'slug': 'exo-ko-ko-bop'},
+    {'artist': 'EXO',               'song': 'Love Shot',                      'slug': 'exo-love-shot'},
+    {'artist': 'Red Velvet',        'song': 'Psycho',                         'slug': 'rv-psycho'},
+    {'artist': 'MAMAMOO',           'song': 'HIP',                            'slug': 'mamamoo-hip'},
+    {'artist': 'aespa',             'song': 'Next Level',                     'slug': 'aespa-next-level'},
+    {'artist': 'ITZY',              'song': 'LOCO',                           'slug': 'itzy-loco'},
+    {'artist': 'GOT7',              'song': 'Not By the Moon',                'slug': 'got7-not-by-the-moon'},
+    {'artist': 'SHINee',            'song': 'View',                           'slug': 'shinee-view'},
+    # ── More Bollywood ───────────────────────────────────────────────────────
+    {'artist': 'Arijit Singh',      'song': 'Ae Dil Hai Mushkil',            'slug': 'ae-dil-hai-mushkil'},
+    {'artist': 'Arijit Singh',      'song': 'Channa Mereya',                  'slug': 'channa-mereya'},
+    {'artist': 'Arijit Singh',      'song': 'Phir Le Aaya Dil',              'slug': 'phir-le-aaya-dil'},
+    {'artist': 'Shreya Ghoshal',    'song': 'Teri Meri',                      'slug': 'teri-meri'},
+    {'artist': 'Udit Narayan',      'song': 'Pehla Nasha',                    'slug': 'pehla-nasha'},
+    {'artist': 'Kumar Sanu',        'song': 'Tujhe Dekha To',                 'slug': 'tujhe-dekha-to'},
+    {'artist': 'Armaan Malik',      'song': 'Main Rahoon Ya Na Rahoon',       'slug': 'main-rahoon'},
+    {'artist': 'Atif Aslam',        'song': 'Woh Lamhe',                      'slug': 'woh-lamhe'},
 ]
 _SONG_BY_SLUG = {s['slug']: s for s in SONG_PAGES}
+
+# ── Genre landing pages ─────────────────────────────────────────────────────
+GENRES = {
+    'pop': {
+        'name': 'Pop',
+        'title': 'Pop Karaoke Songs',
+        'h1': 'Pop Karaoke',
+        'description': 'The biggest pop karaoke hits — Taylor Swift, Dua Lipa, Ariana Grande, Ed Sheeran, and more. Sing the best pop songs free online.',
+        'slugs': ['anti-hero','shape-of-you','blinding-lights','levitating','dont-start-now',
+                  'new-rules','watermelon-sugar','as-it-was','drivers-license','good-4-u',
+                  'thank-u-next','ariana-7-rings','perfect','thinking-out-loud',
+                  'someone-you-loved','all-of-me','espresso','dance-monkey','heat-waves',
+                  'love-yourself','attention','one-call-away'],
+    },
+    'rock': {
+        'name': 'Rock',
+        'title': 'Rock Karaoke Songs',
+        'h1': 'Rock Karaoke',
+        'description': 'Classic and modern rock karaoke — Queen, Nirvana, Linkin Park, Green Day, The Beatles, Guns N\' Roses, and more. Rock the mic free.',
+        'slugs': ['bohemian-rhapsody','dont-stop-me-now','we-will-rock-you','we-are-the-champions',
+                  'stairway-to-heaven','paint-it-black','wonderwall','mr-brightside',
+                  'smells-like-teen-spirit','good-riddance','in-the-end','linkin-park-numb',
+                  'sweet-child-o-mine','hotel-california','hey-jude','let-it-be','yesterday',
+                  'with-or-without-you','africa','dont-stop-believin','livin-on-a-prayer',
+                  'its-my-life','creep','radioactive'],
+    },
+    '80s': {
+        'name': '80s',
+        'title': '80s Karaoke Songs',
+        'h1': '80s Karaoke',
+        'description': 'The greatest 80s karaoke songs — Take On Me, Careless Whisper, Girls Just Want to Have Fun, Total Eclipse of the Heart, Piano Man, and more.',
+        'slugs': ['take-on-me','careless-whisper','like-a-prayer','material-girl',
+                  'girls-just-want-to-have-fun','time-after-time','piano-man',
+                  'every-breath-you-take','superstition','total-eclipse-of-the-heart',
+                  'tiny-dancer','thriller','man-in-the-mirror','rocket-man',
+                  'george-michael-faith','bowie-heroes','my-way','sweet-caroline',
+                  'dont-wanna-miss-a-thing'],
+    },
+    '90s': {
+        'name': '90s',
+        'title': '90s Karaoke Songs',
+        'h1': '90s Karaoke',
+        'description': 'All the best 90s karaoke bangers — Backstreet Boys, Spice Girls, Britney Spears, Whitney Houston, TLC, and more. Sing your favourites free.',
+        'slugs': ['baby-one-more-time','oops-i-did-it-again','wannabe','i-want-it-that-way',
+                  'bye-bye-bye','beautiful-aguilera','dont-speak','say-my-name',
+                  'because-you-loved-me','mariah-fantasy','i-will-always-love-you',
+                  'my-heart-will-go-on','dancing-queen','never-gonna-give-you-up',
+                  'man-i-feel-like-a-woman','alanis-ironic','stand-by-me','lean-on-me'],
+    },
+    'rnb': {
+        'name': 'R&B',
+        'title': 'R&B Karaoke Songs',
+        'h1': 'R&B Karaoke',
+        'description': 'Smooth R&B karaoke — Beyoncé, Usher, Alicia Keys, Whitney Houston, Bruno Mars, and timeless soul classics. Sing R&B hits free online.',
+        'slugs': ['beyonce-halo','crazy-in-love','single-ladies','usher-yeah','alicia-keys-no-one',
+                  'i-gotta-feeling','say-my-name','all-of-me','september','lean-on-me',
+                  'stand-by-me','isnt-she-lovely','sexyback','we-found-love','rihanna-diamonds',
+                  'rihanna-umbrella','just-the-way-you-are','grenade',
+                  'when-i-was-your-man','uptown-funk'],
+    },
+    'kpop': {
+        'name': 'K-Pop',
+        'title': 'K-Pop Karaoke Songs',
+        'h1': 'K-Pop Karaoke',
+        'description': 'Sing your favourite K-Pop karaoke songs — BTS, BLACKPINK, IU, TWICE, NewJeans, Stray Kids, and more. Free K-Pop karaoke online.',
+        'slugs': ['bts-dynamite','bts-boy-with-luv','blackpink-how-you-like-that',
+                  'blackpink-kill-this-love','iu-celebrity','twice-fancy',
+                  'newjeans-hype-boy','stray-kids-gods-menu'],
+    },
+    'latin': {
+        'name': 'Latin',
+        'title': 'Latin Karaoke Songs',
+        'h1': 'Latin Karaoke',
+        'description': 'Hot Latin karaoke — Despacito, Hips Don\'t Lie, Havana, Vivir Mi Vida, and more Spanish hits. Free Latin karaoke online.',
+        'slugs': ['despacito','hips-dont-lie','vivir-mi-vida','enrique-hero','havana',
+                  'dakiti','conga','santana-smooth'],
+    },
+    'bollywood': {
+        'name': 'Bollywood',
+        'title': 'Bollywood Karaoke Songs',
+        'h1': 'Bollywood Karaoke',
+        'description': 'Sing the biggest Bollywood karaoke hits — Tum Hi Ho, Kesariya, Kal Ho Naa Ho, Raataan Lambiyan, and more Hindi songs free online.',
+        'slugs': ['tum-hi-ho','kesariya','kal-ho-naa-ho','raataan-lambiyan',
+                  'tujh-mein-rab','tera-hone-laga-hoon','lut-gaye','dil-deewana'],
+    },
+    'party': {
+        'name': 'Party',
+        'title': 'Party Karaoke Songs',
+        'h1': 'Party Karaoke',
+        'description': 'The ultimate party karaoke playlist — crowd favourites everyone knows, from Don\'t Stop Believin\' to Uptown Funk. Get the party started free.',
+        'slugs': ['dont-stop-believin','livin-on-a-prayer','we-will-rock-you',
+                  'dancing-queen','uptown-funk','i-gotta-feeling','sweet-caroline',
+                  'bohemian-rhapsody','girls-just-want-to-have-fun','shake-it-off',
+                  'wannabe','good-riddance','mr-brightside','somebody-that-i-used-to-know',
+                  'all-about-that-bass','truth-hurts'],
+    },
+    'christmas': {
+        'name': 'Christmas',
+        'title': 'Christmas Karaoke Songs',
+        'h1': 'Christmas Karaoke',
+        'description': 'Sing the best Christmas karaoke songs — All I Want for Christmas Is You, Last Christmas, White Christmas, and more festive favourites free.',
+        'slugs': ['all-i-want-for-christmas','last-christmas','white-christmas',
+                  'most-wonderful-time','jingle-bell-rock','rockin-around-christmas',
+                  'beginning-to-look-like-christmas','santa-baby','the-christmas-song'],
+    },
+}
+_GENRE_SLUGS = set(GENRES.keys())
 
 
 def _regex_parse(video_title):
@@ -499,12 +854,65 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/karaoke/<genre_slug>')
+def genre_page(genre_slug):
+    genre = GENRES.get(genre_slug)
+    if not genre:
+        return render_template('index.html'), 404
+    songs = [_SONG_BY_SLUG[s] for s in genre['slugs'] if s in _SONG_BY_SLUG]
+    return render_template('genre.html', genre=genre, songs=songs, genre_slug=genre_slug)
+
+
 @app.route('/sing/<slug>')
 def song_page(slug):
     song = _SONG_BY_SLUG.get(slug)
     if not song:
         return render_template('index.html'), 404
-    return render_template('song.html', **song)
+    # Related: same artist first, then popular picks (exclude current song)
+    same_artist = [s for s in SONG_PAGES if s['artist'] == song['artist'] and s['slug'] != slug]
+    others      = [s for s in SONG_PAGES if s['artist'] != song['artist']][:6]
+    related     = (same_artist + others)[:6]
+    return render_template('song.html', related=related, **song)
+
+
+@app.route('/og-image')
+def og_image():
+    """Dynamic OG image as SVG — works for homepage and song pages."""
+    song   = request.args.get('song', '')
+    artist = request.args.get('artist', '')
+    if song and artist:
+        line1 = _html.escape(song[:40])
+        line2 = _html.escape(f'by {artist}')
+        sub   = 'Sing along free on Karaoke Lover'
+    else:
+        line1 = 'Karaoke Lover'
+        line2 = 'Sing Any Song, Right Now'
+        sub   = 'Free online karaoke — no downloads, no sign-up'
+
+    svg = f'''<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d0521"/>
+      <stop offset="50%" style="stop-color:#1a0640"/>
+      <stop offset="100%" style="stop-color:#2d0a5e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#9333ea"/>
+      <stop offset="100%" style="stop-color:#ec4899"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="0" y="540" width="1200" height="6" fill="url(#accent)" opacity="0.9"/>
+  <circle cx="80" cy="80" r="200" fill="#9333ea" opacity="0.07"/>
+  <circle cx="1150" cy="580" r="250" fill="#ec4899" opacity="0.06"/>
+  <text x="80" y="120" font-family="Arial,sans-serif" font-size="36" font-weight="700" fill="#9333ea" letter-spacing="3">KARAOKE LOVER</text>
+  <text x="80" y="300" font-family="Arial,sans-serif" font-size="72" font-weight="900" fill="white" letter-spacing="-1">{line1}</text>
+  <text x="80" y="390" font-family="Arial,sans-serif" font-size="48" font-weight="400" fill="#c084fc">{line2}</text>
+  <text x="80" y="500" font-family="Arial,sans-serif" font-size="32" font-weight="400" fill="#6b7280">{sub}</text>
+  <text x="1120" y="300" font-family="Arial,sans-serif" font-size="120" text-anchor="middle" fill="white" opacity="0.08">🎤</text>
+</svg>'''
+    return Response(svg, mimetype='image/svg+xml',
+                    headers={'Cache-Control': 'public, max-age=86400'})
 
 
 @app.route('/robots.txt')
@@ -524,6 +932,11 @@ def sitemap():
         '<url><loc>https://www.karaokelover.com/</loc>'
         '<changefreq>weekly</changefreq><priority>1.0</priority></url>'
     ]
+    for genre_slug in GENRES:
+        urls.append(
+            f'<url><loc>https://www.karaokelover.com/karaoke/{genre_slug}</loc>'
+            f'<changefreq>monthly</changefreq><priority>0.9</priority></url>'
+        )
     for s in SONG_PAGES:
         urls.append(
             f'<url><loc>https://www.karaokelover.com/sing/{s["slug"]}</loc>'

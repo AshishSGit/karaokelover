@@ -2,21 +2,77 @@
 
 {% block json_ld %}
 <script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "Karaoke Lover",
-  "url": "https://www.karaokelover.com",
-  "description": "Free online karaoke — search millions of songs, sing along with lyrics, and play instantly. No downloads, no sign-up required.",
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": {
-      "@type": "EntryPoint",
-      "urlTemplate": "https://www.karaokelover.com/?q={search_term_string}"
-    },
-    "query-input": "required name=search_term_string"
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Karaoke Lover",
+    "url": "https://www.karaokelover.com",
+    "description": "Free online karaoke — search millions of songs, sing along with lyrics, and play instantly. No downloads, no sign-up required.",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://www.karaokelover.com/?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is Karaoke Lover free?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Karaoke Lover is completely free. No downloads, no sign-up required. Just search for a song and start singing."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I do karaoke online?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Simply go to karaokelover.com, type the name of a song or artist in the search box, and press Enter. The song will play instantly with lyrics displayed on screen so you can sing along."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do I need to download anything to use Karaoke Lover?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. Karaoke Lover works entirely in your web browser. No app download, no software installation required."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What songs are available on Karaoke Lover?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Karaoke Lover has millions of songs available — pop, rock, R&amp;B, country, 80s classics, and more. If it's on YouTube, you can karaoke it."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use Karaoke Lover on my phone?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, Karaoke Lover is fully mobile-friendly and works on iPhone, Android, and any device with a web browser."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does Karaoke Lover have lyrics?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. Karaoke Lover displays synced lyrics in real time so you can follow along as the song plays. Lyrics are available for most popular songs."
+        }
+      }
+    ]
   }
-}
+]
 </script>
 {% endblock %}
 

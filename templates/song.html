@@ -9,9 +9,13 @@
 <meta property="og:description" content="Sing {{ song }} by {{ artist }} karaoke online for free on Karaoke Lover." />
 <meta property="og:url" content="https://www.karaokelover.com/sing/{{ slug }}" />
 <meta property="og:type" content="music.song" />
-<meta name="twitter:card" content="summary" />
+<meta property="og:image" content="https://www.karaokelover.com/og-image?song={{ song|urlencode }}&artist={{ artist|urlencode }}" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="{{ song }} Karaoke — Sing Along Free" />
 <meta name="twitter:description" content="Sing {{ song }} by {{ artist }} karaoke free on Karaoke Lover." />
+<meta name="twitter:image" content="https://www.karaokelover.com/og-image?song={{ song|urlencode }}&artist={{ artist|urlencode }}" />
 {% endblock %}
 
 {% block json_ld %}
@@ -52,4 +56,19 @@
     }
   });
 </script>
+
+{% if related %}
+<section class="related-songs" aria-label="More songs to sing">
+  <h2 class="related-title">More Songs to Sing</h2>
+  <div class="related-grid">
+    {% for r in related %}
+    <a class="related-card" href="/sing/{{ r.slug }}">
+      <span class="related-song">{{ r.song }}</span>
+      <span class="related-artist">{{ r.artist }}</span>
+    </a>
+    {% endfor %}
+  </div>
+  <p class="related-home"><a href="/">← Back to Karaoke Lover</a></p>
+</section>
+{% endif %}
 {% endblock %}

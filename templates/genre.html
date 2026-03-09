@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}<title>{{ genre.title }} — Sing Free Online | Karaoke Lover</title>{% endblock %}
+
+{% block seo_head %}
+<link rel="canonical" href="https://www.karaokelover.com/karaoke/{{ genre_slug }}" />
+<meta name="description" content="{{ genre.description }}" />
+<meta property="og:title" content="{{ genre.title }} — Free Online Karaoke" />
+<meta property="og:description" content="{{ genre.description }}" />
+<meta property="og:url" content="https://www.karaokelover.com/karaoke/{{ genre_slug }}" />
+<meta property="og:type" content="website" />
+<meta property="og:image" content="https://www.karaokelover.com/og-image?song={{ genre.h1|urlencode }}&artist=Free+Online" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{ genre.title }} — Free Online Karaoke" />
+<meta name="twitter:description" content="{{ genre.description }}" />
+<meta name="twitter:image" content="https://www.karaokelover.com/og-image?song={{ genre.h1|urlencode }}&artist=Free+Online" />
+{% endblock %}
+
+{% block json_ld %}
+<script type="application/ld+json">
+[
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Karaoke Lover", "item": "https://www.karaokelover.com" },
+      { "@type": "ListItem", "position": 2, "name": "{{ genre.title }}", "item": "https://www.karaokelover.com/karaoke/{{ genre_slug }}" }
+    ]
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "{{ genre.title }}",
+    "description": "{{ genre.description }}",
+    "url": "https://www.karaokelover.com/karaoke/{{ genre_slug }}",
+    "itemListElement": [
+      {% for s in songs %}
+      { "@type": "ListItem", "position": {{ loop.index }}, "name": "{{ s.song }} by {{ s.artist }}", "url": "https://www.karaokelover.com/sing/{{ s.slug }}" }{% if not loop.last %},{% endif %}
+      {% endfor %}
+    ]
+  }
+]
+</script>
+{% endblock %}
+
+{% block hero_title %}{{ genre.h1 }}<br>
+<span class="hero-title-accent">Sing Free Online</span>{% endblock %}
+
+{% block hero_sub %}{{ genre.description }}{% endblock %}
+
+{% block auto_search %}
+<section class="genre-songs" aria-label="{{ genre.title }} song list">
+  <h2 class="genre-songs-title">{{ songs|length }} Songs to Sing</h2>
+  <div class="genre-songs-grid">
+    {% for s in songs %}
+    <a class="genre-song-card" href="/sing/{{ s.slug }}">
+      <span class="genre-song-name">{{ s.song }}</span>
+      <span class="genre-song-artist">{{ s.artist }}</span>
+      <span class="genre-sing-btn">Sing ›</span>
+    </a>
+    {% endfor %}
+  </div>
+
+  <div class="genre-other-genres">
+    <h3 class="genre-other-title">More Categories</h3>
+    <div class="genre-chips">
+      {% set all_genres = [
+        ('pop','Pop'),('rock','Rock'),('80s','80s'),('90s','90s'),
+        ('rnb','R&B'),('kpop','K-Pop'),('latin','Latin'),
+        ('bollywood','Bollywood'),('party','Party'),('christmas','Christmas')
+      ] %}
+      {% for slug, name in all_genres %}
+      {% if slug != genre_slug %}
+      <a class="genre-chip{% if slug == genre_slug %} active{% endif %}" href="/karaoke/{{ slug }}">{{ name }}</a>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  <p class="related-home"><a href="/">← Back to Karaoke Lover</a></p>
+</section>
+{% endblock %}

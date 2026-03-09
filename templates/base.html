@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/css/style.css?v=34" />
+  <link rel="stylesheet" href="/static/css/style.css?v=35" />
   <meta name="google-site-verification" content="JEbL4Ady-ncf3y0xDqyVgUMU6ypR088v8GY-z1q7CWI" />
   {% block seo_head %}
   <link rel="canonical" href="https://www.karaokelover.com/" />
@@ -16,16 +16,20 @@
   <meta property="og:description" content="Free online karaoke. Search, sing, repeat. Powered by YouTube." />
   <meta property="og:url" content="https://www.karaokelover.com" />
   <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://www.karaokelover.com/og-image" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Karaoke Lover — Sing Any Song, Right Now" />
   <meta name="twitter:description" content="Free online karaoke. Search, sing, repeat. Powered by YouTube." />
+  <meta name="twitter:image" content="https://www.karaokelover.com/og-image" />
   {% endblock %}
   {% block json_ld %}{% endblock %}
   <meta name="theme-color" content="#9333EA" />
-  <!-- Firebase v10 compat SDKs (no bundler required) -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <!-- Firebase v10 compat SDKs (deferred — non-blocking for Core Web Vitals) -->
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
 

@@ -3222,3 +3222,156 @@ button, a, [role="button"], input, select {
   .search-input { font-size: 15px; }
   .search-btn { padding: 10px 14px; font-size: 13px; }
 }
+
+/* ==========================================
+   Related Songs (song pages)
+   ========================================== */
+.related-songs {
+  max-width: 700px;
+  margin: 0 auto 48px;
+  padding: 0 16px;
+}
+.related-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(200,170,255,0.85);
+  margin-bottom: 16px;
+  letter-spacing: 0.5px;
+}
+.related-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+.related-card {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px;
+  background: rgba(147,51,234,0.07);
+  border: 1px solid rgba(147,51,234,0.2);
+  border-radius: 10px;
+  text-decoration: none;
+  transition: background 0.18s, border-color 0.18s, transform 0.15s;
+}
+.related-card:hover {
+  background: rgba(147,51,234,0.15);
+  border-color: rgba(147,51,234,0.45);
+  transform: translateY(-2px);
+}
+.related-song {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f3e8ff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.related-artist {
+  font-size: 12px;
+  color: rgba(167,139,250,0.7);
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.related-home {
+  margin-top: 20px;
+  font-size: 13px;
+}
+.related-home a {
+  color: rgba(167,139,250,0.65);
+  text-decoration: none;
+}
+.related-home a:hover { color: #c084fc; }
+
+/* ==========================================
+   Genre Landing Pages
+   ========================================== */
+.genre-songs {
+  max-width: 800px;
+  margin: 0 auto 48px;
+  padding: 0 16px;
+}
+.genre-songs-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(200,170,255,0.85);
+  margin-bottom: 16px;
+}
+.genre-songs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin-bottom: 32px;
+}
+.genre-song-card {
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px;
+  background: rgba(147,51,234,0.07);
+  border: 1px solid rgba(147,51,234,0.2);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: background 0.18s, border-color 0.18s, transform 0.15s;
+  position: relative;
+}
+.genre-song-card:hover {
+  background: rgba(147,51,234,0.15);
+  border-color: rgba(147,51,234,0.5);
+  transform: translateY(-2px);
+}
+.genre-song-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f3e8ff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 36px;
+}
+.genre-song-artist {
+  font-size: 12px;
+  color: rgba(167,139,250,0.7);
+  margin-top: 3px;
+}
+.genre-sing-btn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: rgba(147,51,234,0.6);
+  font-weight: 700;
+}
+.genre-song-card:hover .genre-sing-btn { color: #c084fc; }
+
+.genre-other-genres { margin-top: 40px; }
+.genre-other-title {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(167,139,250,0.55);
+  margin-bottom: 12px;
+}
+.genre-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.genre-chip {
+  padding: 6px 16px;
+  background: rgba(147,51,234,0.1);
+  border: 1px solid rgba(147,51,234,0.25);
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(210,190,255,0.85);
+  text-decoration: none;
+  transition: background 0.18s, border-color 0.18s;
+}
+.genre-chip:hover, .genre-chip.active {
+  background: rgba(147,51,234,0.25);
+  border-color: rgba(147,51,234,0.6);
+  color: #f3e8ff;
+}
