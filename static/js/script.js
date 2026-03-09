@@ -255,15 +255,15 @@ function _checkUrlState() {
   playerSection.style.display    = 'block';
   updateMiniInfo(v);
 
-  // Scroll to player immediately, then again after trending/DOM settles
-  window.scrollTo(0, 0); // ensure we're at top first so offsetTop calculation is clean
-  setTimeout(() => {
-    window.scrollTo({ top: Math.max(0, playerSection.offsetTop - 65) });
-  }, 0);
-  // Second scroll after async content (trending chips) may have shifted layout
-  setTimeout(() => {
-    window.scrollTo({ top: Math.max(0, playerSection.offsetTop - 65) });
-  }, 400);
+  // Scroll to player using scrollIntoView (reliable regardless of offsetTop/layout timing).
+  // rAF ensures browser has painted display:block before we scroll.
+  // Second attempt at 500ms catches any layout shift from async trending chips.
+  const _scrollNow = () => {
+    playerSection.scrollIntoView({ block: 'start', behavior: 'instant' });
+    window.scrollBy({ top: -65 }); // clear the fixed header
+  };
+  requestAnimationFrame(_scrollNow);
+  setTimeout(_scrollNow, 500);
 
   if (startSec > 2) {
     const mm = Math.floor(startSec / 60);
@@ -275,11 +275,7 @@ function _checkUrlState() {
   else { pendingVideoId = videoId; _pendingStartSec = startSec; }
 
   if (v.title !== 'Loading…') {
-    // Delay fetchLyrics slightly so the YouTube iframe has time to load first
-    // (avoids showing the no-lyrics vibes card before we know if lyrics exist)
-    setTimeout(() => {
-      if (currentVideo && currentVideo.video_id === videoId) fetchLyrics(v.title);
-    }, 600);
+    fetchLyrics(v.title);
     fetchRecommendations(v.title);
     addToHistory(v);
     updatePlayerFavBtn();
