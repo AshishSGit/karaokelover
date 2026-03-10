@@ -296,7 +296,7 @@ function _checkUrlState() {
   }
 
   if (v.title !== 'Loading…') {
-    fetchLyrics(v.title);
+    fetchLyrics(v.title, true); // keepLayout: preserve 2-column view from before refresh
     fetchRecommendations(v.title);
     addToHistory(v);
     updatePlayerFavBtn();
@@ -1085,16 +1085,32 @@ function _hideNowPlayingCard() {
   nowPlayingCard.style.display = 'none';
 }
 
-async function fetchLyrics(videoTitle) {
+async function fetchLyrics(videoTitle, keepLayout = false) {
   resetLrcState();
-  // Vibes card shows immediately (single-column); upgrades to 2-column only if lyrics are found
-  _showNowPlayingCard();
-  lyricsSection.style.display = 'none';
+  if (keepLayout) {
+    // Refresh / resume: preserve the two-column layout the user had before refresh.
+    // Show lyrics loading skeleton on the right — identical to the pre-refresh view.
+    nowPlayingCard.style.display = 'none';
+    playerSection.classList.remove('no-lyrics');
+    playerSection.classList.add('has-lyrics');
+    lyricsLoading.style.display  = 'block';
+    lyricsText.style.display     = 'none';
+    lyricsNotFound.style.display = 'none';
+    lyricsSection.style.display  = 'block';
+  } else {
+    // Normal first-play: vibes card while lyrics load
+    _showNowPlayingCard();
+    lyricsSection.style.display = 'none';
+  }
 
   try {
     const res  = await fetch(`/api/lyrics?title=${encodeURIComponent(videoTitle)}`);
     const data = await res.json();
-    if (!res.ok || data.error) { return; } // vibes card stays
+    if (!res.ok || data.error) {
+      // No lyrics found — fall back to vibes card (single-column)
+      if (keepLayout) { _showNowPlayingCard(); lyricsSection.style.display = 'none'; }
+      return;
+    }
 
     // Prepare all lyrics content BEFORE revealing the panel (no flash)
     lyricsTitle.textContent = data.song || 'Lyrics';
@@ -1130,7 +1146,7 @@ async function fetchLyrics(videoTitle) {
       startLrcSync(lyricsBody);
     }
   } catch {
-    // vibes card stays showing — already set at top of fetchLyrics
+    if (keepLayout) { _showNowPlayingCard(); lyricsSection.style.display = 'none'; }
   }
 }
 
