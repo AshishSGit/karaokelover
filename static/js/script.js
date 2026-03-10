@@ -297,17 +297,17 @@ function _checkUrlState() {
 
     if (v.title !== 'Loading…') {
       if (savedHasLyrics === false) {
-        // We KNOW this video had no lyrics — show vibes card immediately (matches pre-refresh)
+        showToast('[DEBUG] refresh: no-lyrics path (vibes card)', '');
         _showNowPlayingCard();
       } else {
-        // Had lyrics (or unknown) — show 2-column skeleton, fetch lyrics to populate
+        showToast('[DEBUG] refresh: lyrics path, savedHasLyrics=' + savedHasLyrics + ', title=' + v.title.substring(0, 30), '');
         fetchLyrics(v.title, true);
       }
       fetchRecommendations(v.title);
       addToHistory(v);
       updatePlayerFavBtn();
     } else {
-      // Shared link with no metadata — show vibes card as placeholder
+      showToast('[DEBUG] refresh: Loading… path (vibes card)', '');
       _showNowPlayingCard();
     }
   } catch (e) {
@@ -1108,7 +1108,7 @@ async function fetchLyrics(videoTitle, preserveLayout) {
     lyricsText.style.display      = 'none';
     lyricsNotFound.style.display  = 'none';
     lyricsSection.style.display   = 'block';
-    console.log('[KL] fetchLyrics: preserveLayout skeleton shown');
+    showToast('[DEBUG] skeleton shown', '');
   } else {
     // Normal mode: start with vibes card, upgrade to 2-column if lyrics found
     _showNowPlayingCard();
@@ -1116,13 +1116,11 @@ async function fetchLyrics(videoTitle, preserveLayout) {
   }
 
   try {
-    console.log('[KL] fetchLyrics: fetching for', videoTitle);
     const res  = await fetch(`/api/lyrics?title=${encodeURIComponent(videoTitle)}`);
     const data = await res.json();
-    console.log('[KL] fetchLyrics: response', res.ok, data ? (data.error || 'ok') : 'null');
+    showToast('[DEBUG] fetch done: ' + (data.error || (data.lyrics ? 'has lyrics' : 'empty')), '');
     if (!res.ok || data.error) {
       if (preserveLayout) {
-        // No lyrics — fall back to vibes card (single column)
         playerSection.classList.remove('has-lyrics');
         _showNowPlayingCard();
         lyricsSection.style.display = 'none';
@@ -1130,7 +1128,6 @@ async function fetchLyrics(videoTitle, preserveLayout) {
       return;
     }
 
-    // Prepare all lyrics content BEFORE revealing the panel (no flash)
     lyricsTitle.textContent = data.song || 'Lyrics';
     const artistLabel = data.artist ? `by ${data.artist}` : '';
     const aiBadge = data.source === 'ai' ? ' <span class="ai-badge">✦ AI</span>' : '';
@@ -1153,21 +1150,17 @@ async function fetchLyrics(videoTitle, preserveLayout) {
       lyricsBody.scrollTop = 0;
     }
 
-    // Lyrics ready — activate two-column layout, hide vibes card, show lyrics
     playerSection.classList.add('has-lyrics');
     _hideNowPlayingCard();
     lyricsSection.style.display = 'block';
+    showToast('[DEBUG] lyrics populated OK', '');
 
-    console.log('[KL] fetchLyrics: lyrics populated, has-lyrics =', playerSection.classList.contains('has-lyrics'));
-
-    // Start sync if already playing
     if (_syncActive && ytPlayer && ytPlayer.getPlayerState &&
         ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
       startLrcSync(lyricsBody);
     }
   } catch (err) {
-    // Error fetching — fall back to vibes card
-    console.error('[KL] fetchLyrics error:', err);
+    showToast('[DEBUG] ERROR: ' + err.message, '');
     playerSection.classList.remove('has-lyrics');
     _showNowPlayingCard();
     lyricsSection.style.display = 'none';
