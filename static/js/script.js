@@ -974,14 +974,30 @@ closePlayerBtn.addEventListener('click', () => {
 // Backdrop is hidden in stage mode; no-op
 playerBackdrop.addEventListener('click', () => {});
 
-// Back button: if URL no longer has ?v=, restore hero and scroll home
+// Back button: stop playback and return to home (same as Exit)
 window.addEventListener('popstate', () => {
   if (!new URLSearchParams(location.search).get('v')) {
     document.body.classList.remove('url-video');
-    if (currentVideo) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      showToast('Music keeps playing ↓', '');
-    }
+    playerSection.classList.remove('has-lyrics');
+    if (ytPlayer) ytPlayer.stopVideo();
+    currentVideo = null;
+    hideMiniPlayer();
+    playerSection.style.display = 'none';
+    lyricsSection.style.display = 'none';
+    nowPlayingCard.style.display = 'none';
+    equalizer.classList.remove('playing');
+    playerContainer.classList.remove('playing');
+    if (playerArtBg) playerArtBg.style.backgroundImage = '';
+    if (stageArtBg)  stageArtBg.style.backgroundImage  = '';
+    if (playerArtThumb) { playerArtThumb.style.backgroundImage = ''; playerArtThumb.classList.remove('loaded'); }
+    document.querySelectorAll('.card.active').forEach(c => {
+      c.classList.remove('active');
+      const ov = c.querySelector('.card-play-overlay');
+      if (ov) ov.innerHTML = '▶';
+    });
+    renderHistory();
+    renderFavorites();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 });
 
