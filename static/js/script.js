@@ -230,123 +230,122 @@ function _checkUrlState() {
   const videoId = new URLSearchParams(location.search).get('v');
   if (!videoId) return false;
 
-  // Collapse hero → player section is immediately visible, no scrolling required.
-  document.body.classList.add('url-video');
-
-  // Find saved metadata: prefer _POS_KEY (same device refresh), then history
-  let v = null, startSec = 0;
   try {
-    const saved = JSON.parse(localStorage.getItem(_POS_KEY) || 'null');
-    if (saved && saved.video_id === videoId) {
-      v = { video_id: saved.video_id, title: saved.title, channel: saved.channel || '', thumbnail: saved.thumbnail || '' };
-      startSec = Math.max(0, (saved.time || 0) - 2);
-    }
-  } catch {}
+    // Collapse hero → player section is immediately visible, no scrolling required.
+    document.body.classList.add('url-video');
 
-  if (!v) {
-    let hist = getHistory();
-    if (!hist.length) try { hist = JSON.parse(localStorage.getItem('ks_history') || '[]'); } catch { hist = []; }
-    const found = hist.find(h => h.video_id === videoId);
-    if (found) { v = found; startSec = Math.max(0, _getSavedTime(videoId) - 2); }
-  }
-
-  // Shared link from another device — no metadata available, load gracefully
-  if (!v) v = { video_id: videoId, title: 'Loading…', channel: '', thumbnail: '' };
-
-  currentResults = [v]; currentIndex = 0; currentVideo = v;
-  playerTitle.textContent   = v.title;
-  playerChannel.textContent = v.channel;
-  _setPlayerArt(v);
-  historySection.style.display   = 'none';
-  favoritesSection.style.display = 'none';
-  playerSection.style.display    = 'block';
-  updateMiniInfo(v);
-
-  // Hero is collapsed (body.url-video), so player section is near the top.
-  // A single rAF is enough to land right on it after the first paint.
-  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-  requestAnimationFrame(() => {
-    const y = playerSection.getBoundingClientRect().top + window.scrollY - 65;
-    window.scrollTo(0, Math.max(0, y));
-  });
-
-  // Show resume overlay — don't autoplay on refresh (browsers block it, causing broken state).
-  // User explicitly clicks ▶ Resume, then loadPlayer() runs.
-  if (playerResumeOverlay) {
-    if (proThumb) proThumb.src = v.thumbnail || '';
-    if (proPosition) {
-      if (startSec > 2) {
-        const mm = Math.floor(startSec / 60);
-        const ss = String(Math.floor(startSec % 60)).padStart(2, '0');
-        proPosition.textContent = `Paused at ${mm}:${ss}`;
-      } else {
-        proPosition.textContent = 'Tap to start';
+    // Find saved metadata: prefer _POS_KEY (same device refresh), then history
+    let v = null, startSec = 0;
+    try {
+      const saved = JSON.parse(localStorage.getItem(_POS_KEY) || 'null');
+      if (saved && saved.video_id === videoId) {
+        v = { video_id: saved.video_id, title: saved.title, channel: saved.channel || '', thumbnail: saved.thumbnail || '' };
+        startSec = Math.max(0, (saved.time || 0) - 2);
       }
+    } catch {}
+
+    if (!v) {
+      let hist = getHistory();
+      if (!hist.length) try { hist = JSON.parse(localStorage.getItem('ks_history') || '[]'); } catch { hist = []; }
+      const found = hist.find(h => h.video_id === videoId);
+      if (found) { v = found; startSec = Math.max(0, _getSavedTime(videoId) - 2); }
     }
-    playerResumeOverlay.style.display = 'flex';
-    if (proBtn) proBtn.onclick = () => {
-      playerResumeOverlay.style.display = 'none';
+
+    // Shared link from another device — no metadata available, load gracefully
+    if (!v) v = { video_id: videoId, title: 'Loading…', channel: '', thumbnail: '' };
+
+    currentResults = [v]; currentIndex = 0; currentVideo = v;
+    playerTitle.textContent   = v.title;
+    playerChannel.textContent = v.channel;
+    _setPlayerArt(v);
+    historySection.style.display   = 'none';
+    favoritesSection.style.display = 'none';
+    playerSection.style.display    = 'block';
+    updateMiniInfo(v);
+
+    // Hero is collapsed (body.url-video), so player section is near the top.
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    requestAnimationFrame(() => {
+      const y = playerSection.getBoundingClientRect().top + window.scrollY - 65;
+      window.scrollTo(0, Math.max(0, y));
+    });
+
+    // Show resume overlay — don't autoplay on refresh (browsers block it).
+    if (playerResumeOverlay) {
+      if (proThumb) proThumb.src = v.thumbnail || '';
+      if (proPosition) {
+        if (startSec > 2) {
+          const mm = Math.floor(startSec / 60);
+          const ss = String(Math.floor(startSec % 60)).padStart(2, '0');
+          proPosition.textContent = `Paused at ${mm}:${ss}`;
+        } else {
+          proPosition.textContent = 'Tap to start';
+        }
+      }
+      playerResumeOverlay.style.display = 'flex';
+      if (proBtn) proBtn.onclick = () => {
+        playerResumeOverlay.style.display = 'none';
+        if (ytReady) loadPlayer(videoId, startSec);
+        else { pendingVideoId = videoId; _pendingStartSec = startSec; }
+      };
+    } else {
       if (ytReady) loadPlayer(videoId, startSec);
       else { pendingVideoId = videoId; _pendingStartSec = startSec; }
-    };
-  } else {
-    // Fallback: no overlay element — load directly
-    if (ytReady) loadPlayer(videoId, startSec);
-    else { pendingVideoId = videoId; _pendingStartSec = startSec; }
-  }
+    }
 
-  if (v.title !== 'Loading…') {
-    // Set up 2-column layout with lyrics skeleton DIRECTLY (no relying on fetchLyrics param).
-    // This preserves the exact view the user had before refresh.
-    playerSection.classList.remove('no-lyrics');
-    playerSection.classList.add('has-lyrics');
-    nowPlayingCard.style.display  = 'none';
-    lyricsLoading.style.display   = 'block';
-    lyricsText.style.display      = 'none';
-    lyricsNotFound.style.display  = 'none';
-    lyricsSection.style.display   = 'block';
+    if (v.title !== 'Loading…') {
+      // Show 2-column layout with lyrics skeleton immediately (matches pre-refresh view).
+      // Lyrics fetch populates content async; falls back to vibes card if no lyrics.
+      playerSection.classList.remove('no-lyrics');
+      playerSection.classList.add('has-lyrics');
+      if (nowPlayingCard) nowPlayingCard.style.display = 'none';
+      if (lyricsLoading)  lyricsLoading.style.display  = 'block';
+      if (lyricsText)     lyricsText.style.display     = 'none';
+      if (lyricsNotFound) lyricsNotFound.style.display = 'none';
+      if (lyricsSection)  lyricsSection.style.display  = 'block';
 
-    // Fetch lyrics in background — populate when ready, fall back to vibes card on failure
-    resetLrcState();
-    fetch(`/api/lyrics?title=${encodeURIComponent(v.title)}`)
-      .then(r => r.json())
-      .then(data => {
-        if (!data || data.error) throw new Error('no lyrics');
-        lyricsTitle.textContent = data.song || 'Lyrics';
-        const artistLabel = data.artist ? `by ${data.artist}` : '';
-        const aiBadge = data.source === 'ai' ? ' <span class="ai-badge">✦ AI</span>' : '';
-        lyricsArtist.innerHTML = escapeHtml(artistLabel) + aiBadge;
-        lyricsLoading.style.display  = 'none';
-        lyricsNotFound.style.display = 'none';
-        if (data.syncedLyrics) {
-          _lrcLines = parseLRC(data.syncedLyrics);
-          _syncActive = true;
-          lyricsText.className = 'lyrics-text synced';
-          renderSyncedLyrics(_lrcLines, lyricsText);
-        } else {
-          _syncActive = false;
-          lyricsText.className = 'lyrics-text';
-          lyricsText.innerHTML = formatLyrics(data.lyrics);
-        }
-        lyricsText.style.display = 'block';
-        lyricsBody.scrollTop = 0;
-        playerSection.classList.add('has-lyrics');
-        _hideNowPlayingCard();
-        lyricsSection.style.display = 'block';
-        if (_syncActive && ytPlayer && ytPlayer.getPlayerState &&
-            ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
-          startLrcSync(lyricsBody);
-        }
-      })
-      .catch(() => {
-        // No lyrics available — fall back to vibes card (single column)
-        _showNowPlayingCard();
-        lyricsSection.style.display = 'none';
-      });
+      resetLrcState();
+      fetch(`/api/lyrics?title=${encodeURIComponent(v.title)}`)
+        .then(r => r.json())
+        .then(data => {
+          if (!data || data.error) throw new Error('no lyrics');
+          if (lyricsTitle) lyricsTitle.textContent = data.song || 'Lyrics';
+          const artistLabel = data.artist ? `by ${data.artist}` : '';
+          const aiBadge = data.source === 'ai' ? ' <span class="ai-badge">✦ AI</span>' : '';
+          if (lyricsArtist) lyricsArtist.innerHTML = escapeHtml(artistLabel) + aiBadge;
+          if (lyricsLoading)  lyricsLoading.style.display  = 'none';
+          if (lyricsNotFound) lyricsNotFound.style.display = 'none';
+          if (data.syncedLyrics) {
+            _lrcLines = parseLRC(data.syncedLyrics);
+            _syncActive = true;
+            lyricsText.className = 'lyrics-text synced';
+            renderSyncedLyrics(_lrcLines, lyricsText);
+          } else {
+            _syncActive = false;
+            lyricsText.className = 'lyrics-text';
+            lyricsText.innerHTML = formatLyrics(data.lyrics);
+          }
+          if (lyricsText) lyricsText.style.display = 'block';
+          if (lyricsBody) lyricsBody.scrollTop = 0;
+          playerSection.classList.add('has-lyrics');
+          _hideNowPlayingCard();
+          if (lyricsSection) lyricsSection.style.display = 'block';
+          if (_syncActive && ytPlayer && ytPlayer.getPlayerState &&
+              ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+            startLrcSync(lyricsBody);
+          }
+        })
+        .catch(() => {
+          _showNowPlayingCard();
+          if (lyricsSection) lyricsSection.style.display = 'none';
+        });
 
-    fetchRecommendations(v.title);
-    addToHistory(v);
-    updatePlayerFavBtn();
+      fetchRecommendations(v.title);
+      addToHistory(v);
+      updatePlayerFavBtn();
+    }
+  } catch (e) {
+    console.error('[KL] _checkUrlState error:', e);
   }
 
   return true;
