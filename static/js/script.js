@@ -294,52 +294,8 @@ function _checkUrlState() {
     }
 
     if (v.title !== 'Loading…') {
-      // Show 2-column layout with lyrics skeleton immediately (matches pre-refresh view).
-      // Lyrics fetch populates content async; falls back to vibes card if no lyrics.
-      playerSection.classList.remove('no-lyrics');
-      playerSection.classList.add('has-lyrics');
-      if (nowPlayingCard) nowPlayingCard.style.display = 'none';
-      if (lyricsLoading)  lyricsLoading.style.display  = 'block';
-      if (lyricsText)     lyricsText.style.display     = 'none';
-      if (lyricsNotFound) lyricsNotFound.style.display = 'none';
-      if (lyricsSection)  lyricsSection.style.display  = 'block';
-
-      resetLrcState();
-      fetch(`/api/lyrics?title=${encodeURIComponent(v.title)}`)
-        .then(r => r.json())
-        .then(data => {
-          if (!data || data.error) throw new Error('no lyrics');
-          if (lyricsTitle) lyricsTitle.textContent = data.song || 'Lyrics';
-          const artistLabel = data.artist ? `by ${data.artist}` : '';
-          const aiBadge = data.source === 'ai' ? ' <span class="ai-badge">✦ AI</span>' : '';
-          if (lyricsArtist) lyricsArtist.innerHTML = escapeHtml(artistLabel) + aiBadge;
-          if (lyricsLoading)  lyricsLoading.style.display  = 'none';
-          if (lyricsNotFound) lyricsNotFound.style.display = 'none';
-          if (data.syncedLyrics) {
-            _lrcLines = parseLRC(data.syncedLyrics);
-            _syncActive = true;
-            lyricsText.className = 'lyrics-text synced';
-            renderSyncedLyrics(_lrcLines, lyricsText);
-          } else {
-            _syncActive = false;
-            lyricsText.className = 'lyrics-text';
-            lyricsText.innerHTML = formatLyrics(data.lyrics);
-          }
-          if (lyricsText) lyricsText.style.display = 'block';
-          if (lyricsBody) lyricsBody.scrollTop = 0;
-          playerSection.classList.add('has-lyrics');
-          _hideNowPlayingCard();
-          if (lyricsSection) lyricsSection.style.display = 'block';
-          if (_syncActive && ytPlayer && ytPlayer.getPlayerState &&
-              ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
-            startLrcSync(lyricsBody);
-          }
-        })
-        .catch(() => {
-          _showNowPlayingCard();
-          if (lyricsSection) lyricsSection.style.display = 'none';
-        });
-
+      // preserveLayout=true: show 2-column + skeleton immediately, populate when fetch completes
+      fetchLyrics(v.title, true);
       fetchRecommendations(v.title);
       addToHistory(v);
       updatePlayerFavBtn();
@@ -1131,15 +1087,35 @@ function _hideNowPlayingCard() {
   nowPlayingCard.style.display = 'none';
 }
 
-async function fetchLyrics(videoTitle) {
+async function fetchLyrics(videoTitle, preserveLayout) {
   resetLrcState();
-  _showNowPlayingCard();
-  lyricsSection.style.display = 'none';
+
+  if (preserveLayout) {
+    // Refresh mode: keep 2-column layout, show loading skeleton in lyrics panel
+    playerSection.classList.add('has-lyrics');
+    nowPlayingCard.style.display  = 'none';
+    lyricsLoading.style.display   = 'block';
+    lyricsText.style.display      = 'none';
+    lyricsNotFound.style.display  = 'none';
+    lyricsSection.style.display   = 'block';
+  } else {
+    // Normal mode: start with vibes card, upgrade to 2-column if lyrics found
+    _showNowPlayingCard();
+    lyricsSection.style.display = 'none';
+  }
 
   try {
     const res  = await fetch(`/api/lyrics?title=${encodeURIComponent(videoTitle)}`);
     const data = await res.json();
-    if (!res.ok || data.error) { return; }
+    if (!res.ok || data.error) {
+      if (preserveLayout) {
+        // No lyrics — fall back to vibes card (single column)
+        playerSection.classList.remove('has-lyrics');
+        _showNowPlayingCard();
+        lyricsSection.style.display = 'none';
+      }
+      return;
+    }
 
     // Prepare all lyrics content BEFORE revealing the panel (no flash)
     lyricsTitle.textContent = data.song || 'Lyrics';
@@ -1175,7 +1151,10 @@ async function fetchLyrics(videoTitle) {
       startLrcSync(lyricsBody);
     }
   } catch {
-    // vibes card stays showing
+    // Error fetching — fall back to vibes card
+    playerSection.classList.remove('has-lyrics');
+    _showNowPlayingCard();
+    lyricsSection.style.display = 'none';
   }
 }
 
