@@ -976,9 +976,14 @@ closePlayerBtn.addEventListener('click', () => {
 // Backdrop is hidden in stage mode; no-op
 playerBackdrop.addEventListener('click', () => {});
 
-// Back button: stop playback and return to home (same as Exit)
+// Back/forward button: handle browser navigation
 window.addEventListener('popstate', () => {
-  if (!new URLSearchParams(location.search).get('v')) {
+  const v = new URLSearchParams(location.search).get('v');
+  if (v) {
+    // Forward button (or navigating to a ?v= URL) — restore the player
+    _checkUrlState();
+  } else {
+    // Back button — stop playback and return to home
     document.body.classList.remove('url-video');
     playerSection.classList.remove('has-lyrics');
     if (ytPlayer) ytPlayer.stopVideo();
