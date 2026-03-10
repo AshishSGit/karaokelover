@@ -46,6 +46,31 @@ function _getSavedTime(videoId) {
   } catch { return 0; }
 }
 
+// ---- Lyrics cache (instant load on refresh/forward) ----
+const _LYRICS_CACHE_KEY = 'ks_lyrics_cache';
+const _LYRICS_CACHE_MAX = 30;
+
+function _getLyricsCache(title) {
+  try {
+    const cache = JSON.parse(localStorage.getItem(_LYRICS_CACHE_KEY) || '{}');
+    return cache[title.trim().toLowerCase()] || null;
+  } catch { return null; }
+}
+
+function _setLyricsCache(title, data) {
+  try {
+    const cache = JSON.parse(localStorage.getItem(_LYRICS_CACHE_KEY) || '{}');
+    const key = title.trim().toLowerCase();
+    cache[key] = { ...data, cachedAt: Date.now() };
+    const keys = Object.keys(cache);
+    if (keys.length > _LYRICS_CACHE_MAX) {
+      keys.sort((a, b) => (cache[a].cachedAt || 0) - (cache[b].cachedAt || 0));
+      keys.slice(0, keys.length - _LYRICS_CACHE_MAX).forEach(k => delete cache[k]);
+    }
+    localStorage.setItem(_LYRICS_CACHE_KEY, JSON.stringify(cache));
+  } catch {}
+}
+
 // ---- URL State (refresh/back button persistence) ----
 function _updateVideoUrl(videoId) {
   try {
@@ -1168,11 +1193,68 @@ function _hideNowPlayingCard() {
   nowPlayingCard.style.display = 'none';
 }
 
+function _renderLyricsData(data) {
+  if (data.noLyrics) {
+    playerSection.classList.remove('has-lyrics');
+    _showNowPlayingCard();
+    lyricsSection.style.display = 'none';
+    return;
+  }
+
+  lyricsTitle.textContent = data.song || 'Lyrics';
+  const artistLabel = data.artist ? `by ${data.artist}` : '';
+  const aiBadge = data.source === 'ai' ? ' <span class="ai-badge">✦ AI</span>' : '';
+  lyricsArtist.innerHTML = escapeHtml(artistLabel) + aiBadge;
+  lyricsLoading.style.display  = 'none';
+  lyricsNotFound.style.display = 'none';
+
+  if (data.syncedLyrics) {
+    _lrcLines  = parseLRC(data.syncedLyrics);
+    _syncActive = true;
+    lyricsText.className = 'lyrics-text synced';
+    renderSyncedLyrics(_lrcLines, lyricsText);
+    lyricsText.style.display = 'block';
+    lyricsBody.scrollTop = 0;
+  } else {
+    _syncActive = false;
+    lyricsText.className = 'lyrics-text';
+    lyricsText.innerHTML = formatLyrics(data.lyrics);
+    lyricsText.style.display = 'block';
+    lyricsBody.scrollTop = 0;
+  }
+
+  playerSection.classList.add('has-lyrics');
+  _hideNowPlayingCard();
+  lyricsSection.style.display = 'block';
+  if (_syncActive && ytPlayer && ytPlayer.getPlayerState &&
+      ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+    startLrcSync(lyricsBody);
+  }
+}
+
+async function _refreshLyricsCache(videoTitle) {
+  try {
+    const res  = await fetch(`/api/lyrics?title=${encodeURIComponent(videoTitle)}`);
+    const data = await res.json();
+    if (res.ok && !data.error) _setLyricsCache(videoTitle, data);
+  } catch {}
+}
+
 async function fetchLyrics(videoTitle, preserveLayout) {
   resetLrcState();
 
+  // --- Try cache first (instant load, no skeleton) ---
   if (preserveLayout) {
-    // Refresh mode: keep 2-column layout, show loading skeleton in lyrics panel
+    const cached = _getLyricsCache(videoTitle);
+    if (cached) {
+      _renderLyricsData(cached);
+      _refreshLyricsCache(videoTitle);
+      return;
+    }
+  }
+
+  // --- No cache: show skeleton (preserveLayout) or vibes card (normal) ---
+  if (preserveLayout) {
     playerSection.classList.add('has-lyrics');
     nowPlayingCard.style.display  = 'none';
     lyricsLoading.style.display   = 'block';
@@ -1180,7 +1262,6 @@ async function fetchLyrics(videoTitle, preserveLayout) {
     lyricsNotFound.style.display  = 'none';
     lyricsSection.style.display   = 'block';
   } else {
-    // Normal mode: start with vibes card, upgrade to 2-column if lyrics found
     _showNowPlayingCard();
     lyricsSection.style.display = 'none';
   }
@@ -1194,38 +1275,12 @@ async function fetchLyrics(videoTitle, preserveLayout) {
         _showNowPlayingCard();
         lyricsSection.style.display = 'none';
       }
+      _setLyricsCache(videoTitle, { noLyrics: true });
       return;
     }
 
-    lyricsTitle.textContent = data.song || 'Lyrics';
-    const artistLabel = data.artist ? `by ${data.artist}` : '';
-    const aiBadge = data.source === 'ai' ? ' <span class="ai-badge">✦ AI</span>' : '';
-    lyricsArtist.innerHTML = escapeHtml(artistLabel) + aiBadge;
-    lyricsLoading.style.display  = 'none';
-    lyricsNotFound.style.display = 'none';
-
-    if (data.syncedLyrics) {
-      _lrcLines  = parseLRC(data.syncedLyrics);
-      _syncActive = true;
-      lyricsText.className = 'lyrics-text synced';
-      renderSyncedLyrics(_lrcLines, lyricsText);
-      lyricsText.style.display = 'block';
-      lyricsBody.scrollTop = 0;
-    } else {
-      _syncActive = false;
-      lyricsText.className = 'lyrics-text';
-      lyricsText.innerHTML = formatLyrics(data.lyrics);
-      lyricsText.style.display = 'block';
-      lyricsBody.scrollTop = 0;
-    }
-
-    playerSection.classList.add('has-lyrics');
-    _hideNowPlayingCard();
-    lyricsSection.style.display = 'block';
-    if (_syncActive && ytPlayer && ytPlayer.getPlayerState &&
-        ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
-      startLrcSync(lyricsBody);
-    }
+    _setLyricsCache(videoTitle, data);
+    _renderLyricsData(data);
   } catch (err) {
     console.error('[KL] fetchLyrics error:', err);
     playerSection.classList.remove('has-lyrics');
