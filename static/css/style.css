@@ -609,7 +609,6 @@ header, section, footer, .loading-overlay,
   min-height: auto;
   scroll-margin-top: 65px;
   position: relative;
-  overflow: hidden;
   background: transparent;
 }
 
@@ -621,7 +620,7 @@ header, section, footer, .loading-overlay,
   transform: scale(1.5);
   transition: background-image 0.9s ease;
   pointer-events: none;
-  opacity: 0.35;
+  opacity: 0.2;
 }
 
 /* Subtle bottom vignette for depth */
@@ -629,8 +628,8 @@ header, section, footer, .loading-overlay,
   content: '';
   position: absolute; inset: 0; z-index: 0;
   background:
-    radial-gradient(ellipse 70% 35% at 50% 0%, rgba(147,51,234,0.10), transparent),
-    linear-gradient(to bottom, transparent 0%, transparent 60%, rgba(5,3,15,0.20) 100%);
+    radial-gradient(ellipse 70% 35% at 50% 0%, rgba(147,51,234,0.06), transparent),
+    linear-gradient(to bottom, transparent 0%, transparent 80%, rgba(5,3,15,0.10) 100%);
   pointer-events: none;
 }
 
@@ -2073,14 +2072,14 @@ body.concert-live .player-section {
 
 body.concert-live .stage-art-bg {
   filter: blur(90px) brightness(0.28) saturate(3.2);
-  opacity: 0.3;
+  opacity: 0.18;
   transition: filter 1.5s ease, opacity 1.5s ease;
 }
 
 body.concert-live .player-section::before {
   background:
-    radial-gradient(ellipse 70% 35% at 50% 0%, rgba(147,51,234,0.15), transparent),
-    linear-gradient(to bottom, transparent 0%, transparent 60%, rgba(5,3,15,0.15) 100%);
+    radial-gradient(ellipse 70% 35% at 50% 0%, rgba(147,51,234,0.10), transparent),
+    linear-gradient(to bottom, transparent 0%, transparent 80%, rgba(5,3,15,0.08) 100%);
 }
 
 body.concert-live .lyrics-card {
