@@ -766,6 +766,8 @@ function renderResults(query, results) {
     resultsGrid.appendChild(createCard(video, i));
   });
   resultsSection.style.display = 'block';
+  renderHistory();
+  renderFavorites();
   setTimeout(() => resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
 }
 
@@ -1354,7 +1356,7 @@ function addToHistory(video) {
 
 function renderHistory() {
   const hist = getHistory();
-  if (hist.length === 0 || resultsSection.style.display !== 'none' || playerSection.style.display === 'block') {
+  if (hist.length === 0 || playerSection.style.display === 'block') {
     historySection.style.display = 'none'; return;
   }
   historyStrip.innerHTML = hist.map(v => `
@@ -1660,7 +1662,7 @@ function toggleFavorite(video) {
 
 function renderFavorites() {
   const favs = getFavorites();
-  if (favs.length === 0 || resultsSection.style.display !== 'none' || playerSection.style.display === 'block') {
+  if (favs.length === 0 || playerSection.style.display === 'block') {
     favoritesSection.style.display = 'none';
     // Still refresh the heart button even when hiding the section (Firestore just loaded)
     if (currentVideo) updatePlayerFavBtn();
