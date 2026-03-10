@@ -11,6 +11,13 @@ let ytReady        = false;
 let pendingVideoId     = null;
 let _pendingStartSec   = 0;
 
+// ---- Synced lyrics state (must be declared early — used by _checkUrlState on refresh) ----
+let _lrcLines      = [];    // [{time, text, el}]
+let _syncInterval  = null;  // setInterval ID
+let _syncActive    = false; // true when synced LRC data is loaded
+let _userScrolling = false;
+let _scrollTimer   = null;
+
 // ---- Playback position persistence ----
 const _POS_KEY  = 'klLastPlay';
 const _PPOS_KEY = 'klPositions';
@@ -297,17 +304,14 @@ function _checkUrlState() {
 
     if (v.title !== 'Loading…') {
       if (savedHasLyrics === false) {
-        showToast('[DEBUG] refresh: no-lyrics path (vibes card)', '');
         _showNowPlayingCard();
       } else {
-        showToast('[DEBUG] refresh: lyrics path, savedHasLyrics=' + savedHasLyrics + ', title=' + v.title.substring(0, 30), '');
         fetchLyrics(v.title, true);
       }
       fetchRecommendations(v.title);
       addToHistory(v);
       updatePlayerFavBtn();
     } else {
-      showToast('[DEBUG] refresh: Loading… path (vibes card)', '');
       _showNowPlayingCard();
     }
   } catch (e) {
@@ -995,12 +999,6 @@ miniStop.addEventListener('click', () => {
 // LYRICS — Synced (LRC) + Plain fallback
 // ==========================================
 
-let _lrcLines      = [];    // [{time, text, el}]
-let _syncInterval  = null;  // setInterval ID
-let _syncActive    = false; // true when synced LRC data is loaded
-let _userScrolling = false;
-let _scrollTimer   = null;
-
 const LRC_OFFSET = 1.5; // seconds — delays highlight to match karaoke track (tune if needed)
 
 function parseLRC(lrc) {
@@ -1108,7 +1106,6 @@ async function fetchLyrics(videoTitle, preserveLayout) {
     lyricsText.style.display      = 'none';
     lyricsNotFound.style.display  = 'none';
     lyricsSection.style.display   = 'block';
-    showToast('[DEBUG] skeleton shown', '');
   } else {
     // Normal mode: start with vibes card, upgrade to 2-column if lyrics found
     _showNowPlayingCard();
@@ -1118,7 +1115,6 @@ async function fetchLyrics(videoTitle, preserveLayout) {
   try {
     const res  = await fetch(`/api/lyrics?title=${encodeURIComponent(videoTitle)}`);
     const data = await res.json();
-    showToast('[DEBUG] fetch done: ' + (data.error || (data.lyrics ? 'has lyrics' : 'empty')), '');
     if (!res.ok || data.error) {
       if (preserveLayout) {
         playerSection.classList.remove('has-lyrics');
@@ -1153,14 +1149,12 @@ async function fetchLyrics(videoTitle, preserveLayout) {
     playerSection.classList.add('has-lyrics');
     _hideNowPlayingCard();
     lyricsSection.style.display = 'block';
-    showToast('[DEBUG] lyrics populated OK', '');
-
     if (_syncActive && ytPlayer && ytPlayer.getPlayerState &&
         ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
       startLrcSync(lyricsBody);
     }
   } catch (err) {
-    showToast('[DEBUG] ERROR: ' + err.message, '');
+    console.error('[KL] fetchLyrics error:', err);
     playerSection.classList.remove('has-lyrics');
     _showNowPlayingCard();
     lyricsSection.style.display = 'none';
