@@ -221,7 +221,7 @@ header, section, footer, .loading-overlay,
 
 .hero {
   text-align: center;
-  padding: 80px 24px 64px;
+  padding: 48px 24px 32px;
   position: relative;
 }
 
@@ -241,7 +241,7 @@ header, section, footer, .loading-overlay,
   color: #d8b4fe;
   font-size: 12px; font-weight: 600; letter-spacing: 0.8px;
   padding: 7px 18px; border-radius: 20px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   box-shadow: 0 0 20px rgba(147,51,234,0.15);
   animation: badge-glow 3s ease-in-out infinite;
 }
@@ -269,7 +269,7 @@ header, section, footer, .loading-overlay,
 .hero-sub {
   font-size: 17px; font-weight: 400;
   color: var(--muted);
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 }
 
 /* ---- Search Bar ---- */
@@ -606,7 +606,7 @@ header, section, footer, .loading-overlay,
 
 .player-section {
   display: block;
-  min-height: calc(100vh - 65px);
+  min-height: auto;
   scroll-margin-top: 65px;
   position: relative;
   overflow: hidden;
@@ -645,7 +645,7 @@ header, section, footer, .loading-overlay,
 .player-section > .section-wrap {
   position: relative; z-index: 1;
   max-width: 860px; width: 100%; margin: 0 auto;
-  padding: 32px 28px 48px;
+  padding: 20px 28px 24px;
   display: grid;
   grid-template-columns: 1fr;
   gap: 0 36px;
@@ -672,8 +672,8 @@ header, section, footer, .loading-overlay,
 /* Now Playing vibes card */
 .now-playing-card {
   grid-column: 1; /* stays in single column */
-  margin-top: 28px;
-  padding: 32px 28px 28px;
+  margin-top: 16px;
+  padding: 24px 28px 24px;
   background: rgba(10,8,22,0.55);
   border: 1px solid rgba(147,51,234,0.2);
   border-radius: 20px;
@@ -685,7 +685,7 @@ header, section, footer, .loading-overlay,
 /* Animated equalizer bars */
 .np-eq-wrap {
   display: flex; align-items: flex-end; justify-content: center;
-  gap: 4px; height: 52px; margin-bottom: 22px;
+  gap: 4px; height: 40px; margin-bottom: 14px;
 }
 .np-bar {
   flex-shrink: 0;
@@ -1579,7 +1579,7 @@ body.concert-live .player-bar::before {
 @media (max-width: 640px) {
   .results-grid { grid-template-columns: repeat(2, 1fr); }
   .kbd-hints { display: none; }
-  .hero { padding: 56px 16px 48px; }
+  .hero { padding: 36px 16px 24px; }
   .section-wrap { padding: 0 16px; }
   .mini-back-btn { display: none; }
   .sing-body, .sing-header { padding-left: 24px; padding-right: 24px; }
