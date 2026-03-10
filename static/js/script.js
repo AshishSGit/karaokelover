@@ -296,7 +296,54 @@ function _checkUrlState() {
   }
 
   if (v.title !== 'Loading…') {
-    fetchLyrics(v.title, true); // keepLayout: preserve 2-column view from before refresh
+    // Set up 2-column layout with lyrics skeleton DIRECTLY (no relying on fetchLyrics param).
+    // This preserves the exact view the user had before refresh.
+    playerSection.classList.remove('no-lyrics');
+    playerSection.classList.add('has-lyrics');
+    nowPlayingCard.style.display  = 'none';
+    lyricsLoading.style.display   = 'block';
+    lyricsText.style.display      = 'none';
+    lyricsNotFound.style.display  = 'none';
+    lyricsSection.style.display   = 'block';
+
+    // Fetch lyrics in background — populate when ready, fall back to vibes card on failure
+    resetLrcState();
+    fetch(`/api/lyrics?title=${encodeURIComponent(v.title)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (!data || data.error) throw new Error('no lyrics');
+        lyricsTitle.textContent = data.song || 'Lyrics';
+        const artistLabel = data.artist ? `by ${data.artist}` : '';
+        const aiBadge = data.source === 'ai' ? ' <span class="ai-badge">✦ AI</span>' : '';
+        lyricsArtist.innerHTML = escapeHtml(artistLabel) + aiBadge;
+        lyricsLoading.style.display  = 'none';
+        lyricsNotFound.style.display = 'none';
+        if (data.syncedLyrics) {
+          _lrcLines = parseLRC(data.syncedLyrics);
+          _syncActive = true;
+          lyricsText.className = 'lyrics-text synced';
+          renderSyncedLyrics(_lrcLines, lyricsText);
+        } else {
+          _syncActive = false;
+          lyricsText.className = 'lyrics-text';
+          lyricsText.innerHTML = formatLyrics(data.lyrics);
+        }
+        lyricsText.style.display = 'block';
+        lyricsBody.scrollTop = 0;
+        playerSection.classList.add('has-lyrics');
+        _hideNowPlayingCard();
+        lyricsSection.style.display = 'block';
+        if (_syncActive && ytPlayer && ytPlayer.getPlayerState &&
+            ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
+          startLrcSync(lyricsBody);
+        }
+      })
+      .catch(() => {
+        // No lyrics available — fall back to vibes card (single column)
+        _showNowPlayingCard();
+        lyricsSection.style.display = 'none';
+      });
+
     fetchRecommendations(v.title);
     addToHistory(v);
     updatePlayerFavBtn();
@@ -1085,32 +1132,15 @@ function _hideNowPlayingCard() {
   nowPlayingCard.style.display = 'none';
 }
 
-async function fetchLyrics(videoTitle, keepLayout = false) {
+async function fetchLyrics(videoTitle) {
   resetLrcState();
-  if (keepLayout) {
-    // Refresh / resume: preserve the two-column layout the user had before refresh.
-    // Show lyrics loading skeleton on the right — identical to the pre-refresh view.
-    nowPlayingCard.style.display = 'none';
-    playerSection.classList.remove('no-lyrics');
-    playerSection.classList.add('has-lyrics');
-    lyricsLoading.style.display  = 'block';
-    lyricsText.style.display     = 'none';
-    lyricsNotFound.style.display = 'none';
-    lyricsSection.style.display  = 'block';
-  } else {
-    // Normal first-play: vibes card while lyrics load
-    _showNowPlayingCard();
-    lyricsSection.style.display = 'none';
-  }
+  _showNowPlayingCard();
+  lyricsSection.style.display = 'none';
 
   try {
     const res  = await fetch(`/api/lyrics?title=${encodeURIComponent(videoTitle)}`);
     const data = await res.json();
-    if (!res.ok || data.error) {
-      // No lyrics found — fall back to vibes card (single-column)
-      if (keepLayout) { _showNowPlayingCard(); lyricsSection.style.display = 'none'; }
-      return;
-    }
+    if (!res.ok || data.error) { return; }
 
     // Prepare all lyrics content BEFORE revealing the panel (no flash)
     lyricsTitle.textContent = data.song || 'Lyrics';
@@ -1146,7 +1176,7 @@ async function fetchLyrics(videoTitle, keepLayout = false) {
       startLrcSync(lyricsBody);
     }
   } catch {
-    if (keepLayout) { _showNowPlayingCard(); lyricsSection.style.display = 'none'; }
+    // vibes card stays showing
   }
 }
 
