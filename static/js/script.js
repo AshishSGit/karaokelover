@@ -1530,7 +1530,6 @@ function hideAllStates() {
   resultsSection.style.display  = 'none';
   emptyState.style.display      = 'none';
   errorState.style.display      = 'none';
-  lyricsSection.style.display   = 'none';
 }
 
 function setLoading(on) {
