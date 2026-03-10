@@ -23,7 +23,8 @@ function _savePosition() {
     localStorage.setItem(_POS_KEY, JSON.stringify({
       video_id: currentVideo.video_id, title: currentVideo.title,
       channel: currentVideo.channel || '', thumbnail: currentVideo.thumbnail || '',
-      time: t, savedAt: Date.now()
+      time: t, savedAt: Date.now(),
+      hasLyrics: playerSection.classList.contains('has-lyrics')
     }));
     const pp = JSON.parse(localStorage.getItem(_PPOS_KEY) || '{}');
     pp[currentVideo.video_id] = t;
@@ -235,12 +236,13 @@ function _checkUrlState() {
     document.body.classList.add('url-video');
 
     // Find saved metadata: prefer _POS_KEY (same device refresh), then history
-    let v = null, startSec = 0;
+    let v = null, startSec = 0, savedHasLyrics = null;
     try {
       const saved = JSON.parse(localStorage.getItem(_POS_KEY) || 'null');
       if (saved && saved.video_id === videoId) {
         v = { video_id: saved.video_id, title: saved.title, channel: saved.channel || '', thumbnail: saved.thumbnail || '' };
         startSec = Math.max(0, (saved.time || 0) - 2);
+        savedHasLyrics = saved.hasLyrics === true || saved.hasLyrics === false ? saved.hasLyrics : null;
       }
     } catch {}
 
@@ -294,11 +296,19 @@ function _checkUrlState() {
     }
 
     if (v.title !== 'Loading…') {
-      // preserveLayout=true: show 2-column + skeleton immediately, populate when fetch completes
-      fetchLyrics(v.title, true);
+      if (savedHasLyrics === false) {
+        // We KNOW this video had no lyrics — show vibes card immediately (matches pre-refresh)
+        _showNowPlayingCard();
+      } else {
+        // Had lyrics (or unknown) — show 2-column skeleton, fetch lyrics to populate
+        fetchLyrics(v.title, true);
+      }
       fetchRecommendations(v.title);
       addToHistory(v);
       updatePlayerFavBtn();
+    } else {
+      // Shared link with no metadata — show vibes card as placeholder
+      _showNowPlayingCard();
     }
   } catch (e) {
     console.error('[KL] _checkUrlState error:', e);
@@ -1098,6 +1108,7 @@ async function fetchLyrics(videoTitle, preserveLayout) {
     lyricsText.style.display      = 'none';
     lyricsNotFound.style.display  = 'none';
     lyricsSection.style.display   = 'block';
+    console.log('[KL] fetchLyrics: preserveLayout skeleton shown');
   } else {
     // Normal mode: start with vibes card, upgrade to 2-column if lyrics found
     _showNowPlayingCard();
@@ -1105,8 +1116,10 @@ async function fetchLyrics(videoTitle, preserveLayout) {
   }
 
   try {
+    console.log('[KL] fetchLyrics: fetching for', videoTitle);
     const res  = await fetch(`/api/lyrics?title=${encodeURIComponent(videoTitle)}`);
     const data = await res.json();
+    console.log('[KL] fetchLyrics: response', res.ok, data ? (data.error || 'ok') : 'null');
     if (!res.ok || data.error) {
       if (preserveLayout) {
         // No lyrics — fall back to vibes card (single column)
@@ -1145,13 +1158,16 @@ async function fetchLyrics(videoTitle, preserveLayout) {
     _hideNowPlayingCard();
     lyricsSection.style.display = 'block';
 
+    console.log('[KL] fetchLyrics: lyrics populated, has-lyrics =', playerSection.classList.contains('has-lyrics'));
+
     // Start sync if already playing
     if (_syncActive && ytPlayer && ytPlayer.getPlayerState &&
         ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
       startLrcSync(lyricsBody);
     }
-  } catch {
+  } catch (err) {
     // Error fetching — fall back to vibes card
+    console.error('[KL] fetchLyrics error:', err);
     playerSection.classList.remove('has-lyrics');
     _showNowPlayingCard();
     lyricsSection.style.display = 'none';
