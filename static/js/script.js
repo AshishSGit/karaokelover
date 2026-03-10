@@ -947,7 +947,27 @@ playerFavBtn.addEventListener('click', () => {
 });
 
 closePlayerBtn.addEventListener('click', () => {
-  document.body.classList.remove('url-video'); // restore full hero
+  document.body.classList.remove('url-video');
+  playerSection.classList.remove('has-lyrics');
+  if (ytPlayer) ytPlayer.stopVideo();
+  currentVideo = null;
+  try { history.replaceState({}, '', '/'); } catch {}
+  hideMiniPlayer();
+  playerSection.style.display = 'none';
+  lyricsSection.style.display = 'none';
+  nowPlayingCard.style.display = 'none';
+  equalizer.classList.remove('playing');
+  playerContainer.classList.remove('playing');
+  if (playerArtBg) playerArtBg.style.backgroundImage = '';
+  if (stageArtBg)  stageArtBg.style.backgroundImage  = '';
+  if (playerArtThumb) { playerArtThumb.style.backgroundImage = ''; playerArtThumb.classList.remove('loaded'); }
+  document.querySelectorAll('.card.active').forEach(c => {
+    c.classList.remove('active');
+    const ov = c.querySelector('.card-play-overlay');
+    if (ov) ov.innerHTML = '▶';
+  });
+  renderHistory();
+  renderFavorites();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 

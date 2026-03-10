@@ -1287,32 +1287,7 @@ body.concert-live .player-bar::before {
 }
 .card-channel { font-size: 11.5px; color: var(--muted); margin-top: auto; }
 
-/* ---- Featured first card (landscape hero) ---- */
-.results-grid .card:first-child {
-  grid-column: 1 / -1;
-  flex-direction: row;
-  min-height: 180px;
-}
-.results-grid .card:first-child .card-thumb-wrap {
-  width: 320px; min-width: 320px;
-  padding-top: 0; height: 180px;
-}
-.results-grid .card:first-child .card-thumb {
-  position: relative; top: auto; left: auto;
-  width: 100%; height: 100%;
-}
-.results-grid .card:first-child .card-body {
-  padding: 20px 24px; justify-content: center;
-}
-.results-grid .card:first-child .card-title {
-  font-size: 16px; -webkit-line-clamp: 3;
-}
-.results-grid .card:first-child .card-channel {
-  font-size: 13px; margin-top: 8px;
-}
-.results-grid .card:first-child .card-num {
-  top: 10px; left: 10px;
-}
+/* All result cards use the same uniform size */
 
 /* staggered animation */
 .card:nth-child(1)  { animation-delay: 0.03s; }
