@@ -1073,10 +1073,22 @@ function resetLrcState() {
   _syncActive = false;
 }
 
+// Disable sync highlighting — lyrics stay visible as plain text
+function _disableSync() {
+  _pauseSyncInterval();
+  _syncActive = false;
+  _lrcLines.forEach(l => {
+    if (!l.el) return;
+    l.el.classList.remove('lyric-active', 'lyric-past');
+  });
+}
+
 function startLrcSync(targetBody) {
   _pauseSyncInterval();                        // stop old interval only
   if (!_lrcLines.length || !ytPlayer) return; // data still intact
   let lastIdx = -1;
+  let stuckCount = 0;         // how many 200ms ticks on same line
+  const STUCK_LIMIT = 40;     // 40 × 200ms = 8s on same line → out of sync
 
   _syncInterval = setInterval(() => {
     if (!ytPlayer || typeof ytPlayer.getCurrentTime !== 'function') return;
@@ -1086,6 +1098,24 @@ function startLrcSync(targetBody) {
       if (_lrcLines[i].time <= t) idx = i;
       else break;
     }
+
+    // --- Drift detection: disable sync if lyrics don't match playback ---
+    // All lyrics already passed (last lyric ended >10s ago but song continues)
+    if (idx === _lrcLines.length - 1 && t > _lrcLines[idx].time + 10) {
+      _disableSync(); return;
+    }
+    // 30s into playback but no lyric has started yet
+    if (t > 30 && idx < 0) {
+      _disableSync(); return;
+    }
+    // Same line highlighted for too long (>8s while playing)
+    if (idx === lastIdx) {
+      stuckCount++;
+      if (stuckCount >= STUCK_LIMIT && t > 5) { _disableSync(); return; }
+    } else {
+      stuckCount = 0;
+    }
+
     if (idx === lastIdx || idx < 0) return;
     lastIdx = idx;
 
